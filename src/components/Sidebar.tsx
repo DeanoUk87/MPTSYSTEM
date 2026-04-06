@@ -8,7 +8,7 @@ import {
 import clsx from "clsx";
 
 const navItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Sales", href: "/admin/sales", icon: Package },
   { label: "Invoices", href: "/admin/invoices", icon: FileText },
