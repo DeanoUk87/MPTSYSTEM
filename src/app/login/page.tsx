@@ -1,6 +1,5 @@
 "use client";
 import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, Eye, EyeOff, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,12 +17,23 @@ function LoginForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const res = await signIn("credentials", { login, password, redirect: false });
-    setLoading(false);
-    if (res?.error) {
-      toast.error("Invalid email/username or password");
-    } else {
-      router.push(callbackUrl);
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Invalid email/username or password");
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
+      }
+    } catch {
+      toast.error("Network error, please try again");
+    } finally {
+      setLoading(false);
     }
   }
 

@@ -1,12 +1,11 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Package, FileText, Settings,
   UserCog, Shield, Mail, Archive, LogOut, Building2, ChevronRight
 } from "lucide-react";
 import clsx from "clsx";
-import { signOut } from "next-auth/react";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -22,6 +21,13 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await fetch("/api/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white flex flex-col z-40">
@@ -66,7 +72,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="px-3 py-4 border-t border-slate-700">
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={handleSignOut}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition-colors"
         >
           <LogOut className="w-4 h-4" />

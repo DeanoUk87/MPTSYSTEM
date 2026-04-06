@@ -1,6 +1,4 @@
-"use client";
-import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
-
+// SessionProvider no longer needed — using custom JWT cookie auth
 export default function SessionProvider({ children }: { children: React.ReactNode }) {
-  return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>;
+  return <>{children}</>;
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { Bell, User } from "lucide-react";
 
 interface TopbarProps {
@@ -8,7 +8,11 @@ interface TopbarProps {
 }
 
 export default function Topbar({ title, subtitle }: TopbarProps) {
-  const { data: session } = useSession();
+  const [user, setUser] = useState<{ name?: string; roles?: string[] } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/me").then((r) => r.json()).then(setUser).catch(() => {});
+  }, []);
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
@@ -26,10 +30,10 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
           </div>
           <div className="hidden sm:block">
             <p className="text-sm font-medium text-slate-700 leading-tight">
-              {session?.user?.name ?? "User"}
+              {user?.name ?? "User"}
             </p>
             <p className="text-xs text-slate-500">
-              {(session?.user as any)?.roles?.[0] ?? ""}
+              {user?.roles?.[0] ?? ""}
             </p>
           </div>
         </div>

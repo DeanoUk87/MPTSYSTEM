@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { jwtVerify } from "jose";
+
+const SECRET = process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Public paths — allow through without auth check
+  // Public paths — no auth needed
   if (
     pathname.startsWith("/login") ||
+    pathname.startsWith("/api/login") ||
+    pathname.startsWith("/api/logout") ||
+    pathname.startsWith("/api/me") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/debug") ||
     pathname.startsWith("/_next") ||
@@ -15,19 +20,22 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Verify JWT token (edge-safe — no Prisma, no Node.js modules)
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production",
-  });
-
+  // Check our custom session cookie
+  const token = req.cookies.get("mp-session")?.value;
   if (!token) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  try {
+    await jwtVerify(token, new TextEncoder().encode(SECRET));
+    return NextResponse.next();
+  } catch {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
 }
 
 export const config = {
