@@ -1,56 +1,58 @@
-import { prisma } from "@/lib/prisma";
+"use client";
+import { useEffect, useState } from "react";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import { Users, Package, FileText, CheckCircle, Clock, Mail, Archive } from "lucide-react";
 
-async function getStats() {
-  const [
-    totalCustomers,
-    totalSales,
-    totalInvoices,
-    pendingInvoices,
-    sentInvoices,
-    unsent,
-    archivedSales,
-  ] = await Promise.all([
-    prisma.customer.count(),
-    prisma.sale.count(),
-    prisma.invoice.count(),
-    prisma.invoice.count({ where: { printer: 0 } }),
-    prisma.invoice.count({ where: { emailStatus: 1 } }),
-    prisma.invoice.count({ where: { emailStatus: 0 } }),
-    prisma.saleArchive.count(),
-  ]);
-  return { totalCustomers, totalSales, totalInvoices, pendingInvoices, sentInvoices, unsent, archivedSales };
+interface Stats {
+  totalCustomers: number;
+  totalSales: number;
+  totalInvoices: number;
+  pendingInvoices: number;
+  sentInvoices: number;
+  unsent: number;
+  archivedSales: number;
 }
 
-export default async function DashboardPage() {
-  const stats = await getStats();
+interface RecentInvoice {
+  id: string;
+  invoiceNumber: string;
+  customerAccount: string;
+  invoiceDate: string;
+  emailStatus: number;
+  printer: number;
+}
 
-  const recentInvoices = await prisma.invoice.findMany({
-    take: 10,
-    orderBy: { dateCreated: "desc" },
-    include: { customer: true },
-  });
+export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [recentInvoices, setRecentInvoices] = useState<RecentInvoice[]>([]);
+
+  useEffect(() => {
+    fetch("/api/dashboard")
+      .then((r) => r.json())
+      .then((d) => {
+        setStats(d.stats);
+        setRecentInvoices(d.recentInvoices);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="flex-1">
       <Topbar title="Dashboard" subtitle="Welcome back to MP Booking System" />
       <div className="p-6 space-y-6">
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Customers" value={stats.totalCustomers} icon={Users} color="blue" />
-          <StatCard title="Total Sales" value={stats.totalSales} icon={Package} color="purple" />
-          <StatCard title="Total Invoices" value={stats.totalInvoices} icon={FileText} color="amber" />
-          <StatCard title="Emails Sent" value={stats.sentInvoices} icon={Mail} color="green" />
+          <StatCard title="Total Customers" value={stats?.totalCustomers ?? "—"} icon={Users} color="blue" />
+          <StatCard title="Total Sales" value={stats?.totalSales ?? "—"} icon={Package} color="purple" />
+          <StatCard title="Total Invoices" value={stats?.totalInvoices ?? "—"} icon={FileText} color="amber" />
+          <StatCard title="Emails Sent" value={stats?.sentInvoices ?? "—"} icon={Mail} color="green" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard title="Pending Invoices" value={stats.pendingInvoices} icon={Clock} color="amber" trend="Awaiting print/send" />
-          <StatCard title="Unsent Invoices" value={stats.unsent} icon={CheckCircle} color="rose" trend="Email not yet dispatched" />
-          <StatCard title="Archived Sales" value={stats.archivedSales} icon={Archive} color="purple" trend="Moved to archive" />
+          <StatCard title="Pending Invoices" value={stats?.pendingInvoices ?? "—"} icon={Clock} color="amber" trend="Awaiting print/send" />
+          <StatCard title="Unsent Invoices" value={stats?.unsent ?? "—"} icon={CheckCircle} color="rose" trend="Email not yet dispatched" />
+          <StatCard title="Archived Sales" value={stats?.archivedSales ?? "—"} icon={Archive} color="purple" trend="Moved to archive" />
         </div>
 
-        {/* Recent Invoices */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="p-5 border-b border-slate-200">
             <h2 className="text-base font-semibold text-slate-800">Recent Invoices</h2>
@@ -59,10 +61,9 @@ export default async function DashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Invoice #</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                  {["Invoice #", "Customer", "Date", "Status"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
