@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
 
   const customer = invoice.customer;
-  if (!customer?.customerEmail) {
+  if (!customer?.email) {
     return NextResponse.json({ error: "Customer has no email address" }, { status: 400 });
   }
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   const body = (settings?.defaultMessage2 || "Please find attached your invoice {invoice_number}.")
     .replace("{invoice_number}", invoice.invoiceNumber);
 
-  const toAddresses = customer.customerEmail.split(",").map((e) => e.trim()).filter(Boolean);
+  const toAddresses = customer.email!.split(",").map((e) => e.trim()).filter(Boolean);
   const bcc = customer.customerEmailBcc?.trim() || undefined;
 
   try {

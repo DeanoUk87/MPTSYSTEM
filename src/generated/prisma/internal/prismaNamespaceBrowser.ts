@@ -57,6 +57,17 @@ export const ModelName = {
   UserRole: 'UserRole',
   RolePermission: 'RolePermission',
   Customer: 'Customer',
+  Driver: 'Driver',
+  DriverContact: 'DriverContact',
+  Vehicle: 'Vehicle',
+  CustomerVehicleRate: 'CustomerVehicleRate',
+  StorageUnit: 'StorageUnit',
+  StorageUsage: 'StorageUsage',
+  BookingType: 'BookingType',
+  FuelSurcharge: 'FuelSurcharge',
+  Booking: 'Booking',
+  ViaAddress: 'ViaAddress',
+  GeoTracking: 'GeoTracking',
   Sale: 'Sale',
   Invoice: 'Invoice',
   SaleArchive: 'SaleArchive',
@@ -64,7 +75,6 @@ export const ModelName = {
   Settings: 'Settings',
   AdminComposer: 'AdminComposer',
   MessageStatus: 'MessageStatus',
-  Post: 'Post',
   Upload: 'Upload',
   JobBatch: 'JobBatch'
 } as const
@@ -93,6 +103,9 @@ export const UserScalarFieldEnum = {
   providerId: 'providerId',
   emailVerifiedAt: 'emailVerifiedAt',
   userStatus: 'userStatus',
+  driverId: 'driverId',
+  customerId: 'customerId',
+  dcontactId: 'dcontactId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -140,17 +153,273 @@ export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnu
 
 export const CustomerScalarFieldEnum = {
   id: 'id',
+  name: 'name',
+  accountNumber: 'accountNumber',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  address2: 'address2',
+  address3: 'address3',
+  city: 'city',
+  postcode: 'postcode',
+  notes: 'notes',
+  contact: 'contact',
+  poNumber: 'poNumber',
+  poEmail: 'poEmail',
+  deadMileage: 'deadMileage',
   customerAccount: 'customerAccount',
-  customerEmail: 'customerEmail',
   customerEmailBcc: 'customerEmailBcc',
-  customerPhone: 'customerPhone',
   termsOfPayment: 'termsOfPayment',
   messageType: 'messageType',
-  poNumber: 'poNumber',
   userId: 'userId'
 } as const
 
 export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
+
+
+export const DriverScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  driverType: 'driverType',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  notes: 'notes',
+  costPerMile: 'costPerMile',
+  costPerMileWeekends: 'costPerMileWeekends',
+  costPerMileOutOfHours: 'costPerMileOutOfHours',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DriverScalarFieldEnum = (typeof DriverScalarFieldEnum)[keyof typeof DriverScalarFieldEnum]
+
+
+export const DriverContactScalarFieldEnum = {
+  id: 'id',
+  driverId: 'driverId',
+  driverName: 'driverName',
+  vehicleMake: 'vehicleMake',
+  vehicleRegistration: 'vehicleRegistration',
+  driverPhone: 'driverPhone',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DriverContactScalarFieldEnum = (typeof DriverContactScalarFieldEnum)[keyof typeof DriverContactScalarFieldEnum]
+
+
+export const VehicleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  costPerMile: 'costPerMile',
+  userId: 'userId',
+  driverId: 'driverId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VehicleScalarFieldEnum = (typeof VehicleScalarFieldEnum)[keyof typeof VehicleScalarFieldEnum]
+
+
+export const CustomerVehicleRateScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  vehicleId: 'vehicleId',
+  ratePerMile: 'ratePerMile',
+  ratePerMileWeekends: 'ratePerMileWeekends',
+  ratePerMileOutOfHours: 'ratePerMileOutOfHours',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CustomerVehicleRateScalarFieldEnum = (typeof CustomerVehicleRateScalarFieldEnum)[keyof typeof CustomerVehicleRateScalarFieldEnum]
+
+
+export const StorageUnitScalarFieldEnum = {
+  id: 'id',
+  unitNumber: 'unitNumber',
+  imei: 'imei',
+  unitSize: 'unitSize',
+  unitType: 'unitType',
+  availability: 'availability',
+  currentDriverId: 'currentDriverId',
+  calibrationDate: 'calibrationDate',
+  jobId: 'jobId',
+  trackable: 'trackable',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StorageUnitScalarFieldEnum = (typeof StorageUnitScalarFieldEnum)[keyof typeof StorageUnitScalarFieldEnum]
+
+
+export const StorageUsageScalarFieldEnum = {
+  id: 'id',
+  unitId: 'unitId',
+  jobId: 'jobId',
+  driverId: 'driverId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StorageUsageScalarFieldEnum = (typeof StorageUsageScalarFieldEnum)[keyof typeof StorageUsageScalarFieldEnum]
+
+
+export const BookingTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  createdAt: 'createdAt'
+} as const
+
+export type BookingTypeScalarFieldEnum = (typeof BookingTypeScalarFieldEnum)[keyof typeof BookingTypeScalarFieldEnum]
+
+
+export const FuelSurchargeScalarFieldEnum = {
+  id: 'id',
+  price: 'price',
+  percentage: 'percentage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FuelSurchargeScalarFieldEnum = (typeof FuelSurchargeScalarFieldEnum)[keyof typeof FuelSurchargeScalarFieldEnum]
+
+
+export const BookingScalarFieldEnum = {
+  id: 'id',
+  customerId: 'customerId',
+  purchaseOrder: 'purchaseOrder',
+  bookedBy: 'bookedBy',
+  bookingTypeId: 'bookingTypeId',
+  jobNotes: 'jobNotes',
+  officeNotes: 'officeNotes',
+  collectionDate: 'collectionDate',
+  collectionTime: 'collectionTime',
+  collectionName: 'collectionName',
+  collectionAddress1: 'collectionAddress1',
+  collectionAddress2: 'collectionAddress2',
+  collectionArea: 'collectionArea',
+  collectionCountry: 'collectionCountry',
+  collectionPostcode: 'collectionPostcode',
+  collectionContact: 'collectionContact',
+  collectionPhone: 'collectionPhone',
+  collectionNotes: 'collectionNotes',
+  deliveryDate: 'deliveryDate',
+  deliveryTime: 'deliveryTime',
+  deliveryName: 'deliveryName',
+  deliveryAddress1: 'deliveryAddress1',
+  deliveryAddress2: 'deliveryAddress2',
+  deliveryArea: 'deliveryArea',
+  deliveryCountry: 'deliveryCountry',
+  deliveryPostcode: 'deliveryPostcode',
+  deliveryContact: 'deliveryContact',
+  deliveryPhone: 'deliveryPhone',
+  deliveryNotes: 'deliveryNotes',
+  deliveryLat: 'deliveryLat',
+  deliveryLng: 'deliveryLng',
+  vehicleId: 'vehicleId',
+  miles: 'miles',
+  customerPrice: 'customerPrice',
+  cost: 'cost',
+  manualAmount: 'manualAmount',
+  manualDesc: 'manualDesc',
+  extraCost2: 'extraCost2',
+  extraCost2Label: 'extraCost2Label',
+  fuelSurchargePercent: 'fuelSurchargePercent',
+  fuelSurchargeCost: 'fuelSurchargeCost',
+  weekend: 'weekend',
+  avoidTolls: 'avoidTolls',
+  driverId: 'driverId',
+  driverCost: 'driverCost',
+  driverContactId: 'driverContactId',
+  secondManId: 'secondManId',
+  extraCost: 'extraCost',
+  cxDriverId: 'cxDriverId',
+  cxDriverCost: 'cxDriverCost',
+  chillUnitId: 'chillUnitId',
+  ambientUnitId: 'ambientUnitId',
+  deliveredTemperature: 'deliveredTemperature',
+  hideTrackingTemperature: 'hideTrackingTemperature',
+  hideTrackingMap: 'hideTrackingMap',
+  numberOfItems: 'numberOfItems',
+  weight: 'weight',
+  podSignature: 'podSignature',
+  podTime: 'podTime',
+  podDate: 'podDate',
+  podUpload: 'podUpload',
+  podMobile: 'podMobile',
+  podDataVerify: 'podDataVerify',
+  podRelationship: 'podRelationship',
+  driverNote: 'driverNote',
+  driverConfirmCollectionAt: 'driverConfirmCollectionAt',
+  jobStatus: 'jobStatus',
+  locker: 'locker',
+  deadMileageStatus: 'deadMileageStatus',
+  waitAndReturn: 'waitAndReturn',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+export const ViaAddressScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  viaType: 'viaType',
+  name: 'name',
+  address1: 'address1',
+  address2: 'address2',
+  area: 'area',
+  country: 'country',
+  postcode: 'postcode',
+  phone: 'phone',
+  contact: 'contact',
+  notes: 'notes',
+  viaDate: 'viaDate',
+  viaTime: 'viaTime',
+  signedBy: 'signedBy',
+  podDate: 'podDate',
+  podTime: 'podTime',
+  podRelationship: 'podRelationship',
+  deliveredTemp: 'deliveredTemp',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  viaPodVerify: 'viaPodVerify',
+  viaPodMobile: 'viaPodMobile',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ViaAddressScalarFieldEnum = (typeof ViaAddressScalarFieldEnum)[keyof typeof ViaAddressScalarFieldEnum]
+
+
+export const GeoTrackingScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  driverId: 'driverId',
+  currentLat: 'currentLat',
+  currentLng: 'currentLng',
+  currentDate: 'currentDate',
+  status: 'status',
+  speed: 'speed',
+  startedLat: 'startedLat',
+  startedLng: 'startedLng',
+  endedLat: 'endedLat',
+  endedLng: 'endedLng',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GeoTrackingScalarFieldEnum = (typeof GeoTrackingScalarFieldEnum)[keyof typeof GeoTrackingScalarFieldEnum]
 
 
 export const SaleScalarFieldEnum = {
@@ -301,6 +570,7 @@ export const SettingsScalarFieldEnum = {
   primaryContact: 'primaryContact',
   baseCurrency: 'baseCurrency',
   vatNumber: 'vatNumber',
+  vatPercent: 'vatPercent',
   invoiceDueDate: 'invoiceDueDate',
   invoiceDuePaymentBy: 'invoiceDuePaymentBy',
   messageTitle: 'messageTitle',
@@ -338,18 +608,6 @@ export const MessageStatusScalarFieldEnum = {
 } as const
 
 export type MessageStatusScalarFieldEnum = (typeof MessageStatusScalarFieldEnum)[keyof typeof MessageStatusScalarFieldEnum]
-
-
-export const PostScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  content: 'content',
-  picture: 'picture',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
 
 
 export const UploadScalarFieldEnum = {

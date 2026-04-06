@@ -33,7 +33,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let failed = 0;
 
   for (const ms of pending) {
-    const emails = ms.customer.customerEmail.split(",").map((e) => e.trim()).filter(Boolean);
+    const emails = ms.customer.email!.split(",").map((e) => e.trim()).filter(Boolean);
     try {
       await transporter.sendMail({
         from: composer.fromEmail || settings?.cemail || process.env.SMTP_USER || "noreply@mpbooking.com",

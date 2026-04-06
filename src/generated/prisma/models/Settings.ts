@@ -27,11 +27,13 @@ export type AggregateSettings = {
 }
 
 export type SettingsAvgAggregateOutputType = {
+  vatPercent: number | null
   invoiceDueDate: number | null
   sendLimit: number | null
 }
 
 export type SettingsSumAggregateOutputType = {
+  vatPercent: number | null
   invoiceDueDate: number | null
   sendLimit: number | null
 }
@@ -53,6 +55,7 @@ export type SettingsMinAggregateOutputType = {
   primaryContact: string | null
   baseCurrency: string | null
   vatNumber: string | null
+  vatPercent: number | null
   invoiceDueDate: number | null
   invoiceDuePaymentBy: string | null
   messageTitle: string | null
@@ -78,6 +81,7 @@ export type SettingsMaxAggregateOutputType = {
   primaryContact: string | null
   baseCurrency: string | null
   vatNumber: string | null
+  vatPercent: number | null
   invoiceDueDate: number | null
   invoiceDuePaymentBy: string | null
   messageTitle: string | null
@@ -103,6 +107,7 @@ export type SettingsCountAggregateOutputType = {
   primaryContact: number
   baseCurrency: number
   vatNumber: number
+  vatPercent: number
   invoiceDueDate: number
   invoiceDuePaymentBy: number
   messageTitle: number
@@ -114,11 +119,13 @@ export type SettingsCountAggregateOutputType = {
 
 
 export type SettingsAvgAggregateInputType = {
+  vatPercent?: true
   invoiceDueDate?: true
   sendLimit?: true
 }
 
 export type SettingsSumAggregateInputType = {
+  vatPercent?: true
   invoiceDueDate?: true
   sendLimit?: true
 }
@@ -140,6 +147,7 @@ export type SettingsMinAggregateInputType = {
   primaryContact?: true
   baseCurrency?: true
   vatNumber?: true
+  vatPercent?: true
   invoiceDueDate?: true
   invoiceDuePaymentBy?: true
   messageTitle?: true
@@ -165,6 +173,7 @@ export type SettingsMaxAggregateInputType = {
   primaryContact?: true
   baseCurrency?: true
   vatNumber?: true
+  vatPercent?: true
   invoiceDueDate?: true
   invoiceDuePaymentBy?: true
   messageTitle?: true
@@ -190,6 +199,7 @@ export type SettingsCountAggregateInputType = {
   primaryContact?: true
   baseCurrency?: true
   vatNumber?: true
+  vatPercent?: true
   invoiceDueDate?: true
   invoiceDuePaymentBy?: true
   messageTitle?: true
@@ -302,6 +312,7 @@ export type SettingsGroupByOutputType = {
   primaryContact: string | null
   baseCurrency: string
   vatNumber: string | null
+  vatPercent: number
   invoiceDueDate: number
   invoiceDuePaymentBy: string | null
   messageTitle: string | null
@@ -350,6 +361,7 @@ export type SettingsWhereInput = {
   primaryContact?: Prisma.StringNullableFilter<"Settings"> | string | null
   baseCurrency?: Prisma.StringFilter<"Settings"> | string
   vatNumber?: Prisma.StringNullableFilter<"Settings"> | string | null
+  vatPercent?: Prisma.FloatFilter<"Settings"> | number
   invoiceDueDate?: Prisma.IntFilter<"Settings"> | number
   invoiceDuePaymentBy?: Prisma.StringNullableFilter<"Settings"> | string | null
   messageTitle?: Prisma.StringNullableFilter<"Settings"> | string | null
@@ -375,6 +387,7 @@ export type SettingsOrderByWithRelationInput = {
   primaryContact?: Prisma.SortOrderInput | Prisma.SortOrder
   baseCurrency?: Prisma.SortOrder
   vatNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   invoiceDuePaymentBy?: Prisma.SortOrderInput | Prisma.SortOrder
   messageTitle?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -403,6 +416,7 @@ export type SettingsWhereUniqueInput = Prisma.AtLeast<{
   primaryContact?: Prisma.StringNullableFilter<"Settings"> | string | null
   baseCurrency?: Prisma.StringFilter<"Settings"> | string
   vatNumber?: Prisma.StringNullableFilter<"Settings"> | string | null
+  vatPercent?: Prisma.FloatFilter<"Settings"> | number
   invoiceDueDate?: Prisma.IntFilter<"Settings"> | number
   invoiceDuePaymentBy?: Prisma.StringNullableFilter<"Settings"> | string | null
   messageTitle?: Prisma.StringNullableFilter<"Settings"> | string | null
@@ -428,6 +442,7 @@ export type SettingsOrderByWithAggregationInput = {
   primaryContact?: Prisma.SortOrderInput | Prisma.SortOrder
   baseCurrency?: Prisma.SortOrder
   vatNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   invoiceDuePaymentBy?: Prisma.SortOrderInput | Prisma.SortOrder
   messageTitle?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -461,6 +476,7 @@ export type SettingsScalarWhereWithAggregatesInput = {
   primaryContact?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   baseCurrency?: Prisma.StringWithAggregatesFilter<"Settings"> | string
   vatNumber?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
+  vatPercent?: Prisma.FloatWithAggregatesFilter<"Settings"> | number
   invoiceDueDate?: Prisma.IntWithAggregatesFilter<"Settings"> | number
   invoiceDuePaymentBy?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
   messageTitle?: Prisma.StringNullableWithAggregatesFilter<"Settings"> | string | null
@@ -486,6 +502,7 @@ export type SettingsCreateInput = {
   primaryContact?: string | null
   baseCurrency?: string
   vatNumber?: string | null
+  vatPercent?: number
   invoiceDueDate?: number
   invoiceDuePaymentBy?: string | null
   messageTitle?: string | null
@@ -511,6 +528,7 @@ export type SettingsUncheckedCreateInput = {
   primaryContact?: string | null
   baseCurrency?: string
   vatNumber?: string | null
+  vatPercent?: number
   invoiceDueDate?: number
   invoiceDuePaymentBy?: string | null
   messageTitle?: string | null
@@ -536,6 +554,7 @@ export type SettingsUpdateInput = {
   primaryContact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   baseCurrency?: Prisma.StringFieldUpdateOperationsInput | string
   vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   invoiceDueDate?: Prisma.IntFieldUpdateOperationsInput | number
   invoiceDuePaymentBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -561,6 +580,7 @@ export type SettingsUncheckedUpdateInput = {
   primaryContact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   baseCurrency?: Prisma.StringFieldUpdateOperationsInput | string
   vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   invoiceDueDate?: Prisma.IntFieldUpdateOperationsInput | number
   invoiceDuePaymentBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -586,6 +606,7 @@ export type SettingsCreateManyInput = {
   primaryContact?: string | null
   baseCurrency?: string
   vatNumber?: string | null
+  vatPercent?: number
   invoiceDueDate?: number
   invoiceDuePaymentBy?: string | null
   messageTitle?: string | null
@@ -611,6 +632,7 @@ export type SettingsUpdateManyMutationInput = {
   primaryContact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   baseCurrency?: Prisma.StringFieldUpdateOperationsInput | string
   vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   invoiceDueDate?: Prisma.IntFieldUpdateOperationsInput | number
   invoiceDuePaymentBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -636,6 +658,7 @@ export type SettingsUncheckedUpdateManyInput = {
   primaryContact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   baseCurrency?: Prisma.StringFieldUpdateOperationsInput | string
   vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatPercent?: Prisma.FloatFieldUpdateOperationsInput | number
   invoiceDueDate?: Prisma.IntFieldUpdateOperationsInput | number
   invoiceDuePaymentBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -661,6 +684,7 @@ export type SettingsCountOrderByAggregateInput = {
   primaryContact?: Prisma.SortOrder
   baseCurrency?: Prisma.SortOrder
   vatNumber?: Prisma.SortOrder
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   invoiceDuePaymentBy?: Prisma.SortOrder
   messageTitle?: Prisma.SortOrder
@@ -670,6 +694,7 @@ export type SettingsCountOrderByAggregateInput = {
 }
 
 export type SettingsAvgOrderByAggregateInput = {
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   sendLimit?: Prisma.SortOrder
 }
@@ -691,6 +716,7 @@ export type SettingsMaxOrderByAggregateInput = {
   primaryContact?: Prisma.SortOrder
   baseCurrency?: Prisma.SortOrder
   vatNumber?: Prisma.SortOrder
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   invoiceDuePaymentBy?: Prisma.SortOrder
   messageTitle?: Prisma.SortOrder
@@ -716,6 +742,7 @@ export type SettingsMinOrderByAggregateInput = {
   primaryContact?: Prisma.SortOrder
   baseCurrency?: Prisma.SortOrder
   vatNumber?: Prisma.SortOrder
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   invoiceDuePaymentBy?: Prisma.SortOrder
   messageTitle?: Prisma.SortOrder
@@ -725,6 +752,7 @@ export type SettingsMinOrderByAggregateInput = {
 }
 
 export type SettingsSumOrderByAggregateInput = {
+  vatPercent?: Prisma.SortOrder
   invoiceDueDate?: Prisma.SortOrder
   sendLimit?: Prisma.SortOrder
 }
@@ -748,6 +776,7 @@ export type SettingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   primaryContact?: boolean
   baseCurrency?: boolean
   vatNumber?: boolean
+  vatPercent?: boolean
   invoiceDueDate?: boolean
   invoiceDuePaymentBy?: boolean
   messageTitle?: boolean
@@ -773,6 +802,7 @@ export type SettingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   primaryContact?: boolean
   baseCurrency?: boolean
   vatNumber?: boolean
+  vatPercent?: boolean
   invoiceDueDate?: boolean
   invoiceDuePaymentBy?: boolean
   messageTitle?: boolean
@@ -798,6 +828,7 @@ export type SettingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   primaryContact?: boolean
   baseCurrency?: boolean
   vatNumber?: boolean
+  vatPercent?: boolean
   invoiceDueDate?: boolean
   invoiceDuePaymentBy?: boolean
   messageTitle?: boolean
@@ -823,6 +854,7 @@ export type SettingsSelectScalar = {
   primaryContact?: boolean
   baseCurrency?: boolean
   vatNumber?: boolean
+  vatPercent?: boolean
   invoiceDueDate?: boolean
   invoiceDuePaymentBy?: boolean
   messageTitle?: boolean
@@ -831,7 +863,7 @@ export type SettingsSelectScalar = {
   sendLimit?: boolean
 }
 
-export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyName" | "logo" | "companyAddress1" | "companyAddress2" | "state" | "city" | "postcode" | "country" | "phone" | "fax" | "cemail" | "website" | "primaryContact" | "baseCurrency" | "vatNumber" | "invoiceDueDate" | "invoiceDuePaymentBy" | "messageTitle" | "defaultMessage" | "defaultMessage2" | "sendLimit", ExtArgs["result"]["settings"]>
+export type SettingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "companyName" | "logo" | "companyAddress1" | "companyAddress2" | "state" | "city" | "postcode" | "country" | "phone" | "fax" | "cemail" | "website" | "primaryContact" | "baseCurrency" | "vatNumber" | "vatPercent" | "invoiceDueDate" | "invoiceDuePaymentBy" | "messageTitle" | "defaultMessage" | "defaultMessage2" | "sendLimit", ExtArgs["result"]["settings"]>
 
 export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Settings"
@@ -853,6 +885,7 @@ export type $SettingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     primaryContact: string | null
     baseCurrency: string
     vatNumber: string | null
+    vatPercent: number
     invoiceDueDate: number
     invoiceDuePaymentBy: string | null
     messageTitle: string | null
@@ -1298,6 +1331,7 @@ export interface SettingsFieldRefs {
   readonly primaryContact: Prisma.FieldRef<"Settings", 'String'>
   readonly baseCurrency: Prisma.FieldRef<"Settings", 'String'>
   readonly vatNumber: Prisma.FieldRef<"Settings", 'String'>
+  readonly vatPercent: Prisma.FieldRef<"Settings", 'Float'>
   readonly invoiceDueDate: Prisma.FieldRef<"Settings", 'Int'>
   readonly invoiceDuePaymentBy: Prisma.FieldRef<"Settings", 'String'>
   readonly messageTitle: Prisma.FieldRef<"Settings", 'String'>

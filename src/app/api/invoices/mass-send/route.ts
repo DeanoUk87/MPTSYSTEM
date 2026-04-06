@@ -39,12 +39,12 @@ export async function POST(req: NextRequest) {
 
   for (const invoice of invoices) {
     const customer = invoice.customer;
-    if (!customer?.customerEmail) { failed++; continue; }
+    if (!customer?.email) { failed++; continue; }
 
     const body = (settings?.defaultMessage2 || "Please find attached your invoice {invoice_number}.")
       .replace("{invoice_number}", invoice.invoiceNumber);
 
-    const toAddresses = customer.customerEmail.split(",").map((e) => e.trim()).filter(Boolean);
+    const toAddresses = customer.email!.split(",").map((e) => e.trim()).filter(Boolean);
     const bcc = customer.customerEmailBcc?.trim() || undefined;
 
     try {

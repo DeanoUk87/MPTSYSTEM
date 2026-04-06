@@ -45,6 +45,9 @@ export type UserMinAggregateOutputType = {
   providerId: string | null
   emailVerifiedAt: Date | null
   userStatus: number | null
+  driverId: string | null
+  customerId: string | null
+  dcontactId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +63,9 @@ export type UserMaxAggregateOutputType = {
   providerId: string | null
   emailVerifiedAt: Date | null
   userStatus: number | null
+  driverId: string | null
+  customerId: string | null
+  dcontactId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,6 +81,9 @@ export type UserCountAggregateOutputType = {
   providerId: number
   emailVerifiedAt: number
   userStatus: number
+  driverId: number
+  customerId: number
+  dcontactId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -100,6 +109,9 @@ export type UserMinAggregateInputType = {
   providerId?: true
   emailVerifiedAt?: true
   userStatus?: true
+  driverId?: true
+  customerId?: true
+  dcontactId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -115,6 +127,9 @@ export type UserMaxAggregateInputType = {
   providerId?: true
   emailVerifiedAt?: true
   userStatus?: true
+  driverId?: true
+  customerId?: true
+  dcontactId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -130,6 +145,9 @@ export type UserCountAggregateInputType = {
   providerId?: true
   emailVerifiedAt?: true
   userStatus?: true
+  driverId?: true
+  customerId?: true
+  dcontactId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -232,6 +250,9 @@ export type UserGroupByOutputType = {
   providerId: string | null
   emailVerifiedAt: Date | null
   userStatus: number
+  driverId: string | null
+  customerId: string | null
+  dcontactId: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -270,6 +291,9 @@ export type UserWhereInput = {
   providerId?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   userStatus?: Prisma.IntFilter<"User"> | number
+  driverId?: Prisma.StringNullableFilter<"User"> | string | null
+  customerId?: Prisma.StringNullableFilter<"User"> | string | null
+  dcontactId?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   roles?: Prisma.UserRoleListRelationFilter
@@ -287,6 +311,9 @@ export type UserOrderByWithRelationInput = {
   providerId?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   userStatus?: Prisma.SortOrder
+  driverId?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  dcontactId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   roles?: Prisma.UserRoleOrderByRelationAggregateInput
@@ -307,6 +334,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   providerId?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   userStatus?: Prisma.IntFilter<"User"> | number
+  driverId?: Prisma.StringNullableFilter<"User"> | string | null
+  customerId?: Prisma.StringNullableFilter<"User"> | string | null
+  dcontactId?: Prisma.StringNullableFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   roles?: Prisma.UserRoleListRelationFilter
@@ -324,6 +354,9 @@ export type UserOrderByWithAggregationInput = {
   providerId?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   userStatus?: Prisma.SortOrder
+  driverId?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  dcontactId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
@@ -347,6 +380,9 @@ export type UserScalarWhereWithAggregatesInput = {
   providerId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   emailVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   userStatus?: Prisma.IntWithAggregatesFilter<"User"> | number
+  driverId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  customerId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  dcontactId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -362,6 +398,9 @@ export type UserCreateInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
@@ -379,6 +418,9 @@ export type UserUncheckedCreateInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
@@ -396,6 +438,9 @@ export type UserUpdateInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
@@ -413,6 +458,9 @@ export type UserUncheckedUpdateInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
@@ -430,6 +478,9 @@ export type UserCreateManyInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -445,6 +496,9 @@ export type UserUpdateManyMutationInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -460,6 +514,9 @@ export type UserUncheckedUpdateManyInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -475,6 +532,9 @@ export type UserCountOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrder
   userStatus?: Prisma.SortOrder
+  driverId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  dcontactId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -494,6 +554,9 @@ export type UserMaxOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrder
   userStatus?: Prisma.SortOrder
+  driverId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  dcontactId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -509,6 +572,9 @@ export type UserMinOrderByAggregateInput = {
   providerId?: Prisma.SortOrder
   emailVerifiedAt?: Prisma.SortOrder
   userStatus?: Prisma.SortOrder
+  driverId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  dcontactId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -592,6 +658,9 @@ export type UserCreateWithoutRolesInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   composedMessages?: Prisma.AdminComposerCreateNestedManyWithoutMessageByInput
@@ -608,6 +677,9 @@ export type UserUncheckedCreateWithoutRolesInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   composedMessages?: Prisma.AdminComposerUncheckedCreateNestedManyWithoutMessageByInput
@@ -640,6 +712,9 @@ export type UserUpdateWithoutRolesInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   composedMessages?: Prisma.AdminComposerUpdateManyWithoutMessageByNestedInput
@@ -656,6 +731,9 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   composedMessages?: Prisma.AdminComposerUncheckedUpdateManyWithoutMessageByNestedInput
@@ -672,6 +750,9 @@ export type UserCreateWithoutComposedMessagesInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
@@ -688,6 +769,9 @@ export type UserUncheckedCreateWithoutComposedMessagesInput = {
   providerId?: string | null
   emailVerifiedAt?: Date | string | null
   userStatus?: number
+  driverId?: string | null
+  customerId?: string | null
+  dcontactId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
@@ -720,6 +804,9 @@ export type UserUpdateWithoutComposedMessagesInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
@@ -736,6 +823,9 @@ export type UserUncheckedUpdateWithoutComposedMessagesInput = {
   providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   userStatus?: Prisma.IntFieldUpdateOperationsInput | number
+  driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dcontactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
@@ -792,6 +882,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   providerId?: boolean
   emailVerifiedAt?: boolean
   userStatus?: boolean
+  driverId?: boolean
+  customerId?: boolean
+  dcontactId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   roles?: boolean | Prisma.User$rolesArgs<ExtArgs>
@@ -810,6 +903,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   providerId?: boolean
   emailVerifiedAt?: boolean
   userStatus?: boolean
+  driverId?: boolean
+  customerId?: boolean
+  dcontactId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -825,6 +921,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   providerId?: boolean
   emailVerifiedAt?: boolean
   userStatus?: boolean
+  driverId?: boolean
+  customerId?: boolean
+  dcontactId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["user"]>
@@ -840,11 +939,14 @@ export type UserSelectScalar = {
   providerId?: boolean
   emailVerifiedAt?: boolean
   userStatus?: boolean
+  driverId?: boolean
+  customerId?: boolean
+  dcontactId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "username" | "avatar" | "password" | "provider" | "providerId" | "emailVerifiedAt" | "userStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "username" | "avatar" | "password" | "provider" | "providerId" | "emailVerifiedAt" | "userStatus" | "driverId" | "customerId" | "dcontactId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roles?: boolean | Prisma.User$rolesArgs<ExtArgs>
   composedMessages?: boolean | Prisma.User$composedMessagesArgs<ExtArgs>
@@ -870,6 +972,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     providerId: string | null
     emailVerifiedAt: Date | null
     userStatus: number
+    driverId: string | null
+    customerId: string | null
+    dcontactId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -1307,6 +1412,9 @@ export interface UserFieldRefs {
   readonly providerId: Prisma.FieldRef<"User", 'String'>
   readonly emailVerifiedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly userStatus: Prisma.FieldRef<"User", 'Int'>
+  readonly driverId: Prisma.FieldRef<"User", 'String'>
+  readonly customerId: Prisma.FieldRef<"User", 'String'>
+  readonly dcontactId: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

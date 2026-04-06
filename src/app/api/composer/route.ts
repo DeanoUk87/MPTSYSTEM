@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
   // Pre-create message_status entries for all customers with emails
   const customers = await prisma.customer.findMany({
-    where: { customerEmail: { not: "" } },
+    where: { email: { not: "" } },
   });
   for (const c of customers) {
     await prisma.messageStatus.create({

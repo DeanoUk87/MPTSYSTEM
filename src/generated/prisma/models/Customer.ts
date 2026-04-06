@@ -20,81 +20,165 @@ export type CustomerModel = runtime.Types.Result.DefaultSelection<Prisma.$Custom
 
 export type AggregateCustomer = {
   _count: CustomerCountAggregateOutputType | null
+  _avg: CustomerAvgAggregateOutputType | null
+  _sum: CustomerSumAggregateOutputType | null
   _min: CustomerMinAggregateOutputType | null
   _max: CustomerMaxAggregateOutputType | null
 }
 
+export type CustomerAvgAggregateOutputType = {
+  deadMileage: number | null
+}
+
+export type CustomerSumAggregateOutputType = {
+  deadMileage: number | null
+}
+
 export type CustomerMinAggregateOutputType = {
   id: string | null
+  name: string | null
+  accountNumber: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  address2: string | null
+  address3: string | null
+  city: string | null
+  postcode: string | null
+  notes: string | null
+  contact: string | null
+  poNumber: string | null
+  poEmail: string | null
+  deadMileage: number | null
   customerAccount: string | null
-  customerEmail: string | null
   customerEmailBcc: string | null
-  customerPhone: string | null
   termsOfPayment: string | null
   messageType: string | null
-  poNumber: string | null
   userId: string | null
 }
 
 export type CustomerMaxAggregateOutputType = {
   id: string | null
+  name: string | null
+  accountNumber: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  address2: string | null
+  address3: string | null
+  city: string | null
+  postcode: string | null
+  notes: string | null
+  contact: string | null
+  poNumber: string | null
+  poEmail: string | null
+  deadMileage: number | null
   customerAccount: string | null
-  customerEmail: string | null
   customerEmailBcc: string | null
-  customerPhone: string | null
   termsOfPayment: string | null
   messageType: string | null
-  poNumber: string | null
   userId: string | null
 }
 
 export type CustomerCountAggregateOutputType = {
   id: number
+  name: number
+  accountNumber: number
+  email: number
+  phone: number
+  address: number
+  address2: number
+  address3: number
+  city: number
+  postcode: number
+  notes: number
+  contact: number
+  poNumber: number
+  poEmail: number
+  deadMileage: number
   customerAccount: number
-  customerEmail: number
   customerEmailBcc: number
-  customerPhone: number
   termsOfPayment: number
   messageType: number
-  poNumber: number
   userId: number
   _all: number
 }
 
 
+export type CustomerAvgAggregateInputType = {
+  deadMileage?: true
+}
+
+export type CustomerSumAggregateInputType = {
+  deadMileage?: true
+}
+
 export type CustomerMinAggregateInputType = {
   id?: true
+  name?: true
+  accountNumber?: true
+  email?: true
+  phone?: true
+  address?: true
+  address2?: true
+  address3?: true
+  city?: true
+  postcode?: true
+  notes?: true
+  contact?: true
+  poNumber?: true
+  poEmail?: true
+  deadMileage?: true
   customerAccount?: true
-  customerEmail?: true
   customerEmailBcc?: true
-  customerPhone?: true
   termsOfPayment?: true
   messageType?: true
-  poNumber?: true
   userId?: true
 }
 
 export type CustomerMaxAggregateInputType = {
   id?: true
+  name?: true
+  accountNumber?: true
+  email?: true
+  phone?: true
+  address?: true
+  address2?: true
+  address3?: true
+  city?: true
+  postcode?: true
+  notes?: true
+  contact?: true
+  poNumber?: true
+  poEmail?: true
+  deadMileage?: true
   customerAccount?: true
-  customerEmail?: true
   customerEmailBcc?: true
-  customerPhone?: true
   termsOfPayment?: true
   messageType?: true
-  poNumber?: true
   userId?: true
 }
 
 export type CustomerCountAggregateInputType = {
   id?: true
+  name?: true
+  accountNumber?: true
+  email?: true
+  phone?: true
+  address?: true
+  address2?: true
+  address3?: true
+  city?: true
+  postcode?: true
+  notes?: true
+  contact?: true
+  poNumber?: true
+  poEmail?: true
+  deadMileage?: true
   customerAccount?: true
-  customerEmail?: true
   customerEmailBcc?: true
-  customerPhone?: true
   termsOfPayment?: true
   messageType?: true
-  poNumber?: true
   userId?: true
   _all?: true
 }
@@ -137,6 +221,18 @@ export type CustomerAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: CustomerAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: CustomerSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: CustomerMinAggregateInputType
@@ -167,21 +263,36 @@ export type CustomerGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: CustomerCountAggregateInputType | true
+  _avg?: CustomerAvgAggregateInputType
+  _sum?: CustomerSumAggregateInputType
   _min?: CustomerMinAggregateInputType
   _max?: CustomerMaxAggregateInputType
 }
 
 export type CustomerGroupByOutputType = {
   id: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  address2: string | null
+  address3: string | null
+  city: string | null
+  postcode: string | null
+  notes: string | null
+  contact: string | null
+  poNumber: string | null
+  poEmail: string | null
+  deadMileage: number
+  customerAccount: string | null
   customerEmailBcc: string | null
-  customerPhone: string | null
   termsOfPayment: string | null
   messageType: string | null
-  poNumber: string | null
   userId: string | null
   _count: CustomerCountAggregateOutputType | null
+  _avg: CustomerAvgAggregateOutputType | null
+  _sum: CustomerSumAggregateOutputType | null
   _min: CustomerMinAggregateOutputType | null
   _max: CustomerMaxAggregateOutputType | null
 }
@@ -206,14 +317,27 @@ export type CustomerWhereInput = {
   OR?: Prisma.CustomerWhereInput[]
   NOT?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
   id?: Prisma.StringFilter<"Customer"> | string
-  customerAccount?: Prisma.StringFilter<"Customer"> | string
-  customerEmail?: Prisma.StringFilter<"Customer"> | string
+  name?: Prisma.StringFilter<"Customer"> | string
+  accountNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
+  email?: Prisma.StringNullableFilter<"Customer"> | string | null
+  phone?: Prisma.StringNullableFilter<"Customer"> | string | null
+  address?: Prisma.StringNullableFilter<"Customer"> | string | null
+  address2?: Prisma.StringNullableFilter<"Customer"> | string | null
+  address3?: Prisma.StringNullableFilter<"Customer"> | string | null
+  city?: Prisma.StringNullableFilter<"Customer"> | string | null
+  postcode?: Prisma.StringNullableFilter<"Customer"> | string | null
+  notes?: Prisma.StringNullableFilter<"Customer"> | string | null
+  contact?: Prisma.StringNullableFilter<"Customer"> | string | null
+  poNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
+  poEmail?: Prisma.StringNullableFilter<"Customer"> | string | null
+  deadMileage?: Prisma.IntFilter<"Customer"> | number
+  customerAccount?: Prisma.StringNullableFilter<"Customer"> | string | null
   customerEmailBcc?: Prisma.StringNullableFilter<"Customer"> | string | null
-  customerPhone?: Prisma.StringNullableFilter<"Customer"> | string | null
   termsOfPayment?: Prisma.StringNullableFilter<"Customer"> | string | null
   messageType?: Prisma.StringNullableFilter<"Customer"> | string | null
-  poNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   userId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  bookings?: Prisma.BookingListRelationFilter
+  vehicleRates?: Prisma.CustomerVehicleRateListRelationFilter
   sales?: Prisma.SaleListRelationFilter
   invoices?: Prisma.InvoiceListRelationFilter
   messagesStatus?: Prisma.MessageStatusListRelationFilter
@@ -221,14 +345,27 @@ export type CustomerWhereInput = {
 
 export type CustomerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  customerAccount?: Prisma.SortOrder
-  customerEmail?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  accountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  address2?: Prisma.SortOrderInput | Prisma.SortOrder
+  address3?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  postcode?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  contact?: Prisma.SortOrderInput | Prisma.SortOrder
+  poNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  poEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  deadMileage?: Prisma.SortOrder
+  customerAccount?: Prisma.SortOrderInput | Prisma.SortOrder
   customerEmailBcc?: Prisma.SortOrderInput | Prisma.SortOrder
-  customerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   termsOfPayment?: Prisma.SortOrderInput | Prisma.SortOrder
   messageType?: Prisma.SortOrderInput | Prisma.SortOrder
-  poNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  bookings?: Prisma.BookingOrderByRelationAggregateInput
+  vehicleRates?: Prisma.CustomerVehicleRateOrderByRelationAggregateInput
   sales?: Prisma.SaleOrderByRelationAggregateInput
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput
   messagesStatus?: Prisma.MessageStatusOrderByRelationAggregateInput
@@ -236,35 +373,61 @@ export type CustomerOrderByWithRelationInput = {
 
 export type CustomerWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  accountNumber?: string
   customerAccount?: string
   AND?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
   OR?: Prisma.CustomerWhereInput[]
   NOT?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
-  customerEmail?: Prisma.StringFilter<"Customer"> | string
+  name?: Prisma.StringFilter<"Customer"> | string
+  email?: Prisma.StringNullableFilter<"Customer"> | string | null
+  phone?: Prisma.StringNullableFilter<"Customer"> | string | null
+  address?: Prisma.StringNullableFilter<"Customer"> | string | null
+  address2?: Prisma.StringNullableFilter<"Customer"> | string | null
+  address3?: Prisma.StringNullableFilter<"Customer"> | string | null
+  city?: Prisma.StringNullableFilter<"Customer"> | string | null
+  postcode?: Prisma.StringNullableFilter<"Customer"> | string | null
+  notes?: Prisma.StringNullableFilter<"Customer"> | string | null
+  contact?: Prisma.StringNullableFilter<"Customer"> | string | null
+  poNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
+  poEmail?: Prisma.StringNullableFilter<"Customer"> | string | null
+  deadMileage?: Prisma.IntFilter<"Customer"> | number
   customerEmailBcc?: Prisma.StringNullableFilter<"Customer"> | string | null
-  customerPhone?: Prisma.StringNullableFilter<"Customer"> | string | null
   termsOfPayment?: Prisma.StringNullableFilter<"Customer"> | string | null
   messageType?: Prisma.StringNullableFilter<"Customer"> | string | null
-  poNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   userId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  bookings?: Prisma.BookingListRelationFilter
+  vehicleRates?: Prisma.CustomerVehicleRateListRelationFilter
   sales?: Prisma.SaleListRelationFilter
   invoices?: Prisma.InvoiceListRelationFilter
   messagesStatus?: Prisma.MessageStatusListRelationFilter
-}, "id" | "customerAccount">
+}, "id" | "accountNumber" | "customerAccount">
 
 export type CustomerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  customerAccount?: Prisma.SortOrder
-  customerEmail?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  accountNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  address?: Prisma.SortOrderInput | Prisma.SortOrder
+  address2?: Prisma.SortOrderInput | Prisma.SortOrder
+  address3?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  postcode?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  contact?: Prisma.SortOrderInput | Prisma.SortOrder
+  poNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  poEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  deadMileage?: Prisma.SortOrder
+  customerAccount?: Prisma.SortOrderInput | Prisma.SortOrder
   customerEmailBcc?: Prisma.SortOrderInput | Prisma.SortOrder
-  customerPhone?: Prisma.SortOrderInput | Prisma.SortOrder
   termsOfPayment?: Prisma.SortOrderInput | Prisma.SortOrder
   messageType?: Prisma.SortOrderInput | Prisma.SortOrder
-  poNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.CustomerCountOrderByAggregateInput
+  _avg?: Prisma.CustomerAvgOrderByAggregateInput
   _max?: Prisma.CustomerMaxOrderByAggregateInput
   _min?: Prisma.CustomerMinOrderByAggregateInput
+  _sum?: Prisma.CustomerSumOrderByAggregateInput
 }
 
 export type CustomerScalarWhereWithAggregatesInput = {
@@ -272,26 +435,50 @@ export type CustomerScalarWhereWithAggregatesInput = {
   OR?: Prisma.CustomerScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CustomerScalarWhereWithAggregatesInput | Prisma.CustomerScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Customer"> | string
-  customerAccount?: Prisma.StringWithAggregatesFilter<"Customer"> | string
-  customerEmail?: Prisma.StringWithAggregatesFilter<"Customer"> | string
+  name?: Prisma.StringWithAggregatesFilter<"Customer"> | string
+  accountNumber?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  email?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  address?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  address2?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  address3?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  postcode?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  notes?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  contact?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  poNumber?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  poEmail?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  deadMileage?: Prisma.IntWithAggregatesFilter<"Customer"> | number
+  customerAccount?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   customerEmailBcc?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
-  customerPhone?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   termsOfPayment?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   messageType?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
-  poNumber?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   userId?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
 }
 
 export type CustomerCreateInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateCreateNestedManyWithoutCustomerInput
   sales?: Prisma.SaleCreateNestedManyWithoutCustomerInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
   messagesStatus?: Prisma.MessageStatusCreateNestedManyWithoutCustomerInput
@@ -299,14 +486,27 @@ export type CustomerCreateInput = {
 
 export type CustomerUncheckedCreateInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
   sales?: Prisma.SaleUncheckedCreateNestedManyWithoutCustomerInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
   messagesStatus?: Prisma.MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
@@ -314,14 +514,27 @@ export type CustomerUncheckedCreateInput = {
 
 export type CustomerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
   sales?: Prisma.SaleUpdateManyWithoutCustomerNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
   messagesStatus?: Prisma.MessageStatusUpdateManyWithoutCustomerNestedInput
@@ -329,14 +542,27 @@ export type CustomerUpdateInput = {
 
 export type CustomerUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
   sales?: Prisma.SaleUncheckedUpdateManyWithoutCustomerNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
   messagesStatus?: Prisma.MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
@@ -344,74 +570,153 @@ export type CustomerUncheckedUpdateInput = {
 
 export type CustomerCreateManyInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
 }
 
 export type CustomerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CustomerUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type CustomerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  accountNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  address2?: Prisma.SortOrder
+  address3?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  postcode?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  contact?: Prisma.SortOrder
+  poNumber?: Prisma.SortOrder
+  poEmail?: Prisma.SortOrder
+  deadMileage?: Prisma.SortOrder
   customerAccount?: Prisma.SortOrder
-  customerEmail?: Prisma.SortOrder
   customerEmailBcc?: Prisma.SortOrder
-  customerPhone?: Prisma.SortOrder
   termsOfPayment?: Prisma.SortOrder
   messageType?: Prisma.SortOrder
-  poNumber?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+}
+
+export type CustomerAvgOrderByAggregateInput = {
+  deadMileage?: Prisma.SortOrder
 }
 
 export type CustomerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  accountNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  address2?: Prisma.SortOrder
+  address3?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  postcode?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  contact?: Prisma.SortOrder
+  poNumber?: Prisma.SortOrder
+  poEmail?: Prisma.SortOrder
+  deadMileage?: Prisma.SortOrder
   customerAccount?: Prisma.SortOrder
-  customerEmail?: Prisma.SortOrder
   customerEmailBcc?: Prisma.SortOrder
-  customerPhone?: Prisma.SortOrder
   termsOfPayment?: Prisma.SortOrder
   messageType?: Prisma.SortOrder
-  poNumber?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
 
 export type CustomerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  accountNumber?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  address?: Prisma.SortOrder
+  address2?: Prisma.SortOrder
+  address3?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  postcode?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  contact?: Prisma.SortOrder
+  poNumber?: Prisma.SortOrder
+  poEmail?: Prisma.SortOrder
+  deadMileage?: Prisma.SortOrder
   customerAccount?: Prisma.SortOrder
-  customerEmail?: Prisma.SortOrder
   customerEmailBcc?: Prisma.SortOrder
-  customerPhone?: Prisma.SortOrder
   termsOfPayment?: Prisma.SortOrder
   messageType?: Prisma.SortOrder
-  poNumber?: Prisma.SortOrder
   userId?: Prisma.SortOrder
+}
+
+export type CustomerSumOrderByAggregateInput = {
+  deadMileage?: Prisma.SortOrder
+}
+
+export type CustomerScalarRelationFilter = {
+  is?: Prisma.CustomerWhereInput
+  isNot?: Prisma.CustomerWhereInput
 }
 
 export type CustomerNullableScalarRelationFilter = {
@@ -419,9 +724,34 @@ export type CustomerNullableScalarRelationFilter = {
   isNot?: Prisma.CustomerWhereInput | null
 }
 
-export type CustomerScalarRelationFilter = {
-  is?: Prisma.CustomerWhereInput
-  isNot?: Prisma.CustomerWhereInput
+export type CustomerCreateNestedOneWithoutVehicleRatesInput = {
+  create?: Prisma.XOR<Prisma.CustomerCreateWithoutVehicleRatesInput, Prisma.CustomerUncheckedCreateWithoutVehicleRatesInput>
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutVehicleRatesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+}
+
+export type CustomerUpdateOneRequiredWithoutVehicleRatesNestedInput = {
+  create?: Prisma.XOR<Prisma.CustomerCreateWithoutVehicleRatesInput, Prisma.CustomerUncheckedCreateWithoutVehicleRatesInput>
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutVehicleRatesInput
+  upsert?: Prisma.CustomerUpsertWithoutVehicleRatesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CustomerUpdateToOneWithWhereWithoutVehicleRatesInput, Prisma.CustomerUpdateWithoutVehicleRatesInput>, Prisma.CustomerUncheckedUpdateWithoutVehicleRatesInput>
+}
+
+export type CustomerCreateNestedOneWithoutBookingsInput = {
+  create?: Prisma.XOR<Prisma.CustomerCreateWithoutBookingsInput, Prisma.CustomerUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutBookingsInput
+  connect?: Prisma.CustomerWhereUniqueInput
+}
+
+export type CustomerUpdateOneWithoutBookingsNestedInput = {
+  create?: Prisma.XOR<Prisma.CustomerCreateWithoutBookingsInput, Prisma.CustomerUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutBookingsInput
+  upsert?: Prisma.CustomerUpsertWithoutBookingsInput
+  disconnect?: Prisma.CustomerWhereInput | boolean
+  delete?: Prisma.CustomerWhereInput | boolean
+  connect?: Prisma.CustomerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CustomerUpdateToOneWithWhereWithoutBookingsInput, Prisma.CustomerUpdateWithoutBookingsInput>, Prisma.CustomerUncheckedUpdateWithoutBookingsInput>
 }
 
 export type CustomerCreateNestedOneWithoutSalesInput = {
@@ -470,30 +800,304 @@ export type CustomerUpdateOneRequiredWithoutMessagesStatusNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CustomerUpdateToOneWithWhereWithoutMessagesStatusInput, Prisma.CustomerUpdateWithoutMessagesStatusInput>, Prisma.CustomerUncheckedUpdateWithoutMessagesStatusInput>
 }
 
-export type CustomerCreateWithoutSalesInput = {
+export type CustomerCreateWithoutVehicleRatesInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingCreateNestedManyWithoutCustomerInput
+  sales?: Prisma.SaleCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
+  messagesStatus?: Prisma.MessageStatusCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerUncheckedCreateWithoutVehicleRatesInput = {
+  id?: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
+  customerEmailBcc?: string | null
+  termsOfPayment?: string | null
+  messageType?: string | null
+  userId?: string | null
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCustomerInput
+  sales?: Prisma.SaleUncheckedCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+  messagesStatus?: Prisma.MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerCreateOrConnectWithoutVehicleRatesInput = {
+  where: Prisma.CustomerWhereUniqueInput
+  create: Prisma.XOR<Prisma.CustomerCreateWithoutVehicleRatesInput, Prisma.CustomerUncheckedCreateWithoutVehicleRatesInput>
+}
+
+export type CustomerUpsertWithoutVehicleRatesInput = {
+  update: Prisma.XOR<Prisma.CustomerUpdateWithoutVehicleRatesInput, Prisma.CustomerUncheckedUpdateWithoutVehicleRatesInput>
+  create: Prisma.XOR<Prisma.CustomerCreateWithoutVehicleRatesInput, Prisma.CustomerUncheckedCreateWithoutVehicleRatesInput>
+  where?: Prisma.CustomerWhereInput
+}
+
+export type CustomerUpdateToOneWithWhereWithoutVehicleRatesInput = {
+  where?: Prisma.CustomerWhereInput
+  data: Prisma.XOR<Prisma.CustomerUpdateWithoutVehicleRatesInput, Prisma.CustomerUncheckedUpdateWithoutVehicleRatesInput>
+}
+
+export type CustomerUpdateWithoutVehicleRatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUpdateManyWithoutCustomerNestedInput
+  sales?: Prisma.SaleUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
+  messagesStatus?: Prisma.MessageStatusUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerUncheckedUpdateWithoutVehicleRatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCustomerNestedInput
+  sales?: Prisma.SaleUncheckedUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+  messagesStatus?: Prisma.MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerCreateWithoutBookingsInput = {
+  id?: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
+  customerEmailBcc?: string | null
+  termsOfPayment?: string | null
+  messageType?: string | null
+  userId?: string | null
+  vehicleRates?: Prisma.CustomerVehicleRateCreateNestedManyWithoutCustomerInput
+  sales?: Prisma.SaleCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
+  messagesStatus?: Prisma.MessageStatusCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerUncheckedCreateWithoutBookingsInput = {
+  id?: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
+  customerEmailBcc?: string | null
+  termsOfPayment?: string | null
+  messageType?: string | null
+  userId?: string | null
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
+  sales?: Prisma.SaleUncheckedCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+  messagesStatus?: Prisma.MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerCreateOrConnectWithoutBookingsInput = {
+  where: Prisma.CustomerWhereUniqueInput
+  create: Prisma.XOR<Prisma.CustomerCreateWithoutBookingsInput, Prisma.CustomerUncheckedCreateWithoutBookingsInput>
+}
+
+export type CustomerUpsertWithoutBookingsInput = {
+  update: Prisma.XOR<Prisma.CustomerUpdateWithoutBookingsInput, Prisma.CustomerUncheckedUpdateWithoutBookingsInput>
+  create: Prisma.XOR<Prisma.CustomerCreateWithoutBookingsInput, Prisma.CustomerUncheckedCreateWithoutBookingsInput>
+  where?: Prisma.CustomerWhereInput
+}
+
+export type CustomerUpdateToOneWithWhereWithoutBookingsInput = {
+  where?: Prisma.CustomerWhereInput
+  data: Prisma.XOR<Prisma.CustomerUpdateWithoutBookingsInput, Prisma.CustomerUncheckedUpdateWithoutBookingsInput>
+}
+
+export type CustomerUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleRates?: Prisma.CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
+  sales?: Prisma.SaleUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
+  messagesStatus?: Prisma.MessageStatusUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerUncheckedUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
+  sales?: Prisma.SaleUncheckedUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+  messagesStatus?: Prisma.MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerCreateWithoutSalesInput = {
+  id?: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
+  customerEmailBcc?: string | null
+  termsOfPayment?: string | null
+  messageType?: string | null
+  userId?: string | null
+  bookings?: Prisma.BookingCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateCreateNestedManyWithoutCustomerInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
   messagesStatus?: Prisma.MessageStatusCreateNestedManyWithoutCustomerInput
 }
 
 export type CustomerUncheckedCreateWithoutSalesInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
   messagesStatus?: Prisma.MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
 }
@@ -516,56 +1120,108 @@ export type CustomerUpdateToOneWithWhereWithoutSalesInput = {
 
 export type CustomerUpdateWithoutSalesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
   messagesStatus?: Prisma.MessageStatusUpdateManyWithoutCustomerNestedInput
 }
 
 export type CustomerUncheckedUpdateWithoutSalesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
   messagesStatus?: Prisma.MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CustomerCreateWithoutInvoicesInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateCreateNestedManyWithoutCustomerInput
   sales?: Prisma.SaleCreateNestedManyWithoutCustomerInput
   messagesStatus?: Prisma.MessageStatusCreateNestedManyWithoutCustomerInput
 }
 
 export type CustomerUncheckedCreateWithoutInvoicesInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
   sales?: Prisma.SaleUncheckedCreateNestedManyWithoutCustomerInput
   messagesStatus?: Prisma.MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
 }
@@ -588,56 +1244,108 @@ export type CustomerUpdateToOneWithWhereWithoutInvoicesInput = {
 
 export type CustomerUpdateWithoutInvoicesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
   sales?: Prisma.SaleUpdateManyWithoutCustomerNestedInput
   messagesStatus?: Prisma.MessageStatusUpdateManyWithoutCustomerNestedInput
 }
 
 export type CustomerUncheckedUpdateWithoutInvoicesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
   sales?: Prisma.SaleUncheckedUpdateManyWithoutCustomerNestedInput
   messagesStatus?: Prisma.MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CustomerCreateWithoutMessagesStatusInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateCreateNestedManyWithoutCustomerInput
   sales?: Prisma.SaleCreateNestedManyWithoutCustomerInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
 }
 
 export type CustomerUncheckedCreateWithoutMessagesStatusInput = {
   id?: string
-  customerAccount: string
-  customerEmail: string
+  name: string
+  accountNumber?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: string | null
+  address2?: string | null
+  address3?: string | null
+  city?: string | null
+  postcode?: string | null
+  notes?: string | null
+  contact?: string | null
+  poNumber?: string | null
+  poEmail?: string | null
+  deadMileage?: number
+  customerAccount?: string | null
   customerEmailBcc?: string | null
-  customerPhone?: string | null
   termsOfPayment?: string | null
   messageType?: string | null
-  poNumber?: string | null
   userId?: string | null
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCustomerInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
   sales?: Prisma.SaleUncheckedCreateNestedManyWithoutCustomerInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
 }
@@ -660,28 +1368,54 @@ export type CustomerUpdateToOneWithWhereWithoutMessagesStatusInput = {
 
 export type CustomerUpdateWithoutMessagesStatusInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
   sales?: Prisma.SaleUpdateManyWithoutCustomerNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
 }
 
 export type CustomerUncheckedUpdateWithoutMessagesStatusInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerAccount?: Prisma.StringFieldUpdateOperationsInput | string
-  customerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  accountNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address3?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  poEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deadMileage?: Prisma.IntFieldUpdateOperationsInput | number
+  customerAccount?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customerEmailBcc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsOfPayment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   messageType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  poNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCustomerNestedInput
+  vehicleRates?: Prisma.CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
   sales?: Prisma.SaleUncheckedUpdateManyWithoutCustomerNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
 }
@@ -692,12 +1426,16 @@ export type CustomerUncheckedUpdateWithoutMessagesStatusInput = {
  */
 
 export type CustomerCountOutputType = {
+  bookings: number
+  vehicleRates: number
   sales: number
   invoices: number
   messagesStatus: number
 }
 
 export type CustomerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | CustomerCountOutputTypeCountBookingsArgs
+  vehicleRates?: boolean | CustomerCountOutputTypeCountVehicleRatesArgs
   sales?: boolean | CustomerCountOutputTypeCountSalesArgs
   invoices?: boolean | CustomerCountOutputTypeCountInvoicesArgs
   messagesStatus?: boolean | CustomerCountOutputTypeCountMessagesStatusArgs
@@ -711,6 +1449,20 @@ export type CustomerCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Ext
    * Select specific fields to fetch from the CustomerCountOutputType
    */
   select?: Prisma.CustomerCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CustomerCountOutputType without action
+ */
+export type CustomerCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BookingWhereInput
+}
+
+/**
+ * CustomerCountOutputType without action
+ */
+export type CustomerCountOutputTypeCountVehicleRatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CustomerVehicleRateWhereInput
 }
 
 /**
@@ -737,14 +1489,27 @@ export type CustomerCountOutputTypeCountMessagesStatusArgs<ExtArgs extends runti
 
 export type CustomerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  name?: boolean
+  accountNumber?: boolean
+  email?: boolean
+  phone?: boolean
+  address?: boolean
+  address2?: boolean
+  address3?: boolean
+  city?: boolean
+  postcode?: boolean
+  notes?: boolean
+  contact?: boolean
+  poNumber?: boolean
+  poEmail?: boolean
+  deadMileage?: boolean
   customerAccount?: boolean
-  customerEmail?: boolean
   customerEmailBcc?: boolean
-  customerPhone?: boolean
   termsOfPayment?: boolean
   messageType?: boolean
-  poNumber?: boolean
   userId?: boolean
+  bookings?: boolean | Prisma.Customer$bookingsArgs<ExtArgs>
+  vehicleRates?: boolean | Prisma.Customer$vehicleRatesArgs<ExtArgs>
   sales?: boolean | Prisma.Customer$salesArgs<ExtArgs>
   invoices?: boolean | Prisma.Customer$invoicesArgs<ExtArgs>
   messagesStatus?: boolean | Prisma.Customer$messagesStatusArgs<ExtArgs>
@@ -753,42 +1518,77 @@ export type CustomerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 
 export type CustomerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  name?: boolean
+  accountNumber?: boolean
+  email?: boolean
+  phone?: boolean
+  address?: boolean
+  address2?: boolean
+  address3?: boolean
+  city?: boolean
+  postcode?: boolean
+  notes?: boolean
+  contact?: boolean
+  poNumber?: boolean
+  poEmail?: boolean
+  deadMileage?: boolean
   customerAccount?: boolean
-  customerEmail?: boolean
   customerEmailBcc?: boolean
-  customerPhone?: boolean
   termsOfPayment?: boolean
   messageType?: boolean
-  poNumber?: boolean
   userId?: boolean
 }, ExtArgs["result"]["customer"]>
 
 export type CustomerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  name?: boolean
+  accountNumber?: boolean
+  email?: boolean
+  phone?: boolean
+  address?: boolean
+  address2?: boolean
+  address3?: boolean
+  city?: boolean
+  postcode?: boolean
+  notes?: boolean
+  contact?: boolean
+  poNumber?: boolean
+  poEmail?: boolean
+  deadMileage?: boolean
   customerAccount?: boolean
-  customerEmail?: boolean
   customerEmailBcc?: boolean
-  customerPhone?: boolean
   termsOfPayment?: boolean
   messageType?: boolean
-  poNumber?: boolean
   userId?: boolean
 }, ExtArgs["result"]["customer"]>
 
 export type CustomerSelectScalar = {
   id?: boolean
+  name?: boolean
+  accountNumber?: boolean
+  email?: boolean
+  phone?: boolean
+  address?: boolean
+  address2?: boolean
+  address3?: boolean
+  city?: boolean
+  postcode?: boolean
+  notes?: boolean
+  contact?: boolean
+  poNumber?: boolean
+  poEmail?: boolean
+  deadMileage?: boolean
   customerAccount?: boolean
-  customerEmail?: boolean
   customerEmailBcc?: boolean
-  customerPhone?: boolean
   termsOfPayment?: boolean
   messageType?: boolean
-  poNumber?: boolean
   userId?: boolean
 }
 
-export type CustomerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerAccount" | "customerEmail" | "customerEmailBcc" | "customerPhone" | "termsOfPayment" | "messageType" | "poNumber" | "userId", ExtArgs["result"]["customer"]>
+export type CustomerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "accountNumber" | "email" | "phone" | "address" | "address2" | "address3" | "city" | "postcode" | "notes" | "contact" | "poNumber" | "poEmail" | "deadMileage" | "customerAccount" | "customerEmailBcc" | "termsOfPayment" | "messageType" | "userId", ExtArgs["result"]["customer"]>
 export type CustomerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | Prisma.Customer$bookingsArgs<ExtArgs>
+  vehicleRates?: boolean | Prisma.Customer$vehicleRatesArgs<ExtArgs>
   sales?: boolean | Prisma.Customer$salesArgs<ExtArgs>
   invoices?: boolean | Prisma.Customer$invoicesArgs<ExtArgs>
   messagesStatus?: boolean | Prisma.Customer$messagesStatusArgs<ExtArgs>
@@ -800,19 +1600,32 @@ export type CustomerIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type $CustomerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Customer"
   objects: {
+    bookings: Prisma.$BookingPayload<ExtArgs>[]
+    vehicleRates: Prisma.$CustomerVehicleRatePayload<ExtArgs>[]
     sales: Prisma.$SalePayload<ExtArgs>[]
     invoices: Prisma.$InvoicePayload<ExtArgs>[]
     messagesStatus: Prisma.$MessageStatusPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    customerAccount: string
-    customerEmail: string
+    name: string
+    accountNumber: string | null
+    email: string | null
+    phone: string | null
+    address: string | null
+    address2: string | null
+    address3: string | null
+    city: string | null
+    postcode: string | null
+    notes: string | null
+    contact: string | null
+    poNumber: string | null
+    poEmail: string | null
+    deadMileage: number
+    customerAccount: string | null
     customerEmailBcc: string | null
-    customerPhone: string | null
     termsOfPayment: string | null
     messageType: string | null
-    poNumber: string | null
     userId: string | null
   }, ExtArgs["result"]["customer"]>
   composites: {}
@@ -1208,6 +2021,8 @@ readonly fields: CustomerFieldRefs;
  */
 export interface Prisma__CustomerClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  bookings<T extends Prisma.Customer$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Customer$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  vehicleRates<T extends Prisma.Customer$vehicleRatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Customer$vehicleRatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerVehicleRatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sales<T extends Prisma.Customer$salesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Customer$salesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SalePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invoices<T extends Prisma.Customer$invoicesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Customer$invoicesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   messagesStatus<T extends Prisma.Customer$messagesStatusArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Customer$messagesStatusArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1241,13 +2056,24 @@ export interface Prisma__CustomerClient<T, Null = never, ExtArgs extends runtime
  */
 export interface CustomerFieldRefs {
   readonly id: Prisma.FieldRef<"Customer", 'String'>
+  readonly name: Prisma.FieldRef<"Customer", 'String'>
+  readonly accountNumber: Prisma.FieldRef<"Customer", 'String'>
+  readonly email: Prisma.FieldRef<"Customer", 'String'>
+  readonly phone: Prisma.FieldRef<"Customer", 'String'>
+  readonly address: Prisma.FieldRef<"Customer", 'String'>
+  readonly address2: Prisma.FieldRef<"Customer", 'String'>
+  readonly address3: Prisma.FieldRef<"Customer", 'String'>
+  readonly city: Prisma.FieldRef<"Customer", 'String'>
+  readonly postcode: Prisma.FieldRef<"Customer", 'String'>
+  readonly notes: Prisma.FieldRef<"Customer", 'String'>
+  readonly contact: Prisma.FieldRef<"Customer", 'String'>
+  readonly poNumber: Prisma.FieldRef<"Customer", 'String'>
+  readonly poEmail: Prisma.FieldRef<"Customer", 'String'>
+  readonly deadMileage: Prisma.FieldRef<"Customer", 'Int'>
   readonly customerAccount: Prisma.FieldRef<"Customer", 'String'>
-  readonly customerEmail: Prisma.FieldRef<"Customer", 'String'>
   readonly customerEmailBcc: Prisma.FieldRef<"Customer", 'String'>
-  readonly customerPhone: Prisma.FieldRef<"Customer", 'String'>
   readonly termsOfPayment: Prisma.FieldRef<"Customer", 'String'>
   readonly messageType: Prisma.FieldRef<"Customer", 'String'>
-  readonly poNumber: Prisma.FieldRef<"Customer", 'String'>
   readonly userId: Prisma.FieldRef<"Customer", 'String'>
 }
     
@@ -1637,6 +2463,54 @@ export type CustomerDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Limit how many Customers to delete.
    */
   limit?: number
+}
+
+/**
+ * Customer.bookings
+ */
+export type Customer$bookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Booking
+   */
+  select?: Prisma.BookingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Booking
+   */
+  omit?: Prisma.BookingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInclude<ExtArgs> | null
+  where?: Prisma.BookingWhereInput
+  orderBy?: Prisma.BookingOrderByWithRelationInput | Prisma.BookingOrderByWithRelationInput[]
+  cursor?: Prisma.BookingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BookingScalarFieldEnum | Prisma.BookingScalarFieldEnum[]
+}
+
+/**
+ * Customer.vehicleRates
+ */
+export type Customer$vehicleRatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CustomerVehicleRate
+   */
+  select?: Prisma.CustomerVehicleRateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CustomerVehicleRate
+   */
+  omit?: Prisma.CustomerVehicleRateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CustomerVehicleRateInclude<ExtArgs> | null
+  where?: Prisma.CustomerVehicleRateWhereInput
+  orderBy?: Prisma.CustomerVehicleRateOrderByWithRelationInput | Prisma.CustomerVehicleRateOrderByWithRelationInput[]
+  cursor?: Prisma.CustomerVehicleRateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CustomerVehicleRateScalarFieldEnum | Prisma.CustomerVehicleRateScalarFieldEnum[]
 }
 
 /**

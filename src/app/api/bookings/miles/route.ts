@@ -1,0 +1,37 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-auth";
+
+export async function POST(req: NextRequest) {
+  const session = await requireAuth(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { origin, destination, avoidTolls } = await req.json();
+  if (!origin || !destination) return NextResponse.json({ error: "origin and destination required" }, { status: 400 });
+
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    // Return a mock distance when no API key configured
+    return NextResponse.json({ miles: 0, duration: "N/A", note: "Configure GOOGLE_MAPS_API_KEY for live distances" });
+  }
+
+  try {
+    const avoid = avoidTolls ? "&avoid=tolls" : "";
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&units=imperial${avoid}&key=${apiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const element = data?.rows?.[0]?.elements?.[0];
+    if (element?.status !== "OK") {
+      return NextResponse.json({ miles: 0, duration: "N/A" });
+    }
+
+    // Distance is in miles from the API (imperial units)
+    const distanceText = element.distance.text; // e.g. "12.4 mi"
+    const miles = parseFloat(distanceText.replace(" mi", "").replace(",", ""));
+    const duration = element.duration.text;
+
+    return NextResponse.json({ miles, duration });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}

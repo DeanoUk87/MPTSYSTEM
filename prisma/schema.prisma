@@ -7,6 +7,8 @@ datasource db {
   provider = "sqlite"
 }
 
+// ─── Auth / Users ──────────────────────────────────────────────────────────
+
 model User {
   id              String    @id @default(cuid())
   name            String
@@ -18,6 +20,10 @@ model User {
   providerId      String?
   emailVerifiedAt DateTime?
   userStatus      Int       @default(1)
+  // links to domain entities
+  driverId        String?
+  customerId      String?
+  dcontactId      String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -72,23 +78,339 @@ model RolePermission {
   @@map("role_permissions")
 }
 
-model Customer {
-  id               String  @id @default(cuid())
-  customerAccount  String  @unique
-  customerEmail    String
-  customerEmailBcc String?
-  customerPhone    String?
-  termsOfPayment   String?
-  messageType      String?
-  poNumber         String?
-  userId           String?
+// ─── Customers ─────────────────────────────────────────────────────────────
 
-  sales          Sale[]
-  invoices       Invoice[]
-  messagesStatus MessageStatus[]
+model Customer {
+  id              String  @id @default(cuid())
+  // Booking system fields
+  name            String
+  accountNumber   String? @unique
+  email           String?
+  phone           String?
+  address         String?
+  address2        String?
+  address3        String?
+  city            String?
+  postcode        String?
+  notes           String?
+  contact         String?
+  poNumber        String?
+  poEmail         String?
+  deadMileage     Int     @default(0)
+  // Invoice system fields (legacy)
+  customerAccount String? @unique
+  customerEmailBcc String?
+  termsOfPayment  String?
+  messageType     String?
+  userId          String?
+
+  bookings        Booking[]
+  vehicleRates    CustomerVehicleRate[]
+  sales           Sale[]
+  invoices        Invoice[]
+  messagesStatus  MessageStatus[]
 
   @@map("customers")
 }
+
+// ─── Drivers ───────────────────────────────────────────────────────────────
+
+model Driver {
+  id                     String   @id @default(cuid())
+  name                   String
+  driverType             String   @default("Driver") // Driver | SubContractor | CXDriver
+  email                  String?
+  phone                  String?
+  address                String?
+  notes                  String?
+  costPerMile            Float    @default(0)
+  costPerMileWeekends    Float    @default(0)
+  costPerMileOutOfHours  Float    @default(0)
+  userId                 String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  contacts DriverContact[]
+  bookingsAsMain     Booking[] @relation("MainDriver")
+  bookingsAsSecond   Booking[] @relation("SecondMan")
+  bookingsAsCx       Booking[] @relation("CxDriver")
+  storageUnits       StorageUnit[]
+
+  @@map("drivers")
+}
+
+model DriverContact {
+  id                   String    @id @default(cuid())
+  driverId             String
+  driverName           String
+  vehicleMake          String?
+  vehicleRegistration  String?
+  driverPhone          String?
+  deletedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@map("driver_contacts")
+}
+
+// ─── Vehicles ──────────────────────────────────────────────────────────────
+
+model Vehicle {
+  id           String   @id @default(cuid())
+  name         String
+  costPerMile  Float    @default(0)
+  userId       String?
+  driverId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookings     Booking[]
+  vehicleRates CustomerVehicleRate[]
+
+  @@map("vehicles")
+}
+
+model CustomerVehicleRate {
+  id                       String  @id @default(cuid())
+  customerId               String
+  vehicleId                String
+  ratePerMile              Float   @default(0)
+  ratePerMileWeekends      Float   @default(0)
+  ratePerMileOutOfHours    Float   @default(0)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, vehicleId])
+  @@map("customer_vehicle_rates")
+}
+
+// ─── Storage Units ─────────────────────────────────────────────────────────
+
+model StorageUnit {
+  id               String    @id @default(cuid())
+  unitNumber       String
+  imei             String?
+  unitSize         String?
+  unitType         String?   // chill | ambient
+  availability     String    @default("Yes") // Yes | No
+  currentDriverId  String?
+  calibrationDate  String?
+  jobId            String?
+  trackable        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  currentDriver    Driver?   @relation(fields: [currentDriverId], references: [id])
+  usages           StorageUsage[]
+  chillBookings    Booking[] @relation("ChillUnit")
+  ambientBookings  Booking[] @relation("AmbientUnit")
+
+  @@map("storage_units")
+}
+
+model StorageUsage {
+  id        String   @id @default(cuid())
+  unitId    String
+  jobId     String
+  driverId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  unit StorageUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@map("storage_usage")
+}
+
+// ─── Booking Types & Fuel Surcharges ───────────────────────────────────────
+
+model BookingType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  bookings  Booking[]
+
+  @@map("booking_types")
+}
+
+model FuelSurcharge {
+  id         String   @id @default(cuid())
+  price      Float
+  percentage Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("fuel_surcharges")
+}
+
+// ─── Bookings ──────────────────────────────────────────────────────────────
+
+model Booking {
+  id                        String    @id @default(cuid())
+  // Customer
+  customerId                String?
+  purchaseOrder             String?
+  bookedBy                  String?
+  bookingTypeId             String?
+  jobNotes                  String?
+  officeNotes               String?
+  // Collection
+  collectionDate            String?
+  collectionTime            String?   @default("00:00")
+  collectionName            String?
+  collectionAddress1        String?
+  collectionAddress2        String?
+  collectionArea            String?
+  collectionCountry         String?   @default("UK")
+  collectionPostcode        String?
+  collectionContact         String?
+  collectionPhone           String?
+  collectionNotes           String?
+  // Delivery
+  deliveryDate              String?
+  deliveryTime              String?
+  deliveryName              String?
+  deliveryAddress1          String?
+  deliveryAddress2          String?
+  deliveryArea              String?
+  deliveryCountry           String?   @default("UK")
+  deliveryPostcode          String?
+  deliveryContact           String?
+  deliveryPhone             String?
+  deliveryNotes             String?
+  deliveryLat               Float?
+  deliveryLng               Float?
+  // Pricing
+  vehicleId                 String?
+  miles                     Float?
+  customerPrice             Float?
+  cost                      Float?
+  manualAmount              Float?
+  manualDesc                String?
+  extraCost2                Float?
+  extraCost2Label           String?
+  fuelSurchargePercent      Float?
+  fuelSurchargeCost         Float?
+  weekend                   Int       @default(0) // 0=normal 1=weekend 2=out-of-hours
+  avoidTolls                Boolean   @default(false)
+  // Drivers
+  driverId                  String?
+  driverCost                Float?
+  driverContactId           String?
+  secondManId               String?
+  extraCost                 Float?
+  cxDriverId                String?
+  cxDriverCost              Float?
+  // Units
+  chillUnitId               String?
+  ambientUnitId             String?
+  deliveredTemperature      String?
+  hideTrackingTemperature   Boolean   @default(false)
+  hideTrackingMap           Boolean   @default(false)
+  // Items
+  numberOfItems             Int?
+  weight                    Float?
+  // POD
+  podSignature              String?
+  podTime                   String?
+  podDate                   String?
+  podUpload                 String?
+  podMobile                 Boolean   @default(false)
+  podDataVerify             Boolean   @default(false)
+  podRelationship           String?
+  driverNote                String?
+  driverConfirmCollectionAt DateTime?
+  // Status
+  jobStatus                 Int       @default(0) // 0=active 1=sent to accounts
+  locker                    Int       @default(0)
+  deadMileageStatus         String?
+  waitAndReturn             Boolean   @default(false)
+  // Meta
+  createdById               String?
+  updatedById               String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  customer    Customer?    @relation(fields: [customerId], references: [id])
+  bookingType BookingType? @relation(fields: [bookingTypeId], references: [id])
+  vehicle     Vehicle?     @relation(fields: [vehicleId], references: [id])
+  driver      Driver?      @relation("MainDriver", fields: [driverId], references: [id])
+  secondMan   Driver?      @relation("SecondMan", fields: [secondManId], references: [id])
+  cxDriver    Driver?      @relation("CxDriver", fields: [cxDriverId], references: [id])
+  chillUnit   StorageUnit? @relation("ChillUnit", fields: [chillUnitId], references: [id])
+  ambientUnit StorageUnit? @relation("AmbientUnit", fields: [ambientUnitId], references: [id])
+  viaAddresses ViaAddress[]
+  geoTracking GeoTracking?
+
+  @@map("bookings")
+}
+
+// ─── Via Addresses ─────────────────────────────────────────────────────────
+
+model ViaAddress {
+  id               String    @id @default(cuid())
+  bookingId        String?
+  viaType          String    @default("Via") // Collection | Delivery | Via
+  name             String?
+  address1         String?
+  address2         String?
+  area             String?
+  country          String?
+  postcode         String?
+  phone            String?
+  contact          String?
+  notes            String?
+  viaDate          String?
+  viaTime          String?
+  signedBy         String?
+  podDate          String?
+  podTime          String?
+  podRelationship  String?
+  deliveredTemp    String?
+  latitude         Float?
+  longitude        Float?
+  viaPodVerify     Boolean   @default(false)
+  viaPodMobile     Boolean   @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("via_addresses")
+}
+
+// ─── Geo Tracking ──────────────────────────────────────────────────────────
+
+model GeoTracking {
+  id          String    @id @default(cuid())
+  bookingId   String    @unique
+  driverId    String?
+  currentLat  Float?
+  currentLng  Float?
+  currentDate DateTime?
+  status      Int       @default(1) // 1=active 2=ended
+  speed       Float?
+  startedLat  Float?
+  startedLng  Float?
+  endedLat    Float?
+  endedLng    Float?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("geo_tracking")
+}
+
+// ─── Invoice system (legacy CSV-based) ────────────────────────────────────
 
 model Sale {
   id                            String   @id @default(cuid())
@@ -221,6 +543,8 @@ model InvoiceArchive {
   @@map("invoices_archive")
 }
 
+// ─── Settings ──────────────────────────────────────────────────────────────
+
 model Settings {
   id                  String  @id @default(cuid())
   companyName         String  @default("")
@@ -238,6 +562,7 @@ model Settings {
   primaryContact      String?
   baseCurrency        String  @default("GBP")
   vatNumber           String?
+  vatPercent          Float   @default(20)
   invoiceDueDate      Int     @default(30)
   invoiceDuePaymentBy String?
   messageTitle        String?
@@ -247,6 +572,8 @@ model Settings {
 
   @@map("settings")
 }
+
+// ─── Admin Composer / Mass Notices ─────────────────────────────────────────
 
 model AdminComposer {
   id          String   @id @default(cuid())
@@ -280,16 +607,7 @@ model MessageStatus {
   @@map("messages_status")
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  picture   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("posts")
-}
+// ─── Misc ───────────────────────────────────────────────────────────────────
 
 model Upload {
   id                String  @id @default(cuid())

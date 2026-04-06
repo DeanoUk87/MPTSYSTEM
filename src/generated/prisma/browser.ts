@@ -48,6 +48,61 @@ export type RolePermission = Prisma.RolePermissionModel
  */
 export type Customer = Prisma.CustomerModel
 /**
+ * Model Driver
+ * 
+ */
+export type Driver = Prisma.DriverModel
+/**
+ * Model DriverContact
+ * 
+ */
+export type DriverContact = Prisma.DriverContactModel
+/**
+ * Model Vehicle
+ * 
+ */
+export type Vehicle = Prisma.VehicleModel
+/**
+ * Model CustomerVehicleRate
+ * 
+ */
+export type CustomerVehicleRate = Prisma.CustomerVehicleRateModel
+/**
+ * Model StorageUnit
+ * 
+ */
+export type StorageUnit = Prisma.StorageUnitModel
+/**
+ * Model StorageUsage
+ * 
+ */
+export type StorageUsage = Prisma.StorageUsageModel
+/**
+ * Model BookingType
+ * 
+ */
+export type BookingType = Prisma.BookingTypeModel
+/**
+ * Model FuelSurcharge
+ * 
+ */
+export type FuelSurcharge = Prisma.FuelSurchargeModel
+/**
+ * Model Booking
+ * 
+ */
+export type Booking = Prisma.BookingModel
+/**
+ * Model ViaAddress
+ * 
+ */
+export type ViaAddress = Prisma.ViaAddressModel
+/**
+ * Model GeoTracking
+ * 
+ */
+export type GeoTracking = Prisma.GeoTrackingModel
+/**
  * Model Sale
  * 
  */
@@ -82,11 +137,6 @@ export type AdminComposer = Prisma.AdminComposerModel
  * 
  */
 export type MessageStatus = Prisma.MessageStatusModel
-/**
- * Model Post
- * 
- */
-export type Post = Prisma.PostModel
 /**
  * Model Upload
  * 
