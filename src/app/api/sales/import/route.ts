@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/api-auth";
 
 // CSV column order (0-indexed, matching the original Laravel import)
 // 0:invoice_number, 1:invoice_date, 2:customer_account, 3:customer_name,
@@ -32,7 +32,7 @@ function parseCSVLine(line: string): string[] {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
+  const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const formData = await req.formData();
