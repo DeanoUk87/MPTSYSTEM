@@ -5,6 +5,6 @@ import NextAuth from "next-auth";
 export const { auth } = NextAuth({
   providers: [],
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production",
   pages: { signIn: "/login" },
 });

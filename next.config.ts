@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production",
+  },
 };
 
 export default nextConfig;

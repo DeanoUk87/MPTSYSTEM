@@ -11,7 +11,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         login: { label: "Email or Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<any> {
         if (!credentials?.login || !credentials?.password) return null;
         const login = credentials.login as string;
         const password = credentials.password as string;
@@ -59,10 +59,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [Google({ clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET })]
+      : []),
   ],
   callbacks: {
     async signIn({ user, account }) {
@@ -115,5 +114,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production",
 });

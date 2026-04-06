@@ -17,7 +17,7 @@ export async function proxy(req: NextRequest) {
   // Verify JWT token (edge-safe — no Prisma, no Node.js modules)
   const token = await getToken({
     req,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production",
   });
 
   if (!token) {
