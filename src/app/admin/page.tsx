@@ -1,4 +1,5 @@
 "use client";
+// dashboard - null safe
 import { useEffect, useState } from "react";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
@@ -25,16 +26,18 @@ interface RecentInvoice {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
-  const [recentInvoices, setRecentInvoices] = useState<RecentInvoice[]>([]);
+  const [recentInvoices, setRecentInvoices] = useState<RecentInvoice[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/dashboard")
       .then((r) => r.json())
       .then((d) => {
-        setStats(d.stats);
-        setRecentInvoices(d.recentInvoices);
+        setStats(d.stats ?? null);
+        setRecentInvoices(d.recentInvoices ?? []);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -67,12 +70,17 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {recentInvoices.length === 0 && (
+                {loading && (
+                  <tr>
+                    <td colSpan={4} className="text-center py-10 text-slate-400">Loading...</td>
+                  </tr>
+                )}
+                {!loading && (recentInvoices ?? []).length === 0 && (
                   <tr>
                     <td colSpan={4} className="text-center py-10 text-slate-400">No invoices yet.</td>
                   </tr>
                 )}
-                {recentInvoices.map((inv) => (
+                {(recentInvoices ?? []).map((inv) => (
                   <tr key={inv.id} className="border-b border-slate-100 hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-blue-600">{inv.invoiceNumber}</td>
                     <td className="px-4 py-3 text-slate-700">{inv.customerAccount}</td>
