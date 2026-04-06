@@ -1,0 +1,21 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+
+export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { searchParams } = new URL(req.url);
+  const type = searchParams.get("type") || "sales";
+
+  if (type === "invoices") {
+    const data = await prisma.invoiceArchive.findMany({ orderBy: { archivedAt: "desc" } });
+    return NextResponse.json(data);
+  }
+
+  const data = await prisma.saleArchive.findMany({
+    orderBy: { archivedAt: "desc" },
+    take: 500,
+  });
+  return NextResponse.json(data);
+}
