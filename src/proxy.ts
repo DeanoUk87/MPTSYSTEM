@@ -7,13 +7,10 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public paths — no auth needed
+  // All /api/ routes are allowed through; auth is handled inside each route handler
   if (
     pathname.startsWith("/login") ||
-    pathname.startsWith("/api/login") ||
-    pathname.startsWith("/api/logout") ||
-    pathname.startsWith("/api/me") ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/debug") ||
+    pathname.startsWith("/api/") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico")
   ) {
