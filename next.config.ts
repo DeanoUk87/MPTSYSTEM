@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   env: {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "mp-booking-fallback-secret-change-in-production",
     DATABASE_URL: process.env.DATABASE_URL ?? `file:${path.resolve(process.cwd(), "dev.db")}`,
-    // Google Maps
+    // Google Maps — NEXT_PUBLIC_ makes it available in the browser bundle
+    NEXT_PUBLIC_GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ?? "AIzaSyCxhsy1iGT_Aj5JnnyQMLOUVijsLm84Vd4",
     GOOGLE_API_KEY: process.env.GOOGLE_API_KEY ?? "AIzaSyCxhsy1iGT_Aj5JnnyQMLOUVijsLm84Vd4",
     GOOGLE_KML: process.env.GOOGLE_KML ?? "https://portal.mp-transport.co.uk/ULEZone2.kml",
     // Crafty Clicks postcode lookup

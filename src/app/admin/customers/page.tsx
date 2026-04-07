@@ -125,7 +125,11 @@ export default function CustomersPage() {
       key: "actions", label: "Actions",
       render: r => (
         <div className="flex items-center gap-1">
-          <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
+          <Link href={`/admin/customers/${r.id}`}
+            className="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
+            Rates
+          </Link>
+          <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600"><Pencil className="w-4 h-4" /></button>
           <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
         </div>
       ),
