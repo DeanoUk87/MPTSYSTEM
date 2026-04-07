@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Topbar from "@/components/Topbar";
 import { Loader2, Search, RefreshCw, Plus, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 import Script from "next/script";
@@ -12,10 +11,14 @@ const today = new Date().toISOString().split("T")[0];
 const inp = "w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white";
 const inp2 = "w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-mono";
 const inpReq = "w-full px-2 py-1.5 border border-rose-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white";
-const sectionHead = "flex items-center gap-2 px-3 py-2 rounded text-white text-xs font-bold uppercase tracking-wider";
+const panel = "bg-white rounded border border-slate-200 overflow-hidden";
 
 function SHead({ color, icon, label }: { color: string; icon: string; label: string }) {
-  return <div className={`${sectionHead} ${color} mb-2`}>{icon} {label}</div>;
+  return (
+    <div className={`flex items-center gap-2 px-3 py-2 text-white text-xs font-bold uppercase tracking-wider ${color}`}>
+      {icon} {label}
+    </div>
+  );
 }
 
 // Postcode search with Crafty Clicks
@@ -270,12 +273,17 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       });
       const data = await res.json();
       if (data.miles !== undefined) {
-        // API already returns Math.round'd miles
         const rounded = Math.round(data.miles);
         s("miles", String(rounded));
         setRouteInfo({ miles: rounded, duration: data.duration });
+        if (vehicleRates.length > 0) {
+          s("customerPrice", (rounded * vehicleRates[0][rateKey]).toFixed(2));
+        }
+        if (f.driverId) {
+          const dr = drivers.find((d: any) => d.id === f.driverId);
+          if (dr) s("driverCost", (rounded * dr[driverRateKey]).toFixed(2));
+        }
       }
-      // Draw route on map
       const g = (window as any).google;
       if (g && googleMapRef.current) {
         new g.maps.DirectionsService().route({
@@ -291,6 +299,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!f.purchaseOrder) { toast.error("Purchase Order is required"); return; }
+    if (!f.bookedBy) { toast.error("Booked By is required"); return; }
     if (!f.numberOfItems) { toast.error("Number of items is required"); return; }
     if (!f.weight) { toast.error("Weight is required"); return; }
     setSaving(true);
@@ -325,7 +334,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   }
 
   const currentRate = vehicleRates.length > 0 ? vehicleRates[0][rateKey] : null;
-  const miles = Math.round(parseFloat(f.miles) || 0);
+  const milesNum = Math.round(parseFloat(f.miles) || 0);
   const profit = ((parseFloat(f.customerPrice) || 0) + (parseFloat(f.extraCost2) || 0))
     - ((parseFloat(f.driverCost) || 0) + (parseFloat(f.extraCost) || 0) + (parseFloat(f.cxDriverCost) || 0));
 
@@ -335,413 +344,433 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
         src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyCxhsy1iGT_Aj5JnnyQMLOUVijsLm84Vd4&libraries=places`}
         strategy="lazyOnload" onLoad={initMap}
       />
-      <div className="flex-1 bg-gray-100 min-h-screen">
-        <Topbar title={`Create Job — ${customer.name}`} subtitle={jtLabel} />
+      <div className="flex-1 bg-slate-100 min-h-screen">
+        {/* Page header with Save Record top-right */}
+        <div className="bg-[#1a3a5c] px-4 py-2 flex items-center justify-between">
+          <div>
+            <h1 className="text-white font-bold text-base">Create Job — {customer.name}</h1>
+            <p className="text-blue-300 text-xs">{jtLabel}</p>
+          </div>
+          <button type="button" onClick={(e) => handleSubmit(e as any)} disabled={saving}
+            className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded font-semibold text-sm disabled:opacity-70">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓"}
+            {saving ? "Saving..." : "Save Record"}
+          </button>
+        </div>
 
-        <div className="p-4">
-          {/* ── TOP ROW: Customer | PO + Booked By ── */}
-          <div className="bg-white rounded border border-slate-200 mb-3">
-            <div className="px-3 py-2 flex items-center gap-4">
-              {/* Customer name + change */}
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-xs text-slate-400 shrink-0">Customer:</span>
-                <span className="text-sm font-semibold text-slate-800 truncate">{customer.name}</span>
-                <button type="button" onClick={onBack} className="text-xs text-blue-500 hover:text-blue-700 underline shrink-0">Change</button>
-                <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700 shrink-0">{jtLabel}</span>
-                {customer.accountNumber && <span className="text-xs text-slate-400 shrink-0">{customer.accountNumber}</span>}
-              </div>
-              {/* PO Number + Booked By aligned right */}
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <label className="text-xs text-slate-500 whitespace-nowrap">PO Number <span className="text-rose-500">*</span></label>
-                  <input type="text" value={f.purchaseOrder} onChange={e => s("purchaseOrder", e.target.value)}
-                    className={f.purchaseOrder ? "w-32 px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" : "w-32 px-2 py-1 border border-rose-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white"}
-                    required />
+        <form onSubmit={handleSubmit} className="p-3 space-y-3">
+
+          {/* ── ROW 1: Customer | Purchase Order ── */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Customer panel */}
+            <div className={panel}>
+              <SHead color="bg-blue-700" icon="👤" label="Customer" />
+              <div className="p-3">
+                <input
+                  type="text"
+                  readOnly
+                  value={customer.name}
+                  className="w-full px-3 py-2 border border-slate-200 rounded bg-slate-50 text-sm font-medium text-slate-700 cursor-default"
+                />
+                <div className="mt-1.5 flex items-center gap-2">
+                  <button type="button" onClick={onBack} className="text-xs text-blue-500 hover:text-blue-700 underline">Change</button>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700">{jtLabel}</span>
+                  {customer.accountNumber && <span className="text-xs text-slate-400">{customer.accountNumber}</span>}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <label className="text-xs text-slate-500 whitespace-nowrap">Booked By <span className="text-rose-500">*</span></label>
+              </div>
+            </div>
+
+            {/* Purchase Order panel */}
+            <div className={panel}>
+              <SHead color="bg-blue-700" icon="📋" label="Purchase Order" />
+              <div className="p-3 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-500 mb-0.5">Purchase Order <span className="text-rose-500">*</span></label>
+                  <input type="text" value={f.purchaseOrder} onChange={e => s("purchaseOrder", e.target.value)}
+                    className={f.purchaseOrder ? inp : inpReq} placeholder="Purchase Order" required />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-0.5">Booked By <span className="text-rose-500">*</span></label>
                   <input type="text" value={f.bookedBy} onChange={e => s("bookedBy", e.target.value)}
-                    className={f.bookedBy ? "w-32 px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" : "w-32 px-2 py-1 border border-rose-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white"}
-                    required />
+                    className={f.bookedBy ? inp : inpReq} placeholder="Booked By" required />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── 3-COLUMN MAIN LAYOUT ── */}
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-3 gap-3">
+          {/* ── ROW 2: 3-column main layout ── */}
+          <div className="grid grid-cols-3 gap-3 items-start">
 
-              {/* ══ COLUMN 1: Collection ══ */}
-              <div className="space-y-3">
-                {/* Collection Date/Time */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-blue-700" icon="📅" label="Collection Date / Time" />
-                  <div className="px-3 pb-3 grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">Date <span className="text-rose-500">*</span></label>
-                      <input type="date" value={f.collectionDate} onChange={e => s("collectionDate", e.target.value)} className={inp} required />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">Time</label>
-                      <input type="time" value={f.collectionTime} onChange={e => s("collectionTime", e.target.value)} className={inp} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collection Details */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-orange-500" icon="📍" label="Collection Details" />
-                  <div className="px-3 pb-3 space-y-1.5">
-                    <PostcodeSearch value={f.collectionPostcode}
-                      onChange={v => s("collectionPostcode", v)}
-                      onApply={r => { s("collectionAddress1", r.line1); s("collectionAddress2", r.line2||""); s("collectionArea", r.city); s("collectionPostcode", r.postcode); }} />
-                    <input type="text" value={f.collectionName} onChange={e => s("collectionName", e.target.value)} placeholder="Business / Place Name" className={inp} />
-                    <input type="text" value={f.collectionAddress1} onChange={e => s("collectionAddress1", e.target.value)} placeholder="Address 1" className={inp} />
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.collectionAddress2} onChange={e => s("collectionAddress2", e.target.value)} placeholder="Address 2" className={inp} />
-                      <input type="text" value={f.collectionArea} onChange={e => s("collectionArea", e.target.value)} placeholder="Town / Area" className={inp} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} placeholder="Postcode *" className={f.collectionPostcode ? inp2 : inpReq + " font-mono"} required />
-                      <input type="text" value={f.collectionCountry} onChange={e => s("collectionCountry", e.target.value)} placeholder="Country" className={inp} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.collectionContact} onChange={e => s("collectionContact", e.target.value)} placeholder="Contact Name" className={inp} />
-                      <input type="text" value={f.collectionPhone} onChange={e => s("collectionPhone", e.target.value)} placeholder="Tel Number" className={inp} />
-                    </div>
-                    <textarea value={f.collectionNotes} onChange={e => s("collectionNotes", e.target.value)} placeholder="Notes" rows={2} className={inp + " resize-none"} />
-                  </div>
-                </div>
-
-                {/* Office Notes */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-slate-500" icon="📝" label="Office Notes" />
-                  <div className="px-3 pb-3">
-                    <textarea value={f.officeNotes} onChange={e => s("officeNotes", e.target.value)} placeholder="Office Notes" rows={4} className={inp + " resize-none"} />
-                  </div>
+            {/* ══ COLUMN 1: Collection ══ */}
+            <div className="space-y-3">
+              {/* Collection Date/Time */}
+              <div className={panel}>
+                <SHead color="bg-blue-700" icon="📅" label="Collection Date / Time" />
+                <div className="p-3 grid grid-cols-2 gap-2">
+                  <input type="date" value={f.collectionDate} onChange={e => s("collectionDate", e.target.value)} className={inp} required />
+                  <input type="time" value={f.collectionTime} onChange={e => s("collectionTime", e.target.value)} className={inp} />
                 </div>
               </div>
 
-              {/* ══ COLUMN 2: Map + Mileage Calculator ══ */}
-              <div className="space-y-3">
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-purple-600" icon="🚗" label="Mileage Calculator" />
+              {/* Collection Details */}
+              <div className={panel}>
+                <SHead color="bg-orange-500" icon="📍" label="Collection Details" />
+                <div className="p-3 space-y-1.5">
+                  <PostcodeSearch value={f.collectionPostcode}
+                    onChange={v => s("collectionPostcode", v)}
+                    onApply={r => {
+                      s("collectionAddress1", r.line1);
+                      s("collectionAddress2", r.line2 || "");
+                      s("collectionArea", r.city);
+                      s("collectionPostcode", r.postcode);
+                    }} />
+                  <input type="text" value={f.collectionName} onChange={e => s("collectionName", e.target.value)} placeholder="Business / Place Name" className={inp} />
+                  <input type="text" value={f.collectionAddress1} onChange={e => s("collectionAddress1", e.target.value)} placeholder="Address 1" className={inp} />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={f.collectionAddress2} onChange={e => s("collectionAddress2", e.target.value)} placeholder="Address 2" className={inp} />
+                    <input type="text" value={f.collectionArea} onChange={e => s("collectionArea", e.target.value)} placeholder="Town / Area" className={inp} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={f.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                    <input type="text" value={f.collectionCountry} onChange={e => s("collectionCountry", e.target.value)} placeholder="Country" className={inp} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={f.collectionContact} onChange={e => s("collectionContact", e.target.value)} placeholder="Contact Name" className={inp} />
+                    <input type="text" value={f.collectionPhone} onChange={e => s("collectionPhone", e.target.value)} placeholder="Tel Number" className={inp} />
+                  </div>
+                  <textarea value={f.collectionNotes} onChange={e => s("collectionNotes", e.target.value)} placeholder="Notes" rows={3} className={inp + " resize-none"} />
+                </div>
+              </div>
 
-                  {/* Map always visible at top */}
-                  <div
-                    ref={el => { (mapRef as any).current = el; }}
-                    style={{ height: "240px" }}
-                    className="w-full border-b border-slate-100"
-                  />
+              {/* POD Upload + Office Notes */}
+              <div className={panel}>
+                <SHead color="bg-teal-600" icon="📎" label="POD Upload" />
+                <div className="p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="px-3 py-1.5 border border-slate-300 rounded text-xs bg-white hover:bg-slate-50 cursor-pointer whitespace-nowrap">
+                      Choose file
+                      <input type="file" className="hidden" accept="image/*,.pdf" />
+                    </label>
+                    <span className="text-xs text-slate-400">No file chosen</span>
+                  </div>
+                  <button type="button" className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700">
+                    <Plus className="w-3 h-3" /> Add file
+                  </button>
+                  <textarea value={f.officeNotes} onChange={e => s("officeNotes", e.target.value)}
+                    placeholder="Office Notes" rows={3} className={inp + " resize-none"} />
+                </div>
+              </div>
+            </div>
 
-                  <div className="px-3 pb-3 space-y-2 mt-2">
-                    {/* Vehicle select + rates */}
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">Vehicle</label>
-                      <select value={f.vehicleId} onChange={e => s("vehicleId", e.target.value)} className={inp}>
-                        <option value="">— Select Vehicle —</option>
-                        {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.name}</option>)}
-                      </select>
-                      {f.vehicleId && vehicleRates.length > 0 && (
-                        <div className="mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                          {jtLabel}: £{currentRate?.toFixed(4)}/mi
-                        </div>
-                      )}
-                      {f.vehicleId && vehicleRates.length === 0 && (
-                        <div className="mt-1 flex items-center justify-between text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded">
-                          <span>No rates set</span>
-                          <a href={`/admin/customers/${customer.id}`} target="_blank" rel="noreferrer" className="flex items-center gap-0.5 underline font-semibold">
-                            Add Rates <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      )}
-                    </div>
+            {/* ══ COLUMN 2: Mileage Calculator + Profit ══ */}
+            <div className="space-y-3">
+              <div className={panel}>
+                <SHead color="bg-purple-600" icon="🚗" label="Mileage Calculator" />
 
-                    {/* Refresh + Add Rates buttons */}
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => {
-                        if (f.vehicleId) {
-                          fetch(`/api/vehicle-rates?customerId=${customer.id}&vehicleId=${f.vehicleId}`)
-                            .then(r => r.json()).then(setVehicleRates);
-                        }
-                      }} className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
-                        <RefreshCw className="w-3 h-3" /> Refresh
-                      </button>
+                {/* Map — always visible */}
+                <div
+                  ref={el => { (mapRef as any).current = el; }}
+                  style={{ height: "220px" }}
+                  className="w-full border-b border-slate-200"
+                />
+
+                <div className="p-3 space-y-2">
+                  {/* Vehicle */}
+                  <select value={f.vehicleId} onChange={e => s("vehicleId", e.target.value)} className={inp}>
+                    <option value="">— Select Vehicle —</option>
+                    {vehicles.map((v: any) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} = {f.vehicleId === v.id && currentRate ? `${currentRate.toFixed(2)}/mile` : "0.00/mile"}
+                      </option>
+                    ))}
+                  </select>
+                  {f.vehicleId && vehicleRates.length === 0 && (
+                    <div className="flex items-center justify-between text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                      <span>No rates for this customer</span>
                       <a href={`/admin/customers/${customer.id}`} target="_blank" rel="noreferrer"
-                        className="flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white rounded text-xs hover:bg-emerald-600">
-                        <Plus className="w-3 h-3" /> Add Rates
+                        className="flex items-center gap-0.5 underline font-semibold">
+                        Add Rates <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
+                  )}
 
-                    {/* Get Mileage button */}
-                    <button type="button" onClick={handleGetMiles} disabled={calcMiles}
-                      className="w-full flex items-center justify-center gap-2 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded font-semibold text-sm disabled:opacity-60">
-                      {calcMiles ? <Loader2 className="w-4 h-4 animate-spin" /> : "🚩"}
-                      Get Mileage and Costs
+                  {/* Refresh + Add Rates */}
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => {
+                      if (f.vehicleId) {
+                        fetch(`/api/vehicle-rates?customerId=${customer.id}&vehicleId=${f.vehicleId}`)
+                          .then(r => r.json()).then(setVehicleRates);
+                      }
+                    }} className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
+                      <RefreshCw className="w-3 h-3" /> Refresh
                     </button>
-
-                    {/* Miles + duration side by side */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs text-slate-500">Miles</label>
-                        <input type="number" min="0" value={f.miles}
-                          onChange={e => s("miles", String(Math.round(parseFloat(e.target.value) || 0)))}
-                          className={inp + " font-bold text-base"} />
-                      </div>
-                      <div className="flex flex-col justify-end pb-1">
-                        {routeInfo && (
-                          <>
-                            <p className="text-xs text-amber-600 font-medium">{routeInfo.duration}</p>
-                            <p className="text-xs text-slate-400">{routeInfo.miles} mi (rounded)</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Quote */}
-                    <div>
-                      <label className="text-xs text-slate-500">Quote (£)</label>
-                      <input type="number" step="0.01" min="0" value={f.customerPrice}
-                        onChange={e => s("customerPrice", e.target.value)}
-                        className={inp + " font-bold text-base"} placeholder="0.00" />
-                    </div>
-
-                    {/* Fuel surcharge */}
-                    <div>
-                      <label className="text-xs text-slate-500">Fuel Surcharge</label>
-                      <select value={f.fuelSurchargePercent} onChange={e => s("fuelSurchargePercent", e.target.value)} className={inp}>
-                        <option value="">None (Up to £1.70/litre)</option>
-                        <option value="6">6% (£1.70-£1.80/litre)</option>
-                        <option value="9">9% (£1.80-£1.90/litre)</option>
-                        <option value="12">12% (Over £1.90/litre)</option>
-                      </select>
-                    </div>
-
-                    {/* Items + Weight side by side */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">No. Items <span className="text-rose-500">*</span></label>
-                        <input type="number" min="1" value={f.numberOfItems}
-                          onChange={e => s("numberOfItems", e.target.value)}
-                          className={f.numberOfItems ? inp : inpReq} required />
-                      </div>
-                      <div>
-                        <label className="text-xs text-slate-500 block mb-1">Weight (kg) <span className="text-rose-500">*</span></label>
-                        <input type="number" step="0.1" min="0" value={f.weight}
-                          onChange={e => s("weight", e.target.value)}
-                          className={f.weight ? inp : inpReq} required />
-                      </div>
-                    </div>
-
-                    {/* Booking type */}
-                    <div>
-                      <label className="text-xs text-slate-500 block mb-1">Booking Type</label>
-                      <select value={f.bookingTypeId} onChange={e => s("bookingTypeId", e.target.value)} className={inp}>
-                        <option value="">Sameday</option>
-                        {bookingTypes.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                      </select>
-                    </div>
-
-                    {/* Manual job */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <input type="text" value={f.manualDesc} onChange={e => s("manualDesc", e.target.value)} placeholder="Manual Job" className={inp} />
-                      <input type="number" step="0.01" value={f.manualAmount} onChange={e => s("manualAmount", e.target.value)} placeholder="Amount" className={inp} />
-                    </div>
-
-                    {/* Checkboxes */}
-                    <div className="flex gap-3 flex-wrap">
-                      <label className="flex items-center gap-1 text-xs cursor-pointer">
-                        <input type="checkbox" checked={f.avoidTolls} onChange={e => s("avoidTolls", e.target.checked)} className="rounded" />
-                        Avoid Tolls
-                      </label>
-                      <label className="flex items-center gap-1 text-xs cursor-pointer">
-                        <input type="checkbox" checked={f.waitAndReturn} onChange={e => s("waitAndReturn", e.target.checked)} className="rounded" />
-                        Wait and Return
-                      </label>
-                    </div>
+                    <a href={`/admin/customers/${customer.id}`} target="_blank" rel="noreferrer"
+                      className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 text-white rounded text-xs hover:bg-emerald-600">
+                      <Plus className="w-3 h-3" /> Add Rates
+                    </a>
                   </div>
-                </div>
 
-                {/* Profit & Notes */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-green-600" icon="💰" label="Profit & Notes" />
-                  <div className="px-3 pb-3 space-y-2">
-                    <div>
-                      <label className="text-xs text-slate-500">PROFIT £</label>
-                      <div className={`px-2 py-1.5 border rounded text-sm font-bold ${profit >= 0 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>
-                        {profit.toFixed(2)}
-                      </div>
-                    </div>
-                    <textarea value={f.jobNotes} onChange={e => s("jobNotes", e.target.value)}
-                      placeholder="Job Notes" rows={4} className={inp + " resize-none"} />
+                  {/* Get Mileage button */}
+                  <button type="button" onClick={handleGetMiles} disabled={calcMiles}
+                    className="w-full flex items-center justify-center gap-2 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-sm disabled:opacity-60">
+                    {calcMiles ? <Loader2 className="w-4 h-4 animate-spin" /> : "🚩"}
+                    Get Mileage and Costs
+                  </button>
+
+                  {/* Miles row */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-slate-500 w-10 shrink-0">Miles</label>
+                    <input type="number" min="0" value={f.miles}
+                      onChange={e => s("miles", String(Math.round(parseFloat(e.target.value) || 0)))}
+                      className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                    {routeInfo && (
+                      <span className="text-xs text-amber-500 font-semibold">Total time: {routeInfo.duration}</span>
+                    )}
                   </div>
+
+                  {/* Quote */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-slate-500 w-16 shrink-0">Quote (£)</label>
+                    <input type="number" step="0.01" min="0" value={f.customerPrice}
+                      onChange={e => s("customerPrice", e.target.value)}
+                      className={inp + " font-bold"} placeholder="0.00" />
+                  </div>
+
+                  {/* Fuel surcharge */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-slate-500 w-16 shrink-0">Fuel Surcharge</label>
+                    <select value={f.fuelSurchargePercent} onChange={e => s("fuelSurchargePercent", e.target.value)} className={inp}>
+                      <option value="">None (Up to £1.70/litre)</option>
+                      <option value="6">6% (£1.70-£1.80/litre)</option>
+                      <option value="9">9% (£1.80-£1.90/litre)</option>
+                      <option value="12">12% (Over £1.90/litre)</option>
+                    </select>
+                  </div>
+
+                  {/* Items + Weight */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="number" min="1" value={f.numberOfItems}
+                      onChange={e => s("numberOfItems", e.target.value)}
+                      placeholder="No. of Items *"
+                      className={f.numberOfItems ? inp : inpReq} />
+                    <input type="number" step="0.1" min="0" value={f.weight}
+                      onChange={e => s("weight", e.target.value)}
+                      placeholder="Weight (kg) *"
+                      className={f.weight ? inp : inpReq} />
+                  </div>
+
+                  {/* Booking type */}
+                  <select value={f.bookingTypeId} onChange={e => s("bookingTypeId", e.target.value)} className={inp}>
+                    <option value="">Sameday</option>
+                    {bookingTypes.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+
+                  {/* Manual job */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="text" value={f.manualDesc} onChange={e => s("manualDesc", e.target.value)} placeholder="Manual Job" className={inp} />
+                    <input type="number" step="0.01" value={f.manualAmount} onChange={e => s("manualAmount", e.target.value)} placeholder="Amount" className={inp} />
+                  </div>
+
+                  {/* Avoid Tolls + Apply button */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded text-xs cursor-pointer hover:bg-slate-50">
+                      <input type="checkbox" checked={f.avoidTolls} onChange={e => s("avoidTolls", e.target.checked)} className="rounded" />
+                      Avoid Tolls
+                    </label>
+                    <button type="button" onClick={handleGetMiles} disabled={calcMiles}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 disabled:opacity-60">
+                      Apply New Mileage &amp; Cost
+                    </button>
+                  </div>
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                    <input type="checkbox" checked={f.waitAndReturn} onChange={e => s("waitAndReturn", e.target.checked)} className="rounded" />
+                    Wait and Return
+                  </label>
                 </div>
               </div>
 
-              {/* ══ COLUMN 3: Delivery + Driver Cost ══ */}
-              <div className="space-y-3">
-                {/* Delivery Date/Time */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-blue-700" icon="📅" label="Delivery Date / Time" />
-                  <div className="px-3 pb-3 grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">Date <span className="text-rose-500">*</span></label>
-                      <input type="date" value={f.deliveryDate} onChange={e => s("deliveryDate", e.target.value)} className={inp} required />
-                    </div>
-                    <div>
-                      <label className="text-xs text-slate-500 mb-1 block">Time</label>
-                      <input type="time" value={f.deliveryTime} onChange={e => s("deliveryTime", e.target.value)} className={inp} />
+              {/* Profit & Notes */}
+              <div className={panel}>
+                <SHead color="bg-emerald-600" icon="💰" label="Profit &amp; Notes" />
+                <div className="p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold text-slate-600 shrink-0">PROFIT £</label>
+                    <div className={`flex-1 px-3 py-1.5 border rounded text-sm font-bold text-center ${profit >= 0 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>
+                      {profit.toFixed(2)}
                     </div>
                   </div>
+                  <textarea value={f.jobNotes} onChange={e => s("jobNotes", e.target.value)}
+                    placeholder="Job Notes" rows={5} className={inp + " resize-none"} />
                 </div>
+              </div>
+            </div>
 
-                {/* Delivery Address */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-teal-600" icon="🏭" label="Delivery Address" />
-                  <div className="px-3 pb-3 space-y-1.5">
-                    <PostcodeSearch value={f.deliveryPostcode}
-                      onChange={v => s("deliveryPostcode", v)}
-                      onApply={r => { s("deliveryAddress1", r.line1); s("deliveryAddress2", r.line2||""); s("deliveryArea", r.city); s("deliveryPostcode", r.postcode); }} />
-                    <input type="text" value={f.deliveryName} onChange={e => s("deliveryName", e.target.value)} placeholder="Business / Place Name" className={inp} />
-                    <input type="text" value={f.deliveryAddress1} onChange={e => s("deliveryAddress1", e.target.value)} placeholder="Address 1" className={inp} />
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.deliveryAddress2} onChange={e => s("deliveryAddress2", e.target.value)} placeholder="Address 2" className={inp} />
-                      <input type="text" value={f.deliveryArea} onChange={e => s("deliveryArea", e.target.value)} placeholder="Town / Area" className={inp} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} placeholder="Postcode *" className={f.deliveryPostcode ? inp2 : inpReq + " font-mono"} required />
-                      <input type="text" value={f.deliveryCountry} onChange={e => s("deliveryCountry", e.target.value)} placeholder="Country" className={inp} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.deliveryContact} onChange={e => s("deliveryContact", e.target.value)} placeholder="Contact Name" className={inp} />
-                      <input type="text" value={f.deliveryPhone} onChange={e => s("deliveryPhone", e.target.value)} placeholder="Tel Number" className={inp} />
-                    </div>
-                    <textarea value={f.deliveryNotes} onChange={e => s("deliveryNotes", e.target.value)} placeholder="Notes" rows={2} className={inp + " resize-none"} />
+            {/* ══ COLUMN 3: Delivery + Driver Cost ══ */}
+            <div className="space-y-3">
+              {/* Delivery Date/Time */}
+              <div className={panel}>
+                <SHead color="bg-blue-700" icon="📅" label="Delivery Date / Time" />
+                <div className="p-3 grid grid-cols-2 gap-2">
+                  <input type="date" value={f.deliveryDate} onChange={e => s("deliveryDate", e.target.value)} className={inp} required />
+                  <input type="time" value={f.deliveryTime} onChange={e => s("deliveryTime", e.target.value)} className={inp} />
+                </div>
+              </div>
+
+              {/* Delivery Address */}
+              <div className={panel}>
+                <SHead color="bg-teal-600" icon="🏭" label="Delivery Address" />
+                <div className="p-3 space-y-1.5">
+                  <PostcodeSearch value={f.deliveryPostcode}
+                    onChange={v => s("deliveryPostcode", v)}
+                    onApply={r => {
+                      s("deliveryAddress1", r.line1);
+                      s("deliveryAddress2", r.line2 || "");
+                      s("deliveryArea", r.city);
+                      s("deliveryPostcode", r.postcode);
+                    }} />
+                  <input type="text" value={f.deliveryName} onChange={e => s("deliveryName", e.target.value)} placeholder="Business / Place Name" className={inp} />
+                  <input type="text" value={f.deliveryAddress1} onChange={e => s("deliveryAddress1", e.target.value)} placeholder="Address 1" className={inp} />
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={f.deliveryAddress2} onChange={e => s("deliveryAddress2", e.target.value)} placeholder="Address 2" className={inp} />
+                    <input type="text" value={f.deliveryArea} onChange={e => s("deliveryArea", e.target.value)} placeholder="Town / Area" className={inp} />
                   </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={f.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                    <input type="text" value={f.deliveryCountry} onChange={e => s("deliveryCountry", e.target.value)} placeholder="Country" className={inp} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <input type="text" value={f.deliveryContact} onChange={e => s("deliveryContact", e.target.value)} placeholder="Contact Name" className={inp} />
+                    <input type="text" value={f.deliveryPhone} onChange={e => s("deliveryPhone", e.target.value)} placeholder="Tel Number" className={inp} />
+                  </div>
+                  <textarea value={f.deliveryNotes} onChange={e => s("deliveryNotes", e.target.value)} placeholder="Notes" rows={3} className={inp + " resize-none"} />
                 </div>
+              </div>
 
-                {/* Driver Cost */}
-                <div className="bg-white rounded border border-slate-200">
-                  <SHead color="bg-red-600" icon="🚗" label="Driver Cost" />
-                  <div className="px-3 pb-3 space-y-2">
-                    {/* Driver */}
-                    <div>
-                      <label className="text-xs text-slate-500 block mb-1">Driver</label>
-                      <div className="flex items-center gap-2">
-                        <select value={f.driverId} onChange={e => handleDriverChange(e.target.value)} className={inp}>
-                          <option value="">Select Driver</option>
-                          {drivers.map((d: any) => (
-                            <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
+              {/* Driver Cost */}
+              <div className={panel}>
+                <SHead color="bg-red-700" icon="🚘" label="Driver Cost" />
+                <div className="p-3 space-y-2.5">
+
+                  {/* Driver */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500 w-16 shrink-0">Driver</span>
+                    <select value={f.driverId} onChange={e => handleDriverChange(e.target.value)} className={inp}>
+                      <option value="">Select Driver</option>
+                      {drivers.map((d: any) => (
+                        <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
+                      ))}
+                    </select>
+                    <span className="text-xs text-slate-400">£</span>
+                    <input type="number" step="0.01" min="0" value={f.driverCost}
+                      onChange={e => s("driverCost", e.target.value)}
+                      className="w-20 px-2 py-1.5 border border-slate-300 rounded text-xs text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                      placeholder="0.00" />
+                  </div>
+
+                  {/* SubCon */}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16 shrink-0">SubCon</span>
+                      <select value={f.secondManId} onChange={e => s("secondManId", e.target.value)} className={inp}>
+                        <option value="">Select Driver</option>
+                        {subcons.map((d: any) => (
+                          <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
+                        ))}
+                      </select>
+                      <span className="text-xs text-slate-400">£</span>
+                      <input type="number" step="0.01" min="0" value={f.extraCost}
+                        onChange={e => s("extraCost", e.target.value)}
+                        className="w-20 px-2 py-1.5 border border-slate-300 rounded text-xs text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                        placeholder="0.00" />
+                    </div>
+                    {subconContacts.length > 0 && (
+                      <div className="mt-1 pl-[4.5rem]">
+                        <select value={f.secondManContactId} onChange={e => s("secondManContactId", e.target.value)} className={inp}>
+                          <option value="">— Select Driver Under SubCon —</option>
+                          {subconContacts.map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
                           ))}
                         </select>
-                        <input type="number" step="0.01" min="0" value={f.driverCost}
-                          onChange={e => s("driverCost", e.target.value)}
-                          className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0.00" />
-                      </div>
-                    </div>
-
-                    {/* SubContractor */}
-                    <div>
-                      <label className="text-xs text-slate-500 block mb-1">SubContractor</label>
-                      <div className="flex items-center gap-2">
-                        <select value={f.secondManId} onChange={e => s("secondManId", e.target.value)} className={inp}>
-                          <option value="">Select SubContractor</option>
-                          {subcons.map((d: any) => (
-                            <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
-                          ))}
-                        </select>
-                        <input type="number" step="0.01" min="0" value={f.extraCost}
-                          onChange={e => s("extraCost", e.target.value)}
-                          className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0.00" />
-                      </div>
-                      {/* SubCon driver contact picker — shows when SubCon has contacts */}
-                      {subconContacts.length > 0 && (
-                        <div className="mt-1">
-                          <select value={f.secondManContactId} onChange={e => s("secondManContactId", e.target.value)} className={inp}>
-                            <option value="">— Select Driver Under SubCon —</option>
-                            {subconContacts.map((c: any) => (
-                              <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* CX Driver */}
-                    <div>
-                      <label className="text-xs text-slate-500 block mb-1">CX Driver</label>
-                      <div className="flex items-center gap-2">
-                        <select value={f.cxDriverId} onChange={e => s("cxDriverId", e.target.value)} className={inp}>
-                          <option value="">Select CX Driver</option>
-                          {cxDrivers.map((d: any) => (
-                            <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
-                          ))}
-                        </select>
-                        <input type="number" step="0.01" min="0" value={f.cxDriverCost}
-                          onChange={e => s("cxDriverCost", e.target.value)}
-                          className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0.00" />
-                      </div>
-                      {/* CX driver contact picker */}
-                      {cxContacts.length > 0 && (
-                        <div className="mt-1">
-                          <select value={f.cxDriverContactId} onChange={e => s("cxDriverContactId", e.target.value)} className={inp}>
-                            <option value="">— Select Driver Under CX —</option>
-                            {cxContacts.map((c: any) => (
-                              <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Storage units */}
-                    {storageUnits.length > 0 && (
-                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                        <div>
-                          <label className="text-xs text-slate-500">Chill Unit</label>
-                          <select value={f.chillUnitId} onChange={e => s("chillUnitId", e.target.value)} className={inp}>
-                            <option value="">None</option>
-                            {storageUnits.filter((u: any) => !u.unitType || u.unitType === "chill").map((u: any) => (
-                              <option key={u.id} value={u.id}>{u.unitNumber}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-xs text-slate-500">Ambient Unit</label>
-                          <select value={f.ambientUnitId} onChange={e => s("ambientUnitId", e.target.value)} className={inp}>
-                            <option value="">None</option>
-                            {storageUnits.filter((u: any) => !u.unitType || u.unitType === "ambient").map((u: any) => (
-                              <option key={u.id} value={u.id}>{u.unitNumber}</option>
-                            ))}
-                          </select>
-                        </div>
                       </div>
                     )}
                   </div>
+
+                  {/* CX Driver */}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500 w-16 shrink-0">CX Driver</span>
+                      <select value={f.cxDriverId} onChange={e => s("cxDriverId", e.target.value)} className={inp}>
+                        <option value="">Select CX Driver</option>
+                        {cxDrivers.map((d: any) => (
+                          <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
+                        ))}
+                      </select>
+                      <span className="text-xs text-slate-400">£</span>
+                      <input type="number" step="0.01" min="0" value={f.cxDriverCost}
+                        onChange={e => s("cxDriverCost", e.target.value)}
+                        className="w-20 px-2 py-1.5 border border-slate-300 rounded text-xs text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                        placeholder="0.00" />
+                    </div>
+                    {cxContacts.length > 0 && (
+                      <div className="mt-1 pl-[4.5rem]">
+                        <select value={f.cxDriverContactId} onChange={e => s("cxDriverContactId", e.target.value)} className={inp}>
+                          <option value="">— Select Driver Under CX —</option>
+                          {cxContacts.map((c: any) => (
+                            <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Storage units */}
+                  {storageUnits.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                      <div>
+                        <label className="text-xs text-slate-500 mb-0.5 block">Chill Unit</label>
+                        <select value={f.chillUnitId} onChange={e => s("chillUnitId", e.target.value)} className={inp}>
+                          <option value="">None</option>
+                          {storageUnits.filter((u: any) => !u.unitType || u.unitType === "chill").map((u: any) => (
+                            <option key={u.id} value={u.id}>{u.unitNumber}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500 mb-0.5 block">Ambient Unit</label>
+                        <select value={f.ambientUnitId} onChange={e => s("ambientUnitId", e.target.value)} className={inp}>
+                          <option value="">None</option>
+                          {storageUnits.filter((u: any) => !u.unitType || u.unitType === "ambient").map((u: any) => (
+                            <option key={u.id} value={u.id}>{u.unitNumber}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Save bar */}
-            <div className="flex items-center justify-between mt-4 bg-white rounded border border-slate-200 px-4 py-3">
-              <button type="button" onClick={onBack} className="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50">Cancel</button>
-              <div className="flex items-center gap-3 text-xs text-slate-400">
-                <span>Miles: <strong className="text-slate-700">{miles || "—"}</strong></span>
-                <span>Quote: <strong className="text-emerald-700">£{parseFloat(f.customerPrice || "0").toFixed(2)}</strong></span>
-                <span className={profit >= 0 ? "text-emerald-600" : "text-rose-600"}>Profit: <strong>£{profit.toFixed(2)}</strong></span>
-              </div>
-              <button type="submit" disabled={saving}
-                className="flex items-center gap-2 px-8 py-2 bg-blue-600 text-white rounded font-semibold text-sm hover:bg-blue-700 disabled:opacity-70">
-                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                {saving ? "Saving..." : "✓ Save Record"}
-              </button>
+          {/* ── Bottom save bar ── */}
+          <div className="flex items-center justify-between bg-white rounded border border-slate-200 px-4 py-3">
+            <button type="button" onClick={onBack}
+              className="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50">
+              Cancel
+            </button>
+            <div className="flex items-center gap-5 text-xs text-slate-500">
+              <span>Miles: <strong className="text-slate-800 text-sm">{milesNum || "—"}</strong></span>
+              <span>Quote: <strong className="text-emerald-700 text-sm">£{parseFloat(f.customerPrice || "0").toFixed(2)}</strong></span>
+              <span className={profit >= 0 ? "text-emerald-600" : "text-rose-600"}>
+                Profit: <strong className="text-sm">£{profit.toFixed(2)}</strong>
+              </span>
             </div>
-          </form>
-        </div>
+            <button type="submit" disabled={saving}
+              className="flex items-center gap-2 px-8 py-2 bg-blue-600 text-white rounded font-semibold text-sm hover:bg-blue-700 disabled:opacity-70">
+              {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+              {saving ? "Saving..." : "✓ Save Record"}
+            </button>
+          </div>
+        </form>
       </div>
     </>
   );
