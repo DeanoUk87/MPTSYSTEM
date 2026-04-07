@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, Package, FileText, Settings,
-  UserCog, Shield, Mail, Archive, LogOut, Building2, ChevronRight,
+  UserCog, Shield, Mail, Archive, LogOut, Building2,
   Truck, Car, Thermometer, ClipboardList, ReceiptText
 } from "lucide-react";
 import clsx from "clsx";
@@ -89,7 +89,7 @@ export default function Sidebar() {
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   <span className="flex-1">{item.label}</span>
-                  {active && <ChevronRight className="w-3 h-3 opacity-70" />}
+                  {active && <span className="w-1.5 h-1.5 rounded-full bg-white/60 shrink-0" />}
                 </Link>
               );
             })}
