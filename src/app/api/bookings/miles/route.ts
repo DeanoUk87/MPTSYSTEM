@@ -8,10 +8,9 @@ export async function POST(req: NextRequest) {
   const { origin, destination, avoidTolls } = await req.json();
   if (!origin || !destination) return NextResponse.json({ error: "origin and destination required" }, { status: 400 });
 
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
-    // Return a mock distance when no API key configured
-    return NextResponse.json({ miles: 0, duration: "N/A", note: "Configure GOOGLE_MAPS_API_KEY for live distances" });
+    return NextResponse.json({ miles: 0, duration: "N/A", note: "Configure GOOGLE_API_KEY for live distances" });
   }
 
   try {

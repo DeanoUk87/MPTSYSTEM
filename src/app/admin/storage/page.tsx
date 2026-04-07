@@ -4,7 +4,7 @@ import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Thermometer, RefreshCw, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 
@@ -19,6 +19,8 @@ const emptyForm = { unitNumber: "", imei: "", unitSize: "", unitType: "chill", a
 export default function StoragePage() {
   const [units, setUnits] = useState<StorageUnit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tempData, setTempData] = useState<Record<string, any>>({});
+  const [tempLoading, setTempLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<StorageUnit | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -33,6 +35,26 @@ export default function StoragePage() {
   }, []);
 
   useEffect(() => { fetchUnits(); }, [fetchUnits]);
+
+  async function fetchTemperatures() {
+    setTempLoading(true);
+    try {
+      const res = await fetch("/api/storage/temperature");
+      if (res.ok) {
+        const data = await res.json();
+        const map: Record<string, any> = {};
+        data.forEach((d: any) => { map[d.id] = d; });
+        setTempData(map);
+      }
+    } finally { setTempLoading(false); }
+  }
+
+  // Auto-refresh temperatures every 60s
+  useEffect(() => {
+    fetchTemperatures();
+    const interval = setInterval(fetchTemperatures, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   function openCreate() { setEditTarget(null); setForm(emptyForm); setModalOpen(true); }
   function openEdit(u: StorageUnit) {
@@ -83,9 +105,21 @@ export default function StoragePage() {
     { key: "currentDriver", label: "Current Driver", render: r => r.currentDriver?.name || "—" },
     { key: "imei", label: "IMEI", render: r => r.imei ? <span className="font-mono text-xs">{r.imei}</span> : "—" },
     { key: "calibrationDate", label: "Calibration", render: r => r.calibrationDate || "—" },
-    { key: "trackable", label: "Tracking", render: r => r.trackable ? (
-      <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Live</span>
-    ) : <span className="text-slate-400 text-xs">Off</span> },
+    { key: "trackable", label: "Temp / Tracking", render: r => {
+      const td = tempData[r.id];
+      if (r.trackable && td?.temperature != null) {
+        const temp = parseFloat(td.temperature);
+        const color = temp < 0 ? "text-blue-700 bg-blue-50" : temp < 5 ? "text-emerald-700 bg-emerald-50" : "text-amber-700 bg-amber-50";
+        return (
+          <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold", color)}>
+            <Thermometer className="w-3 h-3" />{td.temperature}°C
+          </span>
+        );
+      }
+      return r.trackable
+        ? <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">Live</span>
+        : <span className="text-slate-400 text-xs">Off</span>;
+    }},
     { key: "actions", label: "Actions", render: r => (
       <div className="flex items-center gap-1">
         <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
@@ -107,6 +141,11 @@ export default function StoragePage() {
             <span className="text-emerald-600">{inStore} in store</span>
             <span className="text-amber-600">{assigned} assigned</span>
           </div>
+          <button onClick={fetchTemperatures} disabled={tempLoading}
+            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-60">
+            <RefreshCw className={clsx("w-4 h-4", tempLoading && "animate-spin")} />
+            Refresh Temps
+          </button>
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
             <Plus className="w-4 h-4" />Add Unit
           </button>

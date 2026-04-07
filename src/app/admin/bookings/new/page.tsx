@@ -91,6 +91,7 @@ function JobTypeSelect({ customer, onSelect }: { customer: any; onSelect: (type:
 function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: number; onBack: () => void }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [postcodeResults, setPostcodeResults] = useState<{prefix: string; results: any[]}>({ prefix: '', results: [] });
   const [calcMiles, setCalcMiles] = useState(false);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
@@ -197,6 +198,26 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     } catch { toast.error("Failed to calculate miles"); } finally { setCalcMiles(false); }
   }
 
+  async function lookupPostcode(postcode: string, prefix: "collection" | "delivery") {
+    const pc = postcode.replace(/\s/g, "").toUpperCase();
+    if (pc.length < 5) return;
+    try {
+      const res = await fetch(`/api/postcode?postcode=${encodeURIComponent(pc)}`);
+      const data = await res.json();
+      if (data.results?.length > 0) {
+        setPostcodeResults({ prefix, results: data.results });
+      }
+    } catch {}
+  }
+
+  function applyPostcodeResult(r: any, prefix: "collection" | "delivery") {
+    s(`${prefix}Address1`, r.line1);
+    s(`${prefix}Address2`, r.line2 || "");
+    s(`${prefix}Area`, r.city);
+    setPostcodeResults({ prefix: "", results: [] });
+  }
+
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.numberOfItems) { toast.error("Number of items is required"); return; }
@@ -274,7 +295,22 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
               <div><label className={label}>Address 1</label><input type="text" value={form.collectionAddress1} onChange={e => s("collectionAddress1", e.target.value)} className={inp} /></div>
               <div><label className={label}>Address 2</label><input type="text" value={form.collectionAddress2} onChange={e => s("collectionAddress2", e.target.value)} className={inp} /></div>
               <div><label className={label}>Town / Area</label><input type="text" value={form.collectionArea} onChange={e => s("collectionArea", e.target.value)} className={inp} /></div>
-              <div><label className={label}>Postcode</label><input type="text" value={form.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} className={inp + " uppercase"} /></div>
+              <div className="relative">
+                <label className={label}>Postcode</label>
+                <input type="text" value={form.collectionPostcode}
+                  onChange={e => { s("collectionPostcode", e.target.value.toUpperCase()); lookupPostcode(e.target.value, "collection"); }}
+                  className={inp + " uppercase"} />
+                {postcodeResults.prefix === "collection" && postcodeResults.results.length > 0 && (
+                  <div className="absolute z-10 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                    {postcodeResults.results.map((r: any, i: number) => (
+                      <button key={i} type="button" onClick={() => applyPostcodeResult(r, "collection")}
+                        className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-slate-100 last:border-0">
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div><label className={label}>Contact Name</label><input type="text" value={form.collectionContact} onChange={e => s("collectionContact", e.target.value)} className={inp} /></div>
               <div><label className={label}>Phone</label><input type="text" value={form.collectionPhone} onChange={e => s("collectionPhone", e.target.value)} className={inp} /></div>
               <div><label className={label}>Collection Notes</label><textarea value={form.collectionNotes} onChange={e => s("collectionNotes", e.target.value)} rows={2} className={inp + " resize-none"} /></div>
@@ -411,7 +447,22 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
               <div><label className={label}>Address 1</label><input type="text" value={form.deliveryAddress1} onChange={e => s("deliveryAddress1", e.target.value)} className={inp} /></div>
               <div><label className={label}>Address 2</label><input type="text" value={form.deliveryAddress2} onChange={e => s("deliveryAddress2", e.target.value)} className={inp} /></div>
               <div><label className={label}>Town / Area</label><input type="text" value={form.deliveryArea} onChange={e => s("deliveryArea", e.target.value)} className={inp} /></div>
-              <div><label className={label}>Postcode</label><input type="text" value={form.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} className={inp + " uppercase"} /></div>
+              <div className="relative">
+                <label className={label}>Postcode</label>
+                <input type="text" value={form.deliveryPostcode}
+                  onChange={e => { s("deliveryPostcode", e.target.value.toUpperCase()); lookupPostcode(e.target.value, "delivery"); }}
+                  className={inp + " uppercase"} />
+                {postcodeResults.prefix === "delivery" && postcodeResults.results.length > 0 && (
+                  <div className="absolute z-10 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                    {postcodeResults.results.map((r: any, i: number) => (
+                      <button key={i} type="button" onClick={() => applyPostcodeResult(r, "delivery")}
+                        className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-slate-100 last:border-0">
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div><label className={label}>Contact Name</label><input type="text" value={form.deliveryContact} onChange={e => s("deliveryContact", e.target.value)} className={inp} /></div>
               <div><label className={label}>Phone</label><input type="text" value={form.deliveryPhone} onChange={e => s("deliveryPhone", e.target.value)} className={inp} /></div>
               <div><label className={label}>Delivery Notes</label><textarea value={form.deliveryNotes} onChange={e => s("deliveryNotes", e.target.value)} rows={2} className={inp + " resize-none"} /></div>
