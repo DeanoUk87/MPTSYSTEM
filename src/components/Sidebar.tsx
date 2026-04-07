@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, Package, FileText, Settings,
   UserCog, Shield, Mail, Archive, LogOut, Building2, ChevronRight,
@@ -42,6 +43,8 @@ const navGroups = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   async function handleSignOut() {
     await fetch("/api/logout", { method: "POST" });
@@ -71,7 +74,8 @@ export default function Sidebar() {
             </p>
             {group.items.map((item) => {
               const Icon = item.icon;
-              const active = pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
+              // Only compute active state after mount to avoid SSR/client mismatch
+              const active = mounted && (pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href)));
               return (
                 <Link
                   key={item.href}
