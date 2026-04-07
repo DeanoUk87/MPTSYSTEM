@@ -11,6 +11,7 @@ const today = new Date().toISOString().split("T")[0];
 
 const inp = "w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white";
 const inp2 = "w-full px-2 py-1.5 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-mono";
+const inpReq = "w-full px-2 py-1.5 border border-rose-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white";
 const sectionHead = "flex items-center gap-2 px-3 py-2 rounded text-white text-xs font-bold uppercase tracking-wider";
 
 function SHead({ color, icon, label }: { color: string; icon: string; label: string }) {
@@ -208,7 +209,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
         setVehicleRates(rates);
         if (rates.length > 0 && f.miles) {
           const rate = rates[0][rateKey];
-          s("customerPrice", (Math.round(f.miles) * rate).toFixed(2));
+          s("customerPrice", (Math.round(parseFloat(f.miles)) * rate).toFixed(2));
         }
       });
   }, [f.vehicleId]);
@@ -269,8 +270,10 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       });
       const data = await res.json();
       if (data.miles !== undefined) {
-        s("miles", String(data.miles));
-        setRouteInfo({ miles: data.miles, duration: data.duration });
+        // API already returns Math.round'd miles
+        const rounded = Math.round(data.miles);
+        s("miles", String(rounded));
+        setRouteInfo({ miles: rounded, duration: data.duration });
       }
       // Draw route on map
       const g = (window as any).google;
@@ -287,6 +290,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!f.purchaseOrder) { toast.error("Purchase Order is required"); return; }
     if (!f.numberOfItems) { toast.error("Number of items is required"); return; }
     if (!f.weight) { toast.error("Weight is required"); return; }
     setSaving(true);
@@ -336,32 +340,29 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
         <div className="p-4">
           {/* ── TOP ROW: Customer | PO + Booked By ── */}
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            {/* Customer panel */}
-            <div className="bg-white rounded border border-slate-200">
-              <SHead color="bg-blue-600" icon="👤" label="Customer" />
-              <div className="px-3 pb-3">
-                <div className="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded bg-slate-50 text-sm font-medium text-slate-700">
-                  {customer.name}
-                  <button type="button" onClick={onBack} className="ml-auto text-xs text-blue-500 hover:text-blue-700 underline">Change</button>
-                </div>
-                <div className="mt-2 flex gap-2">
-                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700">{jtLabel}</span>
-                  {customer.accountNumber && <span className="text-xs text-slate-400">{customer.accountNumber}</span>}
-                </div>
+          <div className="bg-white rounded border border-slate-200 mb-3">
+            <div className="px-3 py-2 flex items-center gap-4">
+              {/* Customer name + change */}
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="text-xs text-slate-400 shrink-0">Customer:</span>
+                <span className="text-sm font-semibold text-slate-800 truncate">{customer.name}</span>
+                <button type="button" onClick={onBack} className="text-xs text-blue-500 hover:text-blue-700 underline shrink-0">Change</button>
+                <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700 shrink-0">{jtLabel}</span>
+                {customer.accountNumber && <span className="text-xs text-slate-400 shrink-0">{customer.accountNumber}</span>}
               </div>
-            </div>
-            {/* PO + Booked By */}
-            <div className="bg-white rounded border border-slate-200">
-              <SHead color="bg-blue-600" icon="📋" label="Purchase Order" />
-              <div className="px-3 pb-3 grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Purchase Order <span className="text-rose-500">*</span></label>
-                  <input type="text" value={f.purchaseOrder} onChange={e => s("purchaseOrder", e.target.value)} className={inp} required />
+              {/* PO Number + Booked By aligned right */}
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs text-slate-500 whitespace-nowrap">PO Number <span className="text-rose-500">*</span></label>
+                  <input type="text" value={f.purchaseOrder} onChange={e => s("purchaseOrder", e.target.value)}
+                    className={f.purchaseOrder ? "w-32 px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" : "w-32 px-2 py-1 border border-rose-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white"}
+                    required />
                 </div>
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">Booked By</label>
-                  <input type="text" value={f.bookedBy} onChange={e => s("bookedBy", e.target.value)} className={inp} />
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs text-slate-500 whitespace-nowrap">Booked By <span className="text-rose-500">*</span></label>
+                  <input type="text" value={f.bookedBy} onChange={e => s("bookedBy", e.target.value)}
+                    className={f.bookedBy ? "w-32 px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" : "w-32 px-2 py-1 border border-rose-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-500 bg-white"}
+                    required />
                 </div>
               </div>
             </div>
@@ -377,8 +378,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                 <div className="bg-white rounded border border-slate-200">
                   <SHead color="bg-blue-700" icon="📅" label="Collection Date / Time" />
                   <div className="px-3 pb-3 grid grid-cols-2 gap-2">
-                    <input type="date" value={f.collectionDate} onChange={e => s("collectionDate", e.target.value)} className={inp} />
-                    <input type="time" value={f.collectionTime} onChange={e => s("collectionTime", e.target.value)} className={inp} />
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">Date <span className="text-rose-500">*</span></label>
+                      <input type="date" value={f.collectionDate} onChange={e => s("collectionDate", e.target.value)} className={inp} required />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">Time</label>
+                      <input type="time" value={f.collectionTime} onChange={e => s("collectionTime", e.target.value)} className={inp} />
+                    </div>
                   </div>
                 </div>
 
@@ -396,7 +403,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <input type="text" value={f.collectionArea} onChange={e => s("collectionArea", e.target.value)} placeholder="Town / Area" className={inp} />
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                      <input type="text" value={f.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} placeholder="Postcode *" className={f.collectionPostcode ? inp2 : inpReq + " font-mono"} required />
                       <input type="text" value={f.collectionCountry} onChange={e => s("collectionCountry", e.target.value)} placeholder="Country" className={inp} />
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -418,15 +425,20 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
               {/* ══ COLUMN 2: Map + Mileage Calculator ══ */}
               <div className="space-y-3">
-                {/* MILEAGE CALCULATOR with map at top */}
                 <div className="bg-white rounded border border-slate-200">
                   <SHead color="bg-purple-600" icon="🚗" label="Mileage Calculator" />
-                  {/* Map always visible */}
-                  <div ref={el => { (mapRef as any).current = el; }} style={{ height: "220px" }} className="w-full border-b border-slate-100" />
+
+                  {/* Map always visible at top */}
+                  <div
+                    ref={el => { (mapRef as any).current = el; }}
+                    style={{ height: "240px" }}
+                    className="w-full border-b border-slate-100"
+                  />
 
                   <div className="px-3 pb-3 space-y-2 mt-2">
                     {/* Vehicle select + rates */}
                     <div>
+                      <label className="text-xs text-slate-500 mb-1 block">Vehicle</label>
                       <select value={f.vehicleId} onChange={e => s("vehicleId", e.target.value)} className={inp}>
                         <option value="">— Select Vehicle —</option>
                         {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -449,7 +461,6 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     {/* Refresh + Add Rates buttons */}
                     <div className="flex gap-2">
                       <button type="button" onClick={() => {
-                        // Refresh vehicle rates
                         if (f.vehicleId) {
                           fetch(`/api/vehicle-rates?customerId=${customer.id}&vehicleId=${f.vehicleId}`)
                             .then(r => r.json()).then(setVehicleRates);
@@ -470,7 +481,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       Get Mileage and Costs
                     </button>
 
-                    {/* Miles + time */}
+                    {/* Miles + duration side by side */}
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="text-xs text-slate-500">Miles</label>
@@ -478,12 +489,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                           onChange={e => s("miles", String(Math.round(parseFloat(e.target.value) || 0)))}
                           className={inp + " font-bold text-base"} />
                       </div>
-                      {routeInfo && (
-                        <div className="flex flex-col justify-center">
-                          <p className="text-xs text-amber-600 font-medium">{routeInfo.duration}</p>
-                          <p className="text-xs text-slate-400">{routeInfo.miles} miles (rounded)</p>
-                        </div>
-                      )}
+                      <div className="flex flex-col justify-end pb-1">
+                        {routeInfo && (
+                          <>
+                            <p className="text-xs text-amber-600 font-medium">{routeInfo.duration}</p>
+                            <p className="text-xs text-slate-400">{routeInfo.miles} mi (rounded)</p>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     {/* Quote */}
@@ -505,25 +518,30 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       </select>
                     </div>
 
-                    {/* Items + Weight */}
+                    {/* Items + Weight side by side */}
                     <div className="grid grid-cols-2 gap-2">
                       <div>
+                        <label className="text-xs text-slate-500 block mb-1">No. Items <span className="text-rose-500">*</span></label>
                         <input type="number" min="1" value={f.numberOfItems}
                           onChange={e => s("numberOfItems", e.target.value)}
-                          placeholder="No. of Items *" className={inp} />
+                          className={f.numberOfItems ? inp : inpReq} required />
                       </div>
                       <div>
+                        <label className="text-xs text-slate-500 block mb-1">Weight (kg) <span className="text-rose-500">*</span></label>
                         <input type="number" step="0.1" min="0" value={f.weight}
                           onChange={e => s("weight", e.target.value)}
-                          placeholder="Weight (kg) *" className={inp} />
+                          className={f.weight ? inp : inpReq} required />
                       </div>
                     </div>
 
                     {/* Booking type */}
-                    <select value={f.bookingTypeId} onChange={e => s("bookingTypeId", e.target.value)} className={inp}>
-                      <option value="">Sameday</option>
-                      {bookingTypes.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Booking Type</label>
+                      <select value={f.bookingTypeId} onChange={e => s("bookingTypeId", e.target.value)} className={inp}>
+                        <option value="">Sameday</option>
+                        {bookingTypes.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                    </div>
 
                     {/* Manual job */}
                     <div className="grid grid-cols-2 gap-2">
@@ -561,14 +579,20 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                 </div>
               </div>
 
-              {/* ══ COLUMN 3: Delivery + Driver Cost + POD ══ */}
+              {/* ══ COLUMN 3: Delivery + Driver Cost ══ */}
               <div className="space-y-3">
                 {/* Delivery Date/Time */}
                 <div className="bg-white rounded border border-slate-200">
                   <SHead color="bg-blue-700" icon="📅" label="Delivery Date / Time" />
                   <div className="px-3 pb-3 grid grid-cols-2 gap-2">
-                    <input type="date" value={f.deliveryDate} onChange={e => s("deliveryDate", e.target.value)} className={inp} />
-                    <input type="time" value={f.deliveryTime} onChange={e => s("deliveryTime", e.target.value)} className={inp} />
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">Date <span className="text-rose-500">*</span></label>
+                      <input type="date" value={f.deliveryDate} onChange={e => s("deliveryDate", e.target.value)} className={inp} required />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">Time</label>
+                      <input type="time" value={f.deliveryTime} onChange={e => s("deliveryTime", e.target.value)} className={inp} />
+                    </div>
                   </div>
                 </div>
 
@@ -586,7 +610,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <input type="text" value={f.deliveryArea} onChange={e => s("deliveryArea", e.target.value)} placeholder="Town / Area" className={inp} />
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
-                      <input type="text" value={f.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                      <input type="text" value={f.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} placeholder="Postcode *" className={f.deliveryPostcode ? inp2 : inpReq + " font-mono"} required />
                       <input type="text" value={f.deliveryCountry} onChange={e => s("deliveryCountry", e.target.value)} placeholder="Country" className={inp} />
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -602,71 +626,77 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   <SHead color="bg-red-600" icon="🚗" label="Driver Cost" />
                   <div className="px-3 pb-3 space-y-2">
                     {/* Driver */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-slate-500 w-16 shrink-0">Driver</label>
-                      <select value={f.driverId} onChange={e => handleDriverChange(e.target.value)} className={inp}>
-                        <option value="">Select Driver</option>
-                        {drivers.map((d: any) => (
-                          <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
-                        ))}
-                      </select>
-                      <input type="number" step="0.01" min="0" value={f.driverCost}
-                        onChange={e => s("driverCost", e.target.value)}
-                        className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="0.00" />
-                    </div>
-
-                    {/* SubCon */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-slate-500 w-16 shrink-0">SubCon</label>
-                      <select value={f.secondManId} onChange={e => s("secondManId", e.target.value)} className={inp}>
-                        <option value="">Select Driver</option>
-                        {subcons.map((d: any) => (
-                          <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
-                        ))}
-                      </select>
-                      <input type="number" step="0.01" min="0" value={f.extraCost}
-                        onChange={e => s("extraCost", e.target.value)}
-                        className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="0.00" />
-                    </div>
-                    {/* SubCon driver contact picker */}
-                    {subconContacts.length > 0 && (
-                      <div className="ml-16">
-                        <select value={f.secondManContactId} onChange={e => s("secondManContactId", e.target.value)} className={inp}>
-                          <option value="">— Select Driver Under SubCon —</option>
-                          {subconContacts.map((c: any) => (
-                            <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Driver</label>
+                      <div className="flex items-center gap-2">
+                        <select value={f.driverId} onChange={e => handleDriverChange(e.target.value)} className={inp}>
+                          <option value="">Select Driver</option>
+                          {drivers.map((d: any) => (
+                            <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
                           ))}
                         </select>
+                        <input type="number" step="0.01" min="0" value={f.driverCost}
+                          onChange={e => s("driverCost", e.target.value)}
+                          className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          placeholder="0.00" />
                       </div>
-                    )}
+                    </div>
+
+                    {/* SubContractor */}
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">SubContractor</label>
+                      <div className="flex items-center gap-2">
+                        <select value={f.secondManId} onChange={e => s("secondManId", e.target.value)} className={inp}>
+                          <option value="">Select SubContractor</option>
+                          {subcons.map((d: any) => (
+                            <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
+                          ))}
+                        </select>
+                        <input type="number" step="0.01" min="0" value={f.extraCost}
+                          onChange={e => s("extraCost", e.target.value)}
+                          className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          placeholder="0.00" />
+                      </div>
+                      {/* SubCon driver contact picker — shows when SubCon has contacts */}
+                      {subconContacts.length > 0 && (
+                        <div className="mt-1">
+                          <select value={f.secondManContactId} onChange={e => s("secondManContactId", e.target.value)} className={inp}>
+                            <option value="">— Select Driver Under SubCon —</option>
+                            {subconContacts.map((c: any) => (
+                              <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
 
                     {/* CX Driver */}
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-slate-500 w-16 shrink-0">CX Driver</label>
-                      <select value={f.cxDriverId} onChange={e => s("cxDriverId", e.target.value)} className={inp}>
-                        <option value="">Select CX Driver</option>
-                        {cxDrivers.map((d: any) => (
-                          <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
-                        ))}
-                      </select>
-                      <input type="number" step="0.01" min="0" value={f.cxDriverCost}
-                        onChange={e => s("cxDriverCost", e.target.value)}
-                        className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="0.00" />
-                    </div>
-                    {/* CX driver contact picker */}
-                    {cxContacts.length > 0 && (
-                      <div className="ml-16">
-                        <select value={f.cxDriverContactId} onChange={e => s("cxDriverContactId", e.target.value)} className={inp}>
-                          <option value="">— Select Driver Under CX —</option>
-                          {cxContacts.map((c: any) => (
-                            <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">CX Driver</label>
+                      <div className="flex items-center gap-2">
+                        <select value={f.cxDriverId} onChange={e => s("cxDriverId", e.target.value)} className={inp}>
+                          <option value="">Select CX Driver</option>
+                          {cxDrivers.map((d: any) => (
+                            <option key={d.id} value={d.id}>{d.name} (£{d[driverRateKey].toFixed(2)}/mi)</option>
                           ))}
                         </select>
+                        <input type="number" step="0.01" min="0" value={f.cxDriverCost}
+                          onChange={e => s("cxDriverCost", e.target.value)}
+                          className="w-20 px-2 py-1.5 border border-slate-300 rounded text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          placeholder="0.00" />
                       </div>
-                    )}
+                      {/* CX driver contact picker */}
+                      {cxContacts.length > 0 && (
+                        <div className="mt-1">
+                          <select value={f.cxDriverContactId} onChange={e => s("cxDriverContactId", e.target.value)} className={inp}>
+                            <option value="">— Select Driver Under CX —</option>
+                            {cxContacts.map((c: any) => (
+                              <option key={c.id} value={c.id}>{c.driverName} {c.vehicleRegistration ? `(${c.vehicleRegistration})` : ""}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Storage units */}
                     {storageUnits.length > 0 && (
@@ -699,6 +729,11 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
             {/* Save bar */}
             <div className="flex items-center justify-between mt-4 bg-white rounded border border-slate-200 px-4 py-3">
               <button type="button" onClick={onBack} className="px-4 py-2 border border-slate-300 rounded text-sm hover:bg-slate-50">Cancel</button>
+              <div className="flex items-center gap-3 text-xs text-slate-400">
+                <span>Miles: <strong className="text-slate-700">{miles || "—"}</strong></span>
+                <span>Quote: <strong className="text-emerald-700">£{parseFloat(f.customerPrice || "0").toFixed(2)}</strong></span>
+                <span className={profit >= 0 ? "text-emerald-600" : "text-rose-600"}>Profit: <strong>£{profit.toFixed(2)}</strong></span>
+              </div>
               <button type="submit" disabled={saving}
                 className="flex items-center gap-2 px-8 py-2 bg-blue-600 text-white rounded font-semibold text-sm hover:bg-blue-700 disabled:opacity-70">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}

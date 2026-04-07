@@ -174,7 +174,7 @@ export default function DriversPage() {
     { key: "costPerMileOutOfHours", label: "OOH Rate", render: r => `£${r.costPerMileOutOfHours.toFixed(2)}/mi` },
     {
       key: "contacts", label: "Contacts",
-      render: r => (r.driverType === "SubContractor" || r.driverType === "CXDriver") ? (
+      render: r => r.driverType === "SubContractor" ? (
         <button onClick={() => openContacts(r)}
           className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 font-medium">
           <Users className="w-3 h-3" /> {r.contacts?.length ?? 0} driver(s)
