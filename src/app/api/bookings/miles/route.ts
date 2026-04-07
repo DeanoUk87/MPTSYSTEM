@@ -24,9 +24,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ miles: 0, duration: "N/A" });
     }
 
-    // Distance is in miles from the API (imperial units)
-    const distanceText = element.distance.text; // e.g. "12.4 mi"
-    const miles = parseFloat(distanceText.replace(" mi", "").replace(",", ""));
+    // Distance returned in metres, convert to miles and round to nearest whole number
+    const metres = element.distance.value;
+    const miles = Math.round(metres / 1609.344);
     const duration = element.duration.text;
 
     return NextResponse.json({ miles, duration });
