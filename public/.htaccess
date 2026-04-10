@@ -1,0 +1,4 @@
+PassengerEnabled on
+PassengerNodejs /opt/cpanel/ea-nodejs20/root/usr/bin/node
+PassengerStartupFile server.js
+PassengerAppType node
