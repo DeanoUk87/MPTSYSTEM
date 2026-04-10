@@ -8,16 +8,16 @@ import Script from "next/script";
 // ── Helpers ────────────────────────────────────────────────────────────────
 const today = new Date().toISOString().split("T")[0];
 
-const inp = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-colors";
-const inp2 = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono transition-colors";
-const inpReq = "w-full px-3 py-2 border-2 border-rose-400 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 bg-rose-50 transition-colors";
-const panel = "bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden";
-const costInp = "w-24 px-2 py-2 border border-slate-200 rounded-lg text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+const inp = "w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-colors";
+const inp2 = "w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono transition-colors";
+const inpReq = "w-full px-3 py-2 border-2 border-rose-400 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 bg-rose-50 transition-colors";
+const panel = "bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden";
+const costInp = "w-24 px-2 py-2 border border-slate-200 rounded-xl text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
 
 function SHead({ color, icon, label }: { color: string; icon: string; label: string }) {
   return (
-    <div className={`flex items-center gap-2 px-4 py-2.5 text-white text-xs font-bold uppercase tracking-widest ${color}`}>
-      <span>{icon}</span> {label}
+    <div className={`flex items-center gap-2 px-4 py-3 text-white text-xs font-bold uppercase tracking-widest ${color}`}>
+      <span className="text-base">{icon}</span> {label}
     </div>
   );
 }
@@ -106,8 +106,18 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
           </div>
         )}
       </div>
-      {/* Country field — hidden visually but value is preserved */}
-      <input type="hidden" value={country} onChange={e => onChangeCountry(e.target.value)} />
+      {/* Country field — visible, prefilled with UK */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs font-medium text-slate-400 shrink-0">Country</label>
+        <input
+          type="text"
+          value={country}
+          onChange={e => onChangeCountry(e.target.value.toUpperCase())}
+          placeholder="UK"
+          className={inp + " uppercase font-mono"}
+          maxLength={3}
+        />
+      </div>
     </div>
   );
 }
@@ -271,22 +281,45 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     });
   }, [vehicles.length, customer.id]);
 
-  // When vehicle selected, load its rates and recalc price
+  // When vehicle selected, load its rates, update map with fresh data, recalc price
   useEffect(() => {
     if (!f.vehicleId) { setVehicleRates([]); return; }
     fetch(`/api/vehicle-rates?customerId=${customer.id}&vehicleId=${f.vehicleId}`)
       .then(r => r.json()).then(rates => {
         setVehicleRates(rates);
+        // Keep vehicleRatesMap fresh for the selected vehicle so the dropdown shows the correct rate
+        if (rates.length > 0) {
+          setVehicleRatesMap(prev => ({ ...prev, [f.vehicleId]: rates[0][rateKey] ?? 0 }));
+        }
         if (rates.length > 0 && f.miles) {
           s("customerPrice", (Math.round(parseFloat(f.miles)) * rates[0][rateKey]).toFixed(2));
         }
       });
   }, [f.vehicleId]);
 
-  // Recalc price when miles change
+  // Recalc all prices when miles change manually
   useEffect(() => {
-    if (!vehicleRates.length || !f.miles) return;
-    s("customerPrice", (Math.round(parseFloat(f.miles)) * vehicleRates[0][rateKey]).toFixed(2));
+    const miles = Math.round(parseFloat(f.miles) || 0);
+    if (!miles) return;
+    setF(p => {
+      const next = { ...p };
+      if (vehicleRates.length > 0) {
+        next.customerPrice = (miles * vehicleRates[0][rateKey]).toFixed(2);
+      }
+      if (p.driverId) {
+        const dr = drivers.find((d: any) => d.id === p.driverId);
+        if (dr) next.driverCost = (miles * dr[driverRateKey]).toFixed(2);
+      }
+      if (p.secondManId) {
+        const dr = subcons.find((d: any) => d.id === p.secondManId);
+        if (dr) next.extraCost = (miles * dr[driverRateKey]).toFixed(2);
+      }
+      if (p.cxDriverId) {
+        const dr = cxDrivers.find((d: any) => d.id === p.cxDriverId);
+        if (dr) next.cxDriverCost = (miles * dr[driverRateKey]).toFixed(2);
+      }
+      return next;
+    });
   }, [f.miles]);
 
   // Load subcon contacts when subcon changes
@@ -305,40 +338,71 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
   // Handle driver change — update cost or clear if deselected
   function handleDriverChange(driverId: string) {
-    s("driverId", driverId);
     if (!driverId) {
-      s("driverCost", "");
+      setF(p => ({ ...p, driverId: "", driverCost: "" }));
       return;
     }
-    if (!f.miles) return;
+    const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = drivers.find((d: any) => d.id === driverId);
-    if (dr) s("driverCost", (Math.round(parseFloat(f.miles)) * dr[driverRateKey]).toFixed(2));
+    setF(p => ({
+      ...p,
+      driverId,
+      driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost,
+    }));
   }
 
   // Handle subcon change — update cost or clear if deselected
   function handleSubconChange(subconId: string) {
-    s("secondManId", subconId);
-    s("secondManContactId", "");
     if (!subconId) {
-      s("extraCost", "");
+      setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "" }));
       return;
     }
-    if (!f.miles) return;
+    const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = subcons.find((d: any) => d.id === subconId);
-    if (dr) s("extraCost", (Math.round(parseFloat(f.miles)) * dr[driverRateKey]).toFixed(2));
+    setF(p => ({
+      ...p,
+      secondManId: subconId,
+      secondManContactId: "",
+      extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost,
+    }));
+  }
+
+  // SubCon contact selection — recalc extraCost from parent subcon's rate
+  function handleSubconContactChange(contactId: string) {
+    const miles = Math.round(parseFloat(f.miles) || 0);
+    const dr = subcons.find((d: any) => d.id === f.secondManId);
+    setF(p => ({
+      ...p,
+      secondManContactId: contactId,
+      extraCost: contactId && dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost,
+    }));
+  }
+
+  // CX contact selection — recalc cxDriverCost from parent CX driver's rate
+  function handleCxContactChange(contactId: string) {
+    const miles = Math.round(parseFloat(f.miles) || 0);
+    const dr = cxDrivers.find((d: any) => d.id === f.cxDriverId);
+    setF(p => ({
+      ...p,
+      cxDriverContactId: contactId,
+      cxDriverCost: contactId && dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost,
+    }));
   }
 
   // Handle CX driver change — update cost or clear if deselected
   function handleCxChange(cxId: string) {
-    s("cxDriverId", cxId);
-    s("cxDriverContactId", "");
     if (!cxId) {
-      s("cxDriverCost", "");
+      setF(p => ({ ...p, cxDriverId: "", cxDriverContactId: "", cxDriverCost: "" }));
       return;
     }
-    if (!f.miles) return;
+    const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = cxDrivers.find((d: any) => d.id === cxId);
-    if (dr) s("cxDriverCost", (Math.round(parseFloat(f.miles)) * dr[driverRateKey]).toFixed(2));
+    setF(p => ({
+      ...p,
+      cxDriverId: cxId,
+      cxDriverContactId: "",
+      cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost,
+    }));
   }
 
   // Assign storage unit to driver
@@ -461,8 +525,8 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const profit = ((parseFloat(f.customerPrice) || 0) + (parseFloat(f.extraCost2) || 0))
     - ((parseFloat(f.driverCost) || 0) + (parseFloat(f.extraCost) || 0) + (parseFloat(f.cxDriverCost) || 0));
 
-  // Storage units for the active driver (main driver or subcon)
-  const activeDriverId = f.driverId || f.secondManId;
+  // Storage units for the active driver (main driver, subcon, or CX driver)
+  const activeDriverId = f.driverId || f.secondManId || f.cxDriverId;
   const availableStorageUnits = allStorageUnits.filter((u: any) =>
     !u.currentDriverId || u.currentDriverId === activeDriverId
   );
@@ -476,13 +540,13 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       />
       <div className="flex-1 bg-slate-100 min-h-screen">
         {/* Page header */}
-        <div className="bg-[#1a3a5c] px-5 py-3 flex items-center justify-between shadow-md">
+        <div className="bg-gradient-to-r from-[#1a3a5c] to-[#1e4976] px-5 py-3 flex items-center justify-between shadow-lg">
           <div>
             <h1 className="text-white font-bold text-base tracking-tight">Create Job — {customer.name}</h1>
             <p className="text-blue-300 text-xs mt-0.5">{jtLabel}</p>
           </div>
           <button type="button" onClick={(e) => handleSubmit(e as any)} disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-semibold text-sm disabled:opacity-70 shadow transition-colors">
+            className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-xl font-semibold text-sm disabled:opacity-70 shadow-md transition-all">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓"}
             {saving ? "Saving..." : "Save Record"}
           </button>
@@ -495,7 +559,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
             <div className={panel}>
               <SHead color="bg-blue-700" icon="👤" label="Customer" />
               <div className="p-4">
-                <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50">
                   <span className="flex-1 text-sm font-semibold text-slate-700">{customer.name}</span>
                   <button type="button" onClick={onBack} className="text-xs text-blue-500 hover:text-blue-700 font-medium underline shrink-0">Change</button>
                 </div>
@@ -639,20 +703,25 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     <button type="button" onClick={() => {
                       if (f.vehicleId) {
                         fetch(`/api/vehicle-rates?customerId=${customer.id}&vehicleId=${f.vehicleId}`)
-                          .then(r => r.json()).then(setVehicleRates);
+                          .then(r => r.json()).then(rates => {
+                            setVehicleRates(rates);
+                            if (rates.length > 0) {
+                              setVehicleRatesMap(prev => ({ ...prev, [f.vehicleId]: rates[0][rateKey] ?? 0 }));
+                            }
+                          });
                       }
-                    }} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-xs hover:bg-blue-600 font-medium transition-colors">
+                    }} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-xl text-xs hover:bg-blue-600 font-medium transition-colors shadow-sm">
                       <RefreshCw className="w-3 h-3" /> Refresh
                     </button>
                     <a href={`/admin/customers/${customer.id}`} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs hover:bg-emerald-600 font-medium transition-colors">
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-xl text-xs hover:bg-emerald-600 font-medium transition-colors shadow-sm">
                       <Plus className="w-3 h-3" /> Add Rates
                     </a>
                   </div>
 
                   {/* Get Mileage */}
                   <button type="button" onClick={handleGetMiles} disabled={calcMiles}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-sm disabled:opacity-60 transition-colors shadow-sm">
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-sm disabled:opacity-60 transition-colors shadow-md">
                     {calcMiles ? <Loader2 className="w-4 h-4 animate-spin" /> : "🚩"}
                     Get Mileage and Costs
                   </button>
@@ -729,7 +798,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                 <div className="p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-bold text-slate-600 shrink-0">PROFIT £</label>
-                    <div className={`flex-1 px-3 py-2 border rounded-lg text-sm font-bold text-center ${profit >= 0 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>
+                    <div className={`flex-1 px-3 py-2 border rounded-xl text-sm font-bold text-center ${profit >= 0 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>
                       {profit.toFixed(2)}
                     </div>
                   </div>
@@ -825,7 +894,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     </div>
                     {subconContacts.length > 0 && (
                       <div className="mt-1.5">
-                        <select value={f.secondManContactId} onChange={e => s("secondManContactId", e.target.value)} className={inp}>
+                        <select value={f.secondManContactId} onChange={e => handleSubconContactChange(e.target.value)} className={inp}>
                           <option value="">— Assign driver under SubCon —</option>
                           {subconContacts.map((c: any) => (
                             <option key={c.id} value={c.id}>{c.driverName}{c.vehicleRegistration ? ` · ${c.vehicleRegistration}` : ""}</option>
@@ -851,7 +920,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     </div>
                     {cxContacts.length > 0 && (
                       <div className="mt-1.5">
-                        <select value={f.cxDriverContactId} onChange={e => s("cxDriverContactId", e.target.value)} className={inp}>
+                        <select value={f.cxDriverContactId} onChange={e => handleCxContactChange(e.target.value)} className={inp}>
                           <option value="">— Assign driver under CX —</option>
                           {cxContacts.map((c: any) => (
                             <option key={c.id} value={c.id}>{c.driverName}{c.vehicleRegistration ? ` · ${c.vehicleRegistration}` : ""}</option>
@@ -915,9 +984,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
           </div>
 
           {/* ── Bottom save bar ── */}
-          <div className="flex items-center justify-between bg-white rounded-xl shadow-sm border border-slate-100 px-5 py-3">
+          <div className="flex items-center justify-between bg-white rounded-2xl shadow-md border border-slate-100 px-5 py-3">
             <button type="button" onClick={onBack}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 font-medium transition-colors">
+              className="px-4 py-2 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 font-medium transition-colors">
               ← Cancel
             </button>
             <div className="flex items-center gap-6 text-xs text-slate-500">
@@ -928,7 +997,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
               </span>
             </div>
             <button type="submit" disabled={saving}
-              className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-70 shadow transition-colors">
+              className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 disabled:opacity-70 shadow-md transition-all">
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {saving ? "Saving..." : "✓ Save Record"}
             </button>
