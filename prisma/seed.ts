@@ -1,10 +1,12 @@
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import Database from "better-sqlite3";
 import bcrypt from "bcryptjs";
 import path from "path";
 
 const dbPath = path.resolve(process.cwd(), "dev.db");
-const adapter = new PrismaLibSql({ url: `file:${dbPath}` });
+const db = new Database(dbPath);
+const adapter = new PrismaBetterSqlite3(db);
 const prisma = new PrismaClient({ adapter } as any);
 
 async function main() {
