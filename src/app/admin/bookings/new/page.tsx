@@ -201,6 +201,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [cxContacts, setCxContacts] = useState<any[]>([]);
   const [bookingTypes, setBookingTypes] = useState<any[]>([]);
   const [allStorageUnits, setAllStorageUnits] = useState<any[]>([]);
+  const [fuelSurcharges, setFuelSurcharges] = useState<any[]>([]);
   const [vehicleRates, setVehicleRates] = useState<any[]>([]);
   const [vehicleRatesMap, setVehicleRatesMap] = useState<Record<string, number>>({});
   const [routeInfo, setRouteInfo] = useState<{ miles: number; duration: string } | null>(null);
@@ -214,7 +215,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [f, setF] = useState<Record<string, any>>({
     vehicleId: "", miles: "", customerPrice: "", manualAmount: "", manualDesc: "",
     fuelSurchargePercent: "", extraCost2: "", extraCost2Label: "",
-    avoidTolls: false, waitAndReturn: false,
+    avoidTolls: false, waitAndReturn: false, deadMilesEnabled: false, deadMiles: "",
     purchaseOrder: customer.poNumber || "", bookedBy: "",
     numberOfItems: "", weight: "", bookingTypeId: "",
     jobNotes: "", officeNotes: "",
@@ -245,13 +246,15 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       fetch("/api/drivers?type=CXDriver").then(r => r.json()),
       fetch("/api/booking-types").then(r => r.json()),
       fetch("/api/storage").then(r => r.json()),
-    ]).then(([v, d, sc, cx, bt, su]) => {
+      fetch("/api/fuel-surcharges").then(r => r.json()),
+    ]).then(([v, d, sc, cx, bt, su, fs]) => {
       setVehicles(v);
       setDrivers(d.filter((dr: any) => dr[driverRateKey] > 0));
       setSubcons(sc.filter((dr: any) => dr[driverRateKey] > 0));
       setCxDrivers(cx.filter((dr: any) => dr[driverRateKey] > 0));
       setBookingTypes(bt);
       setAllStorageUnits(su);
+      setFuelSurcharges(fs);
     });
   }, [jt]);
 
@@ -500,6 +503,12 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
         bookingTypeId: f.bookingTypeId || null,
         chillUnitId: f.chillUnitId || null, ambientUnitId: f.ambientUnitId || null,
       };
+      // Remove form-only fields not in the Booking schema
+      delete payload.secondManContactId;
+      delete payload.cxDriverContactId;
+      payload.deadMileageStatus = f.deadMilesEnabled && f.deadMiles ? String(parseFloat(f.deadMiles) || 0) : null;
+      delete payload.deadMilesEnabled;
+      delete payload.deadMiles;
       const res = await fetch("/api/bookings", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -737,10 +746,10 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-medium text-slate-500 w-16 shrink-0">Fuel Surcharge</label>
                     <select value={f.fuelSurchargePercent} onChange={e => s("fuelSurchargePercent", e.target.value)} className={inp}>
-                      <option value="">None (Up to £1.70/litre)</option>
-                      <option value="6">6% (£1.70–£1.80/litre)</option>
-                      <option value="9">9% (£1.80–£1.90/litre)</option>
-                      <option value="12">12% (Over £1.90/litre)</option>
+                      <option value="">None</option>
+                      {fuelSurcharges.map((fs: any) => (
+                        <option key={fs.id} value={String(fs.percentage)}>{fs.percentage}% (diesel &gt; £{fs.price.toFixed(2)}/litre)</option>
+                      ))}
                     </select>
                   </div>
 
@@ -774,6 +783,23 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     <Toggle checked={f.avoidTolls} onChange={v => s("avoidTolls", v)} label="Avoid Tolls" />
                     <Toggle checked={f.waitAndReturn} onChange={v => s("waitAndReturn", v)} label="Wait & Return" />
+                    <Toggle
+                      checked={!!f.deadMilesEnabled}
+                      onChange={v => {
+                        s("deadMilesEnabled", v);
+                        if (v && !f.deadMiles) s("deadMiles", String(customer.deadMileage || 15));
+                        if (!v) s("deadMiles", "");
+                      }}
+                      label="Dead Miles"
+                    />
+                    {f.deadMilesEnabled && (
+                      <input
+                        type="number" min="0" value={f.deadMiles}
+                        onChange={e => s("deadMiles", e.target.value)}
+                        className="w-16 px-2 py-1 border border-slate-300 rounded-lg text-xs font-bold text-center text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        placeholder="15"
+                      />
+                    )}
                     <button type="button" onClick={handleGetMiles} disabled={calcMiles}
                       className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full text-xs font-semibold transition-colors disabled:opacity-60">
                       Apply New Mileage

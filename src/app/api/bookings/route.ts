@@ -44,36 +44,43 @@ export async function POST(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json();
-  const { chillUnitId, ambientUnitId, driverId, ...rest } = body;
+  try {
+    const body = await req.json();
+    // Destructure out form-only fields that are not in the Booking schema
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { chillUnitId, ambientUnitId, driverId, secondManContactId: _smc, cxDriverContactId: _cxc, ...rest } = body;
 
-  const booking = await prisma.booking.create({
-    data: {
-      ...rest,
-      driverId: driverId || null,
-      chillUnitId: chillUnitId || null,
-      ambientUnitId: ambientUnitId || null,
-      createdById: (session as any).id,
-    },
-  });
+    const booking = await prisma.booking.create({
+      data: {
+        ...rest,
+        driverId: driverId || null,
+        chillUnitId: chillUnitId || null,
+        ambientUnitId: ambientUnitId || null,
+        createdById: (session as any).id,
+      },
+    });
 
-  // Allocate storage units
-  for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
-    const unit = await prisma.storageUnit.findUnique({ where: { id: unitId } });
-    if (unit && unit.availability === "Yes" && driverId) {
-      await prisma.storageUnit.update({
-        where: { id: unitId },
-        data: { availability: "No", currentDriverId: driverId, jobId: booking.id, trackable: 1 },
-      });
-    } else if (unit) {
-      await prisma.storageUnit.update({ where: { id: unitId }, data: { trackable: 1 } });
+    // Allocate storage units
+    for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
+      const unit = await prisma.storageUnit.findUnique({ where: { id: unitId } });
+      if (unit && unit.availability === "Yes" && driverId) {
+        await prisma.storageUnit.update({
+          where: { id: unitId },
+          data: { availability: "No", currentDriverId: driverId, jobId: booking.id, trackable: 1 },
+        });
+      } else if (unit) {
+        await prisma.storageUnit.update({ where: { id: unitId }, data: { trackable: 1 } });
+      }
+      if (unitId) {
+        await prisma.storageUsage.create({
+          data: { unitId, jobId: booking.id, driverId: driverId || null },
+        });
+      }
     }
-    if (unitId) {
-      await prisma.storageUsage.create({
-        data: { unitId, jobId: booking.id, driverId: driverId || null },
-      });
-    }
+
+    return NextResponse.json(booking, { status: 201 });
+  } catch (e: any) {
+    console.error("Booking create error:", e);
+    return NextResponse.json({ error: e.message || "Failed to create booking" }, { status: 500 });
   }
-
-  return NextResponse.json(booking, { status: 201 });
 }

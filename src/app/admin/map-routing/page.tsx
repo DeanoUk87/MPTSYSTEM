@@ -11,6 +11,7 @@ export default function MapRoutingPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   function initMap() {
     if (!mapRef.current || googleMapRef.current) return;
@@ -38,9 +39,11 @@ export default function MapRoutingPage() {
   }
 
   async function addPostcodes() {
-    const lines = input.split(/[\n,\s]+/).map(p => p.trim().toUpperCase()).filter(p => p.length >= 5);
+    // Split only on newlines and commas — NOT spaces, so "SW1A 1AA" stays intact
+    const lines = input.split(/[\n,]+/).map(p => p.trim().toUpperCase()).filter(p => p.length >= 3);
     if (!lines.length) return;
     setLoading(true);
+    setStatusMsg(null);
     const added: string[] = [];
     for (const pc of lines) {
       if (postcodes.includes(pc)) continue;
@@ -62,6 +65,9 @@ export default function MapRoutingPage() {
       const bounds = new (window as any).google.maps.LatLngBounds();
       markersRef.current.forEach(m => bounds.extend(m.getPosition()));
       googleMapRef.current.fitBounds(bounds);
+      setStatusMsg(`Added ${added.length} postcode${added.length !== 1 ? "s" : ""}`);
+    } else if (lines.length > 0) {
+      setStatusMsg("No postcodes could be plotted — check the format (e.g. SW1A 1AA)");
     }
     setInput("");
     setLoading(false);
@@ -106,14 +112,19 @@ export default function MapRoutingPage() {
                 className="w-80 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addPostcodes(); } }}
               />
-              <button
-                onClick={addPostcodes}
-                disabled={loading || !input.trim() || !mapReady}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors self-end"
-              >
-                <MapPin className="w-4 h-4" />
-                {loading ? "Adding..." : "Add Postcodes"}
-              </button>
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={addPostcodes}
+                  disabled={loading || !input.trim() || !mapReady}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  <MapPin className="w-4 h-4" />
+                  {loading ? "Adding..." : "Add Postcodes"}
+                </button>
+                {statusMsg && (
+                  <p className={`text-xs px-1 ${statusMsg.startsWith("No") ? "text-rose-600" : "text-emerald-600"}`}>{statusMsg}</p>
+                )}
+              </div>
             </div>
             {postcodes.length > 0 && (
               <button

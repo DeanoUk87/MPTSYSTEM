@@ -1,5 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// postcodes.io fallback — returns city/district when Crafty Clicks has no results
+async function fallbackLookup(postcode: string): Promise<any[]> {
+  try {
+    const clean = postcode.replace(/\s+/g, "").toUpperCase();
+    const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(clean)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.result) return [];
+    const r = data.result;
+    return [{
+      line1: "",
+      line2: "",
+      line3: "",
+      city: r.admin_district || r.parliamentary_constituency || "",
+      county: r.admin_county || "",
+      postcode: r.postcode,
+      label: r.admin_district || r.postcode,
+    }];
+  } catch {
+    return [];
+  }
+}
+
 // Crafty Clicks postcode lookup — returns address fields for a given postcode
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -7,24 +30,32 @@ export async function GET(req: NextRequest) {
   if (!postcode) return NextResponse.json({ error: "postcode required" }, { status: 400 });
 
   const apiKey = process.env.CRAFTY_CLICKS_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "Postcode API not configured" }, { status: 500 });
+  if (!apiKey) {
+    const fallback = await fallbackLookup(postcode);
+    return NextResponse.json({ results: fallback });
+  }
 
   try {
     const url = `https://api.craftyclicks.co.uk/address/1.1/find?postcode=${encodeURIComponent(postcode)}&key=${apiKey}&response=data_formatted`;
     const res = await fetch(url);
-    if (!res.ok) return NextResponse.json({ error: "Lookup failed" }, { status: 502 });
+    if (!res.ok) {
+      const fallback = await fallbackLookup(postcode);
+      return NextResponse.json({ results: fallback });
+    }
 
     const data = await res.json();
 
     // Handle error response from Crafty Clicks
     if (data.error_code || data.error) {
-      return NextResponse.json({ results: [] });
+      const fallback = await fallbackLookup(postcode);
+      return NextResponse.json({ results: fallback });
     }
 
     // Support both `results` array and `addresses` array (different API versions)
     const raw: any[] = data.results ?? data.addresses ?? [];
     if (raw.length === 0) {
-      return NextResponse.json({ results: [] });
+      const fallback = await fallbackLookup(postcode);
+      return NextResponse.json({ results: fallback });
     }
 
     // Return normalised address list
@@ -39,7 +70,8 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({ results });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch {
+    const fallback = await fallbackLookup(postcode);
+    return NextResponse.json({ results: fallback });
   }
 }
