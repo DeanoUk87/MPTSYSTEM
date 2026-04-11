@@ -28,28 +28,33 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   if (!body.name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
-  const customer = await prisma.customer.create({
-    data: {
-      name: body.name,
-      accountNumber: body.accountNumber || null,
-      email: body.email || null,
-      phone: body.phone || null,
-      address: body.address || null,
-      address2: body.address2 || null,
-      address3: body.address3 || null,
-      city: body.city || null,
-      postcode: body.postcode || null,
-      notes: body.notes || null,
-      contact: body.contact || null,
-      poNumber: body.poNumber || null,
-      poEmail: body.poEmail || null,
-      deadMileage: parseInt(body.deadMileage) || 0,
-      jobRefStart: parseInt(body.jobRefStart) || 1,
-      // Legacy invoice fields
-      customerAccount: body.customerAccount || null,
-      termsOfPayment: body.termsOfPayment || null,
-      userId: (session as any).id,
-    },
-  });
-  return NextResponse.json(customer, { status: 201 });
+  try {
+    const customer = await prisma.customer.create({
+      data: {
+        name: body.name,
+        accountNumber: body.accountNumber || null,
+        email: body.email || null,
+        phone: body.phone || null,
+        address: body.address || null,
+        address2: body.address2 || null,
+        address3: body.address3 || null,
+        city: body.city || null,
+        postcode: body.postcode || null,
+        notes: body.notes || null,
+        contact: body.contact || null,
+        poNumber: body.poNumber || null,
+        poEmail: body.poEmail || null,
+        deadMileage: parseInt(body.deadMileage) || 0,
+        jobRefStart: parseInt(body.jobRefStart) || 1,
+        // Legacy invoice fields
+        customerAccount: body.customerAccount || null,
+        termsOfPayment: body.termsOfPayment || null,
+        userId: (session as any).id,
+      },
+    });
+    return NextResponse.json(customer, { status: 201 });
+  } catch (e: any) {
+    console.error("Customer create error:", e);
+    return NextResponse.json({ error: e.message || "Failed to create customer" }, { status: 500 });
+  }
 }
