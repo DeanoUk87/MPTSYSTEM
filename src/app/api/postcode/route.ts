@@ -63,10 +63,10 @@ export async function GET(req: NextRequest) {
       line1: r.line_1 ?? r.address_line_1 ?? "",
       line2: r.line_2 ?? r.address_line_2 ?? "",
       line3: r.line_3 ?? r.address_line_3 ?? "",
-      city: r.locality ?? r.town_or_city ?? r.post_town ?? "",
+      city: r.town ?? r.locality ?? r.town_or_city ?? r.post_town ?? "",
       county: r.county ?? "",
       postcode: postcode.toUpperCase(),
-      label: r.place_name ?? `${r.line_1 ?? r.address_line_1}, ${r.town_or_city ?? r.post_town ?? ""}`,
+      label: r.line_1 ? `${r.line_1}, ${r.town ?? r.locality ?? r.town_or_city ?? ""}` : (r.place_name ?? ""),
     }));
 
     return NextResponse.json({ results });

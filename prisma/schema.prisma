@@ -334,6 +334,7 @@ model Booking {
   waitAndReturn             Boolean   @default(false)
   // Job Reference
   jobRef                    String?
+  deletedAt                 DateTime?
   // Meta
   createdById               String?
   updatedById               String?

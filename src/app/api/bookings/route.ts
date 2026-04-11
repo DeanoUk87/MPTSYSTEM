@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const date = searchParams.get("date");
 
-  const where: any = {};
+  const where: any = { deletedAt: null };
   if (customerId) where.customerId = customerId;
   if (driverId) where.driverId = driverId;
   if (status !== null && status !== "") where.jobStatus = parseInt(status);

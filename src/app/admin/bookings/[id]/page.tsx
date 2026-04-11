@@ -270,9 +270,19 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         {(booking.chillUnit || booking.ambientUnit) && (
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <h3 className="font-semibold text-slate-800 mb-3">Temperature Units</h3>
-            <div className="flex gap-4 text-sm">
-              {booking.chillUnit && <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg">Chill: {booking.chillUnit.unitNumber}</span>}
-              {booking.ambientUnit && <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-lg">Ambient: {booking.ambientUnit.unitNumber}</span>}
+            <div className="flex gap-4 text-sm flex-wrap">
+              {booking.chillUnit && (
+                <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg">
+                  🧊 Chill: {booking.chillUnit.unitNumber}
+                  {booking.chillUnit.unitType && booking.chillUnit.unitType.toLowerCase() !== "chill" ? ` (type: ${booking.chillUnit.unitType})` : ""}
+                </span>
+              )}
+              {booking.ambientUnit && booking.ambientUnit.id !== booking.chillUnit?.id && (
+                <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-lg">
+                  🌡 Ambient: {booking.ambientUnit.unitNumber}
+                  {booking.ambientUnit.unitType && booking.ambientUnit.unitType.toLowerCase() !== "ambient" ? ` (type: ${booking.ambientUnit.unitType})` : ""}
+                </span>
+              )}
             </div>
           </div>
         )}

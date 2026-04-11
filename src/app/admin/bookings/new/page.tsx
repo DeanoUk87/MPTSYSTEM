@@ -221,6 +221,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [transferDriverSearch, setTransferDriverSearch] = useState("");
   const [transferDriverId, setTransferDriverId] = useState("");
   const [vias, setVias] = useState<any[]>([]);
+  const [deliveryOrders, setDeliveryOrders] = useState<{ref: string, type: string}[]>([]);
 
   const rateKey = jt === 0 ? "ratePerMile" : jt === 1 ? "ratePerMileWeekends" : "ratePerMileOutOfHours";
   const driverRateKey = jt === 0 ? "costPerMile" : jt === 1 ? "costPerMileWeekends" : "costPerMileOutOfHours";
@@ -237,6 +238,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     secondManId: "", secondManContactId: "", extraCost: "",
     cxDriverId: "", cxDriverContactId: "", cxDriverCost: "",
     chillUnitId: "", ambientUnitId: "",
+    hideTrackingTemperature: false, hideTrackingMap: false,
     // Collection
     collectionDate: today, collectionTime: "00:00",
     collectionName: "", collectionAddress1: "", collectionAddress2: "",
@@ -465,10 +467,13 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   }, []);
 
   // VIA / Collected Orders helpers
-  const viaEmpty = () => ({ viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "" });
+  const viaEmpty = () => ({ viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [] as {ref: string, type: string}[] });
   function addVia(type = "Via") { setVias(prev => [...prev.slice(0, 5), { ...viaEmpty(), viaType: type }]); }
   function updateVia(i: number, k: string, v: any) { setVias(prev => prev.map((x, idx) => idx === i ? { ...x, [k]: v } : x)); }
   function removeVia(i: number) { setVias(prev => prev.filter((_, idx) => idx !== i)); }
+  function addViaOrder(i: number) { updateVia(i, "collectedOrders", [...(vias[i].collectedOrders || []), {ref: "", type: "Chill"}]); }
+  function updateViaOrder(i: number, oi: number, k: string, v: string) { const orders = [...(vias[i].collectedOrders || [])]; orders[oi] = {...orders[oi], [k]: v}; updateVia(i, "collectedOrders", orders); }
+  function removeViaOrder(i: number, oi: number) { updateVia(i, "collectedOrders", (vias[i].collectedOrders || []).filter((_: any, idx: number) => idx !== oi)); }
 
   // Central price recalculation — takes final miles and current form state
   function recalcPrices(baseMiles: number, formState: Record<string, any>, newVehicleRates?: any[]) {
@@ -567,7 +572,18 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       delete payload.deadMiles;
       const res = await fetch("/api/bookings", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, viaAddresses: vias.filter((v: any) => v.name || v.postcode) }),
+        body: JSON.stringify({
+          ...payload,
+          deliveryNotes: (() => {
+            const dOrders = deliveryOrders.filter(o => o.ref || o.type);
+            return dOrders.length > 0 ? `${f.deliveryNotes || ""}---ORDERS---${JSON.stringify(dOrders)}` : f.deliveryNotes;
+          })(),
+          viaAddresses: vias.filter((v: any) => v.name || v.postcode).map((via: any) => {
+            const { collectedOrders, ...rest } = via;
+            const orders = (collectedOrders || []).filter((o: any) => o.ref || o.type);
+            return { ...rest, notes: orders.length > 0 ? `${rest.notes || ""}---ORDERS---${JSON.stringify(orders)}` : (rest.notes || "") };
+          }),
+        }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Save failed");
       toast.success("Booking created");
@@ -921,6 +937,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full text-xs font-semibold transition-colors disabled:opacity-60">
                       Apply New Mileage
                     </button>
+                    <span className="text-slate-300 text-xs">|</span>
+                    <Toggle checked={!!f.hideTrackingTemperature} onChange={v => s("hideTrackingTemperature", v)} label="Hide Temp" />
+                    <Toggle checked={!!f.hideTrackingMap} onChange={v => s("hideTrackingMap", v)} label="Hide Map" />
                   </div>
                 </div>
               </div>
@@ -989,6 +1008,31 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     <input type="text" value={f.deliveryPhone} onChange={e => s("deliveryPhone", e.target.value)} placeholder="Tel Number" className={inp} />
                   </div>
                   <textarea value={f.deliveryNotes} onChange={e => s("deliveryNotes", e.target.value)} placeholder="Notes" rows={2} className={inp + " resize-none"} />
+                  {/* Delivery Collected Orders */}
+                  <div className="border-t border-slate-200 pt-2 space-y-1.5 mt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
+                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: "Chill"}])}
+                        className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
+                        <Plus className="w-3 h-3" /> Add
+                      </button>
+                    </div>
+                    {deliveryOrders.map((order, oi) => (
+                      <div key={oi} className="flex items-center gap-1.5">
+                        <input type="text" value={order.ref} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, ref: e.target.value} : o))}
+                          placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
+                        <select value={order.type} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, type: e.target.value} : o))}
+                          className="px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
+                          <option value="Chill">Chill</option>
+                          <option value="Amb">Amb</option>
+                          <option value="Pump">Pump</option>
+                          <option value="Stores">Stores</option>
+                        </select>
+                        <button type="button" onClick={() => setDeliveryOrders(prev => prev.filter((_, i) => i !== oi))}
+                          className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -1087,7 +1131,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType === "chill").map((u: any) => (
+                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "chill").map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
                           </option>
@@ -1103,7 +1147,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType === "ambient" || u.unitType === "Ambient").map((u: any) => (
+                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "ambient").map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
                           </option>
@@ -1116,18 +1160,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
             </div>
           </div>
 
-          {/* ── VIA / Collected Orders ── */}
+          {/* ── VIA ── */}
           <div className={panel}>
-            <SHead color="bg-indigo-600" icon="📍" label="Via / Collected Orders" />
+            <SHead color="bg-indigo-600" icon="📍" label="Via Stops" />
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
                 <button type="button" onClick={() => addVia("Via")} disabled={vias.length >= 6}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                   <Plus className="w-3 h-3" /> Add Via Stop
-                </button>
-                <button type="button" onClick={() => addVia("Collection")} disabled={vias.length >= 6}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-xl text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors">
-                  <Plus className="w-3 h-3" /> Add Collected Order
                 </button>
                 {vias.length > 0 && <span className="text-xs text-slate-400">{vias.length}/6 stops</span>}
               </div>
@@ -1135,13 +1175,20 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                   {vias.map((via: any, i: number) => (
                     <div key={i} className="relative bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${via.viaType === "Collection" ? "bg-orange-100 text-orange-700" : via.viaType === "Delivery" ? "bg-teal-100 text-teal-700" : "bg-indigo-100 text-indigo-700"}`}>
-                            {via.viaType === "Collection" ? "📦 Collected Order" : via.viaType === "Delivery" ? "🏭 Drop" : `📍 Via ${i + 1}`}
-                          </span>
-                        </div>
-                        <button type="button" onClick={() => removeVia(i)} className="text-slate-400 hover:text-rose-600 text-lg font-bold leading-none">×</button>
+                      {/* Header: type + date + time + remove */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <select value={via.viaType} onChange={e => updateVia(i, "viaType", e.target.value)}
+                          className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
+                          <option value="Via">📍 Via Stop</option>
+                          <option value="Collection">📦 Collection</option>
+                          <option value="Delivery">🏭 Delivery</option>
+                        </select>
+                        <input type="date" value={via.viaDate || ""} onChange={e => updateVia(i, "viaDate", e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                        <input type="time" value={via.viaTime || ""} onChange={e => updateVia(i, "viaTime", e.target.value)}
+                          className="w-24 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                        <button type="button" onClick={() => removeVia(i)}
+                          className="ml-auto text-slate-400 hover:text-rose-600 text-lg font-bold leading-none">&times;</button>
                       </div>
                       <PostcodeSearch postcode={via.postcode} country="UK"
                         onChangePostcode={v => updateVia(i, "postcode", v.toUpperCase())}
@@ -1154,11 +1201,35 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         <input type="text" value={via.area || ""} onChange={e => updateVia(i, "area", e.target.value)} placeholder="Town / Area" className={inp} />
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        <input type="date" value={via.viaDate || ""} onChange={e => updateVia(i, "viaDate", e.target.value)} className={inp} />
-                        <input type="time" value={via.viaTime || ""} onChange={e => updateVia(i, "viaTime", e.target.value)} className={inp} />
+                        <input type="text" value={via.contact || ""} onChange={e => updateVia(i, "contact", e.target.value)} placeholder="Contact" className={inp} />
+                        <input type="text" value={via.phone || ""} onChange={e => updateVia(i, "phone", e.target.value)} placeholder="Phone" className={inp} />
                       </div>
-                      <input type="text" value={via.contact || ""} onChange={e => updateVia(i, "contact", e.target.value)} placeholder="Contact name" className={inp} />
                       <textarea value={via.notes || ""} onChange={e => updateVia(i, "notes", e.target.value)} placeholder="Notes" rows={1} className={inp + " resize-none"} />
+                      {/* Collected Orders */}
+                      <div className="border-t border-slate-200 pt-2 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
+                          <button type="button" onClick={() => addViaOrder(i)}
+                            className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
+                            <Plus className="w-3 h-3" /> Add
+                          </button>
+                        </div>
+                        {(via.collectedOrders || []).map((order: any, oi: number) => (
+                          <div key={oi} className="flex items-center gap-1.5">
+                            <input type="text" value={order.ref || ""} onChange={e => updateViaOrder(i, oi, "ref", e.target.value)}
+                              placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
+                            <select value={order.type || "Chill"} onChange={e => updateViaOrder(i, oi, "type", e.target.value)}
+                              className="px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
+                              <option value="Chill">Chill</option>
+                              <option value="Amb">Amb</option>
+                              <option value="Pump">Pump</option>
+                              <option value="Stores">Stores</option>
+                            </select>
+                            <button type="button" onClick={() => removeViaOrder(i, oi)}
+                              className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>

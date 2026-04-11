@@ -3,10 +3,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Users, Package, FileText, Settings,
+  LayoutDashboard, Users, Package, Settings,
   UserCog, Shield, Mail, Archive, LogOut, Building2,
   Truck, Car, Thermometer, ClipboardList, ReceiptText,
-  MapPin, Fuel, BookMarked, Map
+  Fuel, BookMarked, Map, ChevronLeft, ChevronRight
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -44,7 +44,12 @@ const navGroups = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean;
+  onToggle: (v: boolean) => void;
+}
+
+export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -57,43 +62,62 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white flex flex-col z-40">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-700">
-        <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+    <aside className={clsx(
+      "fixed top-0 left-0 h-screen bg-slate-900 text-white flex flex-col z-40 transition-[width] duration-200 overflow-hidden",
+      collapsed ? "w-16" : "w-64"
+    )}>
+      {/* Logo + Toggle */}
+      <div className={clsx(
+        "flex items-center border-b border-slate-700/60 shrink-0",
+        collapsed ? "px-3 py-4 justify-between" : "px-4 py-4 gap-3"
+      )}>
+        <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
           <Building2 className="w-5 h-5 text-white" />
         </div>
-        <div>
-          <p className="font-bold text-sm leading-tight">MP Booking</p>
-          <p className="text-xs text-slate-400">Transport System</p>
-        </div>
+        {!collapsed && (
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm leading-tight truncate">MP Booking</p>
+            <p className="text-xs text-slate-400">Transport System</p>
+          </div>
+        )}
+        <button
+          onClick={() => onToggle(!collapsed)}
+          className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-1">
-              {group.label}
-            </p>
+      <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden px-2 space-y-0.5">
+        {navGroups.map((group, gi) => (
+          <div key={group.label} className={gi > 0 ? "pt-2" : ""}>
+            {collapsed
+              ? <div className="border-t border-slate-700/40 mx-1 my-2" />
+              : <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-1 mt-1">{group.label}</p>
+            }
             {group.items.map((item) => {
               const Icon = item.icon;
-              // Only compute active state after mount to avoid SSR/client mismatch
               const active = mounted && (pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href)));
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={clsx(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    "relative flex items-center rounded-lg text-sm font-medium transition-colors group mb-0.5",
+                    collapsed ? "justify-center p-3" : "gap-3 px-3 py-2",
+                    active ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   )}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span className="flex-1">{item.label}</span>
-                  {active && <span className="w-1.5 h-1.5 rounded-full bg-white/60 shrink-0" />}
+                  {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                  {!collapsed && active && <span className="w-1.5 h-1.5 rounded-full bg-white/60 shrink-0" />}
+                  {collapsed && (
+                    <span className="pointer-events-none absolute left-full ml-3 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1.5 text-xs text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                      {item.label}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -102,15 +126,26 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-slate-700">
+      <div className="px-2 py-3 border-t border-slate-700/60 shrink-0">
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition-colors"
+          className={clsx(
+            "relative flex items-center rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition-colors group",
+            collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
+          )}
         >
-          <LogOut className="w-4 h-4" />
-          Sign Out
+          <LogOut className="w-4 h-4 shrink-0" />
+          {!collapsed && "Sign Out"}
+          {collapsed && (
+            <span className="pointer-events-none absolute left-full ml-3 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1.5 text-xs text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">
+              Sign Out
+            </span>
+          )}
         </button>
       </div>
     </aside>
   );
 }
+
+
+

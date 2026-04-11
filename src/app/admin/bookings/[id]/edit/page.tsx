@@ -137,6 +137,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
 
   // VIA state loaded from booking
   const [vias, setVias] = useState<any[]>([]);
+  const [deliveryOrders, setDeliveryOrders] = useState<{ref: string, type: string}[]>([]);
 
   // Load booking + reference data
   useEffect(() => {
@@ -160,7 +161,22 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       setBookingTypes(bt);
       setAllStorageUnits(su);
       setFuelSurcharges(fs);
-      setVias(booking.viaAddresses?.filter((v: any) => !v.deletedAt) ?? []);
+      // Decode via's collected orders from notes
+      setVias((booking.viaAddresses?.filter((v: any) => !v.deletedAt) ?? []).map((v: any) => {
+        if (v.notes?.includes("---ORDERS---")) {
+          const [text, ordJson] = v.notes.split("---ORDERS---");
+          return { ...v, notes: text, collectedOrders: JSON.parse(ordJson || "[]") || [] };
+        }
+        return { ...v, collectedOrders: v.collectedOrders ?? [] };
+      }));
+      // Decode delivery orders from deliveryNotes
+      const rawDeliveryNotes: string = booking.deliveryNotes || "";
+      let parsedDeliveryNotes = rawDeliveryNotes;
+      if (rawDeliveryNotes.includes("---ORDERS---")) {
+        const [text, ordJson] = rawDeliveryNotes.split("---ORDERS---");
+        parsedDeliveryNotes = text;
+        setDeliveryOrders(JSON.parse(ordJson || "[]") || []);
+      }
       // Flatten booking into form state
       setF({
         vehicleId: booking.vehicleId || "",
@@ -213,7 +229,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         deliveryPostcode: booking.deliveryPostcode || "",
         deliveryContact: booking.deliveryContact || "",
         deliveryPhone: booking.deliveryPhone || "",
-        deliveryNotes: booking.deliveryNotes || "",
+        deliveryNotes: parsedDeliveryNotes,
         // POD
         podSignature: booking.podSignature || "",
         podDate: booking.podDate || today,
@@ -383,9 +399,18 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       payload.deadMileageStatus = f.deadMilesEnabled && f.deadMiles ? String(parseFloat(f.deadMiles) || 0) : null;
       delete payload.deadMilesEnabled;
       delete payload.deadMiles;
+      // Encode collected orders into via notes
+      const encodedVias = vias.filter((v: any) => v.name || v.postcode).map((v: any) => {
+        const orders = v.collectedOrders ?? [];
+        const baseNotes = v.notes || "";
+        return { ...v, notes: orders.length > 0 ? `${baseNotes}---ORDERS---${JSON.stringify(orders)}` : baseNotes };
+      });
+      // Encode delivery orders into deliveryNotes
+      const baseDeliveryNotes = payload.deliveryNotes || "";
+      if (deliveryOrders.length > 0) payload.deliveryNotes = `${baseDeliveryNotes}---ORDERS---${JSON.stringify(deliveryOrders)}`;
       const res = await fetch(`/api/bookings/${id}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, viaAddresses: vias.filter((v: any) => v.name || v.postcode) }),
+        body: JSON.stringify({ ...payload, viaAddresses: encodedVias }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Save failed");
       toast.success("Booking updated");
@@ -629,6 +654,9 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full text-xs font-semibold transition-colors disabled:opacity-60">
                       Apply New Mileage
                     </button>
+                    <span className="text-slate-300 text-xs">|</span>
+                    <Toggle checked={!!f.hideTrackingTemperature} onChange={v => s("hideTrackingTemperature", v)} label="Hide Temp" />
+                    <Toggle checked={!!f.hideTrackingMap} onChange={v => s("hideTrackingMap", v)} label="Hide Map" />
                   </div>
                 </div>
               </div>
@@ -681,6 +709,31 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                     <input type="text" value={f.deliveryPhone || ""} onChange={e => s("deliveryPhone", e.target.value)} placeholder="Tel Number" className={inp} />
                   </div>
                   <textarea value={f.deliveryNotes || ""} onChange={e => s("deliveryNotes", e.target.value)} placeholder="Notes" rows={2} className={inp + " resize-none"} />
+                  {/* Delivery Collected Orders */}
+                  <div className="border-t border-slate-200 pt-2 space-y-1.5 mt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
+                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: "Chill"}])}
+                        className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
+                        <Plus className="w-3 h-3" /> Add
+                      </button>
+                    </div>
+                    {deliveryOrders.map((order, oi) => (
+                      <div key={oi} className="flex items-center gap-1.5">
+                        <input type="text" value={order.ref} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, ref: e.target.value} : o))}
+                          placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
+                        <select value={order.type} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, type: e.target.value} : o))}
+                          className="px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
+                          <option value="Chill">Chill</option>
+                          <option value="Amb">Amb</option>
+                          <option value="Pump">Pump</option>
+                          <option value="Stores">Stores</option>
+                        </select>
+                        <button type="button" onClick={() => setDeliveryOrders(prev => prev.filter((_, i) => i !== oi))}
+                          className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -766,7 +819,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <select value={f.chillUnitId || ""} onChange={e => s("chillUnitId", e.target.value)}
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType === "chill").map((u: any) => (
+                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "chill" || u.id === f.chillUnitId).map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
                           </option>
@@ -778,7 +831,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <select value={f.ambientUnitId || ""} onChange={e => s("ambientUnitId", e.target.value)}
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType === "ambient" || u.unitType === "Ambient").map((u: any) => (
+                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "ambient" || u.id === f.ambientUnitId).map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
                           </option>
@@ -823,26 +876,20 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div className="flex items-center gap-3 pt-1">
                     <Toggle checked={!!f.podDataVerify} onChange={v => s("podDataVerify", v)} label="POD Verified" />
-                    <Toggle checked={!!f.hideTrackingTemperature} onChange={v => s("hideTrackingTemperature", v)} label="Hide Temp Tracking" />
-                    <Toggle checked={!!f.hideTrackingMap} onChange={v => s("hideTrackingMap", v)} label="Hide Map" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* VIA / Collected Orders */}
+          {/* VIA */}
           <div className={panel}>
-            <SHead color="bg-indigo-600" icon="📍" label="Via / Collected Orders" />
+            <SHead color="bg-indigo-600" icon="📍" label="Via Stops" />
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: "", viaTime: "" }])} disabled={vias.length >= 6}
+                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: "", viaTime: "", collectedOrders: [] }])} disabled={vias.length >= 6}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors">
-                  + Add Via Stop
-                </button>
-                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Collection", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: "", viaTime: "" }])} disabled={vias.length >= 6}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-xl text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors">
-                  + Add Collected Order
+                  <Plus className="w-3 h-3" /> Add Via Stop
                 </button>
                 {vias.length > 0 && <span className="text-xs text-slate-400">{vias.length}/6 stops</span>}
               </div>
@@ -850,11 +897,20 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                   {vias.map((via: any, i: number) => (
                     <div key={i} className="relative bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${via.viaType === "Collection" ? "bg-orange-100 text-orange-700" : via.viaType === "Delivery" ? "bg-teal-100 text-teal-700" : "bg-indigo-100 text-indigo-700"}`}>
-                          {via.viaType === "Collection" ? "📦 Collected Order" : via.viaType === "Delivery" ? "🏭 Drop" : `📍 Via ${i + 1}`}
-                        </span>
-                        <button type="button" onClick={() => setVias(prev => prev.filter((_, idx) => idx !== i))} className="text-slate-400 hover:text-rose-600 text-lg font-bold">×</button>
+                      {/* Header: type + date + time + remove */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <select value={via.viaType} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaType: e.target.value } : x))}
+                          className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
+                          <option value="Via">📍 Via Stop</option>
+                          <option value="Collection">📦 Collection</option>
+                          <option value="Delivery">🏭 Delivery</option>
+                        </select>
+                        <input type="date" value={via.viaDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaDate: e.target.value } : x))}
+                          className="flex-1 min-w-0 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                        <input type="time" value={via.viaTime || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaTime: e.target.value } : x))}
+                          className="w-24 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                        <button type="button" onClick={() => setVias(prev => prev.filter((_, idx) => idx !== i))}
+                          className="ml-auto text-slate-400 hover:text-rose-600 text-lg font-bold leading-none">&times;</button>
                       </div>
                       <PostcodeSearch postcode={via.postcode || ""} country="UK"
                         onChangePostcode={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, postcode: v.toUpperCase() } : x))}
@@ -867,14 +923,38 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         <input type="text" value={via.area || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, area: e.target.value } : x))} placeholder="Town / Area" className={inp} />
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        <input type="date" value={via.viaDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaDate: e.target.value } : x))} className={inp} />
-                        <input type="time" value={via.viaTime || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaTime: e.target.value } : x))} className={inp} />
+                        <input type="text" value={via.contact || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, contact: e.target.value } : x))} placeholder="Contact" className={inp} />
+                        <input type="text" value={via.phone || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, phone: e.target.value } : x))} placeholder="Phone" className={inp} />
                       </div>
-                      <input type="text" value={via.contact || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, contact: e.target.value } : x))} placeholder="Contact name" className={inp} />
                       {via.signedBy && (
                         <div className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">✓ POD: {via.signedBy}{via.podDate ? ` · ${via.podDate}` : ""}</div>
                       )}
                       <textarea value={via.notes || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, notes: e.target.value } : x))} placeholder="Notes" rows={1} className={inp + " resize-none"} />
+                      {/* Collected Orders */}
+                      <div className="border-t border-slate-200 pt-2 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
+                          <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: [...(x.collectedOrders || []), { ref: "", type: "Chill" }] } : x))}
+                            className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
+                            <Plus className="w-3 h-3" /> Add
+                          </button>
+                        </div>
+                        {(via.collectedOrders || []).map((order: any, oi: number) => (
+                          <div key={oi} className="flex items-center gap-1.5">
+                            <input type="text" value={order.ref || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.map((o: any, oIdx: number) => oIdx === oi ? { ...o, ref: e.target.value } : o) } : x))}
+                              placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
+                            <select value={order.type || "Chill"} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.map((o: any, oIdx: number) => oIdx === oi ? { ...o, type: e.target.value } : o) } : x))}
+                              className="px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
+                              <option value="Chill">Chill</option>
+                              <option value="Amb">Amb</option>
+                              <option value="Pump">Pump</option>
+                              <option value="Stores">Stores</option>
+                            </select>
+                            <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.filter((_: any, oIdx: number) => oIdx !== oi) } : x))}
+                              className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>

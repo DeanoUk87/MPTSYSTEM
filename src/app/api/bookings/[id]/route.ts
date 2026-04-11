@@ -58,6 +58,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
   }
 
+  // Update storage unit records when assigned
+  for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
+    await prisma.storageUnit.update({
+      where: { id: unitId as string },
+      data: { trackable: 1, availability: "No", currentDriverId: driverId || null },
+    }).catch(() => {/* non-critical */});
+  }
+
   return NextResponse.json(booking);
 }
 
@@ -65,6 +73,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  await prisma.booking.delete({ where: { id } });
+  await prisma.booking.update({ where: { id }, data: { deletedAt: new Date() } });
   return NextResponse.json({ success: true });
 }

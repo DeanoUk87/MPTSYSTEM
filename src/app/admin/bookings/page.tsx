@@ -76,10 +76,7 @@ export default function BookingsPage() {
     { key: "collectionDate", label: "Date", render: (r) => r.collectionDate || "—" },
     { key: "collectionTime", label: "Time", render: (r) => r.collectionTime || "—" },
     { key: "customer", label: "Customer", render: (r) => (
-      <div>
-        <p className="font-medium whitespace-nowrap">{r.customer?.name || "—"}</p>
-        <p className="text-xs text-slate-400">{r.customer?.accountNumber}</p>
-      </div>
+      <p className="font-medium whitespace-nowrap">{r.customer?.name || "—"}</p>
     )},
     { key: "collectionPostcode", label: "From", render: (r) => r.collectionPostcode || "—" },
     { key: "via1", label: "Via 1", render: (r) => r.viaAddresses?.[0]?.postcode || "—" },
