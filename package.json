@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.7.0",\n    "@prisma/client": "^7.7.0",
+    "@prisma/adapter-better-sqlite3": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "@react-pdf/renderer": "^4.3.3",
     "@types/bcryptjs": "^3.0.0",
     "@types/nodemailer": "^6.4.0",
@@ -29,7 +30,6 @@
     "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.0",
     "typescript": "^5.9.3",
     "@types/node": "^24.10.2",
     "@types/react": "^19.2.7",
