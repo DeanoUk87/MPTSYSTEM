@@ -128,6 +128,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
   const jtLabel = ["Normal", "Weekend / BH", "Out of Hours"][jt] || "Normal";
 
   const s = (k: string, v: any) => setF(p => ({ ...p, [k]: v }));
+  const today = new Date().toISOString().slice(0, 10);
 
   // If Google Maps was already loaded (e.g. navigated back), init immediately
   useEffect(() => {
