@@ -2,7 +2,7 @@
 import { useState, useEffect, use } from "react";
 import Topbar from "@/components/Topbar";
 import Modal from "@/components/Modal";
-import { ArrowLeft, Plus, Trash2, Pencil, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Pencil, Loader2, KeyRound, CheckCircle2, Copy } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -21,13 +21,18 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [custForm, setCustForm] = useState<any>({});
+  const [accessModal, setAccessModal] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<{ hasAccess: boolean; user: any | null } | null>(null);
+  const [generatedCreds, setGeneratedCreds] = useState<{ username: string; password: string } | null>(null);
+  const [accessLoading, setAccessLoading] = useState(false);
 
   async function loadAll() {
     setLoading(true);
-    const [cRes, vRes, rRes] = await Promise.all([
+    const [cRes, vRes, rRes, aRes] = await Promise.all([
       fetch(`/api/customers/${id}`),
       fetch("/api/vehicles"),
       fetch(`/api/vehicle-rates?customerId=${id}`),
+      fetch(`/api/customers/${id}/access`),
     ]);
     if (cRes.ok) {
       const c = await cRes.json();
@@ -42,6 +47,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     }
     if (vRes.ok) setVehicles(await vRes.json());
     if (rRes.ok) setRates(await rRes.json());
+    if (aRes.ok) setAccessStatus(await aRes.json());
     setLoading(false);
   }
 
@@ -104,6 +110,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     } catch (e: any) { toast.error(e.message); } finally { setSaving(false); }
   }
 
+  async function handleGrantAccess() {
+    setAccessLoading(true);
+    try {
+      const res = await fetch(`/api/customers/${id}/access`, { method: "POST" });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      const data = await res.json();
+      setGeneratedCreds(data);
+      loadAll();
+    } catch (e: any) { toast.error(e.message); } finally { setAccessLoading(false); }
+  }
+
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
       <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -124,10 +141,21 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           <Link href="/admin/customers" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
             <ArrowLeft className="w-4 h-4" /> Back to customers
           </Link>
-          <button onClick={() => setEditModal(true)}
-            className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
-            <Pencil className="w-3 h-3" /> Edit Customer
-          </button>
+          <div className="flex items-center gap-2">
+            {accessStatus?.hasAccess && (
+              <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                <CheckCircle2 className="w-3 h-3" /> Portal Access Active
+              </span>
+            )}
+            <button onClick={() => { setGeneratedCreds(null); setAccessModal(true); }}
+              className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+              <KeyRound className="w-3 h-3" /> {accessStatus?.hasAccess ? "Reset Portal Access" : "Allow Login Access"}
+            </button>
+            <button onClick={() => setEditModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+              <Pencil className="w-3 h-3" /> Edit Customer
+            </button>
+          </div>
         </div>
 
         {/* Customer Info */}
@@ -289,6 +317,59 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             {saving ? "Saving..." : "Update"}
           </button>
         </div>
+      </Modal>
+
+      {/* Portal Access Modal */}
+      <Modal open={accessModal} onClose={() => setAccessModal(false)} title="Customer Portal Access">
+        {!generatedCreds ? (
+          <div className="space-y-4">
+            {accessStatus?.hasAccess ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+                <p className="font-medium mb-1">This customer already has portal access.</p>
+                <p>Clicking below will reset their password and generate new credentials.</p>
+                <p className="text-xs mt-1 text-amber-600">Existing username: <strong>{accessStatus.user?.username}</strong></p>
+              </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                <p className="font-medium mb-1">Grant <strong>{customer?.name}</strong> access to the customer portal.</p>
+                <p>This will create a login with a generated username and password. The customer can log in at <strong>/login</strong> and view their bookings.</p>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button onClick={() => setAccessModal(false)}
+                className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+              <button onClick={handleGrantAccess} disabled={accessLoading}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60">
+                {accessLoading ? "Generating..." : accessStatus?.hasAccess ? "Reset Password" : "Generate Access"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-emerald-800 mb-3">Access credentials generated — share these with the customer:</p>
+              <div className="space-y-3">
+                {[["Username", generatedCreds.username], ["Password", generatedCreds.password]].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between bg-white border border-emerald-200 rounded-lg px-3 py-2">
+                    <div>
+                      <p className="text-xs text-slate-400">{label}</p>
+                      <p className="font-mono font-semibold text-slate-800">{value}</p>
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText(value); toast.success(`${label} copied`); }}
+                      className="p-1.5 hover:bg-emerald-50 rounded text-slate-500 hover:text-slate-700">
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-emerald-700 mt-3">Login URL: <strong>{typeof window !== "undefined" ? window.location.origin : ""}/login</strong></p>
+            </div>
+            <button onClick={() => { setAccessModal(false); setGeneratedCreds(null); }}
+              className="w-full px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700">
+              Done
+            </button>
+          </div>
+        )}
       </Modal>
     </div>
   );

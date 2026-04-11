@@ -10,16 +10,21 @@ export async function GET(req: NextRequest) {
   if (!user.customerId) return NextResponse.json({ error: "Not a customer account" }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
-  const date = searchParams.get("date") || new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0];
+  const dateFrom = searchParams.get("dateFrom") || today;
+  const dateTo = searchParams.get("dateTo") || today;
 
   const bookings = await prisma.booking.findMany({
-    where: { customerId: user.customerId, collectionDate: date },
+    where: {
+      customerId: user.customerId,
+      collectionDate: { gte: dateFrom, lte: dateTo },
+    },
     include: {
       vehicle: { select: { name: true } },
       driver: { select: { name: true } },
       viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
     },
-    orderBy: { collectionTime: "asc" },
+    orderBy: [{ collectionDate: "asc" }, { collectionTime: "asc" }],
   });
   return NextResponse.json(bookings);
 }

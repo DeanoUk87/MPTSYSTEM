@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Users, Package, FileText, Settings,
   UserCog, Shield, Mail, Archive, LogOut, Building2,
-  Truck, Car, Thermometer, ClipboardList, ReceiptText
+  Truck, Car, Thermometer, ClipboardList, ReceiptText,
+  MapPin, Fuel, BookMarked, Map
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -19,6 +20,9 @@ const navGroups = [
       { label: "Vehicles", href: "/admin/vehicles", icon: Car },
       { label: "Storage Units", href: "/admin/storage", icon: Thermometer },
       { label: "Customers", href: "/admin/customers", icon: Users },
+      { label: "Addresses", href: "/admin/addresses", icon: BookMarked },
+      { label: "Fuel Surcharges", href: "/admin/fuel-surcharges", icon: Fuel },
+      { label: "Map Routing", href: "/admin/map-routing", icon: Map },
     ],
   },
   {

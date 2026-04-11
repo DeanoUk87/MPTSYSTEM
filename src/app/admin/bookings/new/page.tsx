@@ -106,18 +106,8 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
           </div>
         )}
       </div>
-      {/* Country field — visible, prefilled with UK */}
-      <div className="flex items-center gap-2">
-        <label className="text-xs font-medium text-slate-400 shrink-0">Country</label>
-        <input
-          type="text"
-          value={country}
-          onChange={e => onChangeCountry(e.target.value.toUpperCase())}
-          placeholder="UK"
-          className={inp + " uppercase font-mono"}
-          maxLength={3}
-        />
-      </div>
+      {/* Country field — hidden, preserved in state */}
+      <input type="hidden" value={country} onChange={e => onChangeCountry(e.target.value)} />
     </div>
   );
 }

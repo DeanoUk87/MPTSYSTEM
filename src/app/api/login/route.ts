@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       name: user.name,
       email: user.email,
       username: user.username,
+      customerId: user.customerId ?? null,
       roles,
       permissions,
     })

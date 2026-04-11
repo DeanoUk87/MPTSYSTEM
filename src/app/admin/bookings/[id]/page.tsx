@@ -25,6 +25,7 @@ interface Booking {
   jobNotes?: string; officeNotes?: string; weekend: number; jobStatus: number;
   podSignature?: string; podTime?: string; podDate?: string; podDataVerify: boolean;
   podRelationship?: string; driverNote?: string; deliveredTemperature?: string;
+  hideTrackingTemperature: boolean; hideTrackingMap: boolean;
   viaAddresses?: any[];
 }
 
@@ -91,6 +92,19 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     } catch { toast.error("Failed to update"); } finally { setVerifying(false); }
   }
 
+  async function toggleField(field: "hideTrackingTemperature" | "hideTrackingMap") {
+    if (!booking) return;
+    const newVal = !booking[field];
+    try {
+      await fetch(`/api/bookings/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...booking, [field]: newVal }),
+      });
+      setBooking(b => b ? { ...b, [field]: newVal } : b);
+      toast.success(newVal ? "Hidden on customer view" : "Visible on customer view");
+    } catch { toast.error("Failed to update"); }
+  }
+
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
       <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -145,6 +159,31 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           )}>
             {booking.jobStatus === 1 ? "Sent to Accounts" : "Active"}
           </span>
+        </div>
+
+        {/* Customer view tracking toggles */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-wrap items-center gap-3">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Customer View:</span>
+          <button
+            onClick={() => toggleField("hideTrackingTemperature")}
+            className={clsx("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
+              booking.hideTrackingTemperature
+                ? "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
+                : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+            )}
+          >
+            {booking.hideTrackingTemperature ? "🌡️ Temp Tracking OFF" : "🌡️ Temp Tracking ON"}
+          </button>
+          <button
+            onClick={() => toggleField("hideTrackingMap")}
+            className={clsx("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
+              booking.hideTrackingMap
+                ? "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
+                : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+            )}
+          >
+            {booking.hideTrackingMap ? "🗺️ Map Tracking OFF" : "🗺️ Map Tracking ON"}
+          </button>
         </div>
 
         {/* Addresses */}
