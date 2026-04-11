@@ -28,7 +28,13 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, SECRET);
+    // Customers must only access /portal, not /admin
+    if (pathname.startsWith("/admin") && (payload as any).customerId) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/portal";
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
   } catch {
     const url = req.nextUrl.clone();

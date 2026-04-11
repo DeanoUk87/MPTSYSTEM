@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
       driver: { select: { id: true, name: true, driverType: true } },
       secondMan: { select: { id: true, name: true } },
       bookingType: { select: { id: true, name: true } },
+      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 500,
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     // Destructure out form-only fields that are not in the Booking schema
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { chillUnitId, ambientUnitId, driverId, secondManContactId: _smc, cxDriverContactId: _cxc, ...rest } = body;
+    const { chillUnitId, ambientUnitId, driverId, secondManContactId: _smc, cxDriverContactId: _cxc, viaAddresses: viaData, ...rest } = body;
 
     const booking = await prisma.booking.create({
       data: {
@@ -59,6 +60,22 @@ export async function POST(req: NextRequest) {
         createdById: (session as any).id,
       },
     });
+
+    // Generate jobRef based on customer account number + per-customer increment
+    if (rest.customerId) {
+      try {
+        const cust = await prisma.customer.findUnique({
+          where: { id: rest.customerId },
+          select: { accountNumber: true, jobRefStart: true, _count: { select: { bookings: true } } },
+        });
+        if (cust) {
+          const base = (cust.jobRefStart ?? 1) + ((cust._count?.bookings ?? 1) - 1);
+          const jobRef = `${cust.accountNumber ?? "JOB"}-${String(base).padStart(5, "0")}`;
+          await prisma.booking.update({ where: { id: booking.id }, data: { jobRef } });
+          (booking as any).jobRef = jobRef;
+        }
+      } catch (_) { /* non-critical */ }
+    }
 
     // Allocate storage units
     for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
@@ -75,6 +92,16 @@ export async function POST(req: NextRequest) {
         await prisma.storageUsage.create({
           data: { unitId, jobId: booking.id, driverId: driverId || null },
         });
+      }
+    }
+
+    // Create via / collected-order addresses
+    if (Array.isArray(viaData)) {
+      for (const via of viaData) {
+        if (!via.name && !via.postcode) continue;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, bookingId: _bid, createdAt: _ca, updatedAt: _ua, deletedAt: _da, ...viaFields } = via;
+        await prisma.viaAddress.create({ data: { ...viaFields, bookingId: booking.id } });
       }
     }
 

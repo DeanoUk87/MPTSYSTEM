@@ -99,6 +99,7 @@ model Customer {
   poNumber        String?
   poEmail         String?
   deadMileage     Int     @default(0)
+  jobRefStart     Int     @default(1)
   // Invoice system fields (legacy)
   customerAccount String? @unique
   customerEmailBcc String?
@@ -332,6 +333,8 @@ model Booking {
   locker                    Int       @default(0)
   deadMileageStatus         String?
   waitAndReturn             Boolean   @default(false)
+  // Job Reference
+  jobRef                    String?
   // Meta
   createdById               String?
   updatedById               String?

@@ -32,11 +32,8 @@ export async function GET(req: NextRequest) {
   const postcode = searchParams.get("postcode");
   if (!postcode) return NextResponse.json({ error: "postcode required" }, { status: 400 });
 
-  const apiKey = process.env.CRAFTY_CLICKS_API_KEY;
-  if (!apiKey) {
-    const fallback = await fallbackLookup(postcode);
-    return NextResponse.json({ results: fallback });
-  }
+  // Use env key or fall back to hardcoded trial key
+  const apiKey = process.env.CRAFTY_CLICKS_API_KEY || "b6156-93a8a-c5122-0314a";
 
   try {
     const url = `https://api.craftyclicks.co.uk/address/1.1/find?postcode=${encodeURIComponent(postcode)}&key=${apiKey}&response=data_formatted`;

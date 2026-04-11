@@ -203,6 +203,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
   const [saving, setSaving] = useState(false);
   const [calcMiles, setCalcMiles] = useState(false);
+  const [jt, setJt] = useState(jobType);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
   const [subcons, setSubcons] = useState<any[]>([]);
@@ -219,8 +220,8 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [showUnitsModal, setShowUnitsModal] = useState(false);
   const [transferDriverSearch, setTransferDriverSearch] = useState("");
   const [transferDriverId, setTransferDriverId] = useState("");
+  const [vias, setVias] = useState<any[]>([]);
 
-  const jt = jobType;
   const rateKey = jt === 0 ? "ratePerMile" : jt === 1 ? "ratePerMileWeekends" : "ratePerMileOutOfHours";
   const driverRateKey = jt === 0 ? "costPerMile" : jt === 1 ? "costPerMileWeekends" : "costPerMileOutOfHours";
   const jtLabel = ["Normal", "Weekend / BH", "Out of Hours"][jt];
@@ -458,12 +459,24 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     tryInit();
   }
 
+  // If Google Maps script was already cached, init immediately on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).google?.maps) initMap();
+  }, []);
+
+  // VIA / Collected Orders helpers
+  const viaEmpty = () => ({ viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "" });
+  function addVia(type = "Via") { setVias(prev => [...prev.slice(0, 5), { ...viaEmpty(), viaType: type }]); }
+  function updateVia(i: number, k: string, v: any) { setVias(prev => prev.map((x, idx) => idx === i ? { ...x, [k]: v } : x)); }
+  function removeVia(i: number) { setVias(prev => prev.filter((_, idx) => idx !== i)); }
+
   // Central price recalculation — takes final miles and current form state
   function recalcPrices(baseMiles: number, formState: Record<string, any>, newVehicleRates?: any[]) {
     const rates = newVehicleRates ?? vehicleRates;
     const deadMi = formState.deadMilesEnabled && formState.deadMiles ? parseFloat(formState.deadMiles) || 0 : 0;
     const totalMiles = baseMiles + deadMi;
-    const billMiles = formState.waitAndReturn ? totalMiles * 2 : totalMiles;
+    // Wait & Return = outward + return (return = base journey only, no dead miles)
+    const billMiles = formState.waitAndReturn ? Math.round(totalMiles * 1.5) : totalMiles;
 
     let customerPrice = 0;
     if (rates.length > 0) customerPrice = billMiles * rates[0][rateKey];
@@ -525,8 +538,6 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     e.preventDefault();
     if (!f.purchaseOrder) { toast.error("Purchase Order is required"); return; }
     if (!f.bookedBy) { toast.error("Booked By is required"); return; }
-    if (!f.numberOfItems) { toast.error("Number of items is required"); return; }
-    if (!f.weight) { toast.error("Weight is required"); return; }
     setSaving(true);
     try {
       const payload: Record<string, any> = {
@@ -556,7 +567,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       delete payload.deadMiles;
       const res = await fetch("/api/bookings", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, viaAddresses: vias.filter((v: any) => v.name || v.postcode) }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Save failed");
       toast.success("Booking created");
@@ -580,7 +591,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     <>
       <Script
         src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyCxhsy1iGT_Aj5JnnyQMLOUVijsLm84Vd4&libraries=places`}
-        strategy="lazyOnload" onLoad={initMap}
+        strategy="afterInteractive" onLoad={initMap}
       />
       <div className="flex-1 bg-slate-100 min-h-screen">
         {/* Page header */}
@@ -1054,8 +1065,8 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     )}
                   </div>
 
-                  {/* Storage unit assignment — compact dropdowns per unit type */}
-                  <div className="border-t border-slate-100 pt-3 space-y-2">
+                  {/* Storage unit assignment — only show when a driver is selected */}
+                  {activeDriverId && <div className="border-t border-slate-100 pt-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         <Thermometer className="w-3.5 h-3.5 text-blue-500" />
@@ -1099,9 +1110,59 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         ))}
                       </select>
                     </div>
-                  </div>
+                  </div>}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* ── VIA / Collected Orders ── */}
+          <div className={panel}>
+            <SHead color="bg-indigo-600" icon="📍" label="Via / Collected Orders" />
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button type="button" onClick={() => addVia("Via")} disabled={vias.length >= 6}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+                  <Plus className="w-3 h-3" /> Add Via Stop
+                </button>
+                <button type="button" onClick={() => addVia("Collection")} disabled={vias.length >= 6}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white rounded-xl text-xs font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors">
+                  <Plus className="w-3 h-3" /> Add Collected Order
+                </button>
+                {vias.length > 0 && <span className="text-xs text-slate-400">{vias.length}/6 stops</span>}
+              </div>
+              {vias.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  {vias.map((via: any, i: number) => (
+                    <div key={i} className="relative bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${via.viaType === "Collection" ? "bg-orange-100 text-orange-700" : via.viaType === "Delivery" ? "bg-teal-100 text-teal-700" : "bg-indigo-100 text-indigo-700"}`}>
+                            {via.viaType === "Collection" ? "📦 Collected Order" : via.viaType === "Delivery" ? "🏭 Drop" : `📍 Via ${i + 1}`}
+                          </span>
+                        </div>
+                        <button type="button" onClick={() => removeVia(i)} className="text-slate-400 hover:text-rose-600 text-lg font-bold leading-none">×</button>
+                      </div>
+                      <PostcodeSearch postcode={via.postcode} country="UK"
+                        onChangePostcode={v => updateVia(i, "postcode", v.toUpperCase())}
+                        onChangeCountry={() => {}}
+                        onApply={r => { updateVia(i, "address1", r.line1); updateVia(i, "address2", r.line2 || ""); updateVia(i, "area", r.city); updateVia(i, "postcode", r.postcode); }}
+                        placeholder="Postcode lookup..." />
+                      <input type="text" value={via.name || ""} onChange={e => updateVia(i, "name", e.target.value)} placeholder="Business / Place Name" className={inp} />
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <input type="text" value={via.address1 || ""} onChange={e => updateVia(i, "address1", e.target.value)} placeholder="Address 1" className={inp} />
+                        <input type="text" value={via.area || ""} onChange={e => updateVia(i, "area", e.target.value)} placeholder="Town / Area" className={inp} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <input type="date" value={via.viaDate || ""} onChange={e => updateVia(i, "viaDate", e.target.value)} className={inp} />
+                        <input type="time" value={via.viaTime || ""} onChange={e => updateVia(i, "viaTime", e.target.value)} className={inp} />
+                      </div>
+                      <input type="text" value={via.contact || ""} onChange={e => updateVia(i, "contact", e.target.value)} placeholder="Contact name" className={inp} />
+                      <textarea value={via.notes || ""} onChange={e => updateVia(i, "notes", e.target.value)} placeholder="Notes" rows={1} className={inp + " resize-none"} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

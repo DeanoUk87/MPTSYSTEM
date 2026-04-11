@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       poNumber: body.poNumber || null,
       poEmail: body.poEmail || null,
       deadMileage: parseInt(body.deadMileage) || 0,
+      jobRefStart: parseInt(body.jobRefStart) || 1,
       // Legacy invoice fields
       customerAccount: body.customerAccount || null,
       termsOfPayment: body.termsOfPayment || null,

@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       .setExpirationTime("7d")
       .sign(new TextEncoder().encode(SECRET));
 
-    const res = NextResponse.json({ ok: true });
+    const res = NextResponse.json({ ok: true, redirectTo: user.customerId ? "/portal" : "/admin" });
     res.cookies.set("mp-session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

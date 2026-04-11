@@ -40,6 +40,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       poNumber: data.poNumber || null,
       poEmail: data.poEmail || null,
       deadMileage: parseInt(data.deadMileage) || 0,
+      jobRefStart: parseInt(data.jobRefStart) || 1,
       customerAccount: data.customerAccount || null,
       termsOfPayment: data.termsOfPayment || null,
     },

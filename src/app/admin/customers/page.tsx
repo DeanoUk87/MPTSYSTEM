@@ -23,6 +23,7 @@ interface Customer {
   poNumber?: string;
   poEmail?: string;
   deadMileage?: number;
+  jobRefStart?: number;
   _count?: { bookings: number };
 }
 
@@ -30,6 +31,7 @@ const emptyForm = {
   name: "", accountNumber: "", email: "", phone: "",
   address: "", address2: "", address3: "", city: "", postcode: "",
   notes: "", contact: "", poNumber: "", poEmail: "", deadMileage: "0",
+  jobRefStart: "1",
 };
 
 const inp = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -72,6 +74,7 @@ export default function CustomersPage() {
       notes: c.notes || "", contact: c.contact || "",
       poNumber: c.poNumber || "", poEmail: c.poEmail || "",
       deadMileage: String(c.deadMileage ?? 0),
+      jobRefStart: String(c.jobRefStart ?? 1),
     });
     setModalOpen(true);
   }
@@ -212,6 +215,11 @@ export default function CustomersPage() {
               <label className="block text-xs font-medium text-slate-600 mb-1">Dead Mileage</label>
               <input type="number" min="0" value={form.deadMileage} onChange={e => set("deadMileage", e.target.value)} className={inp} />
               <p className="text-xs text-slate-400 mt-0.5">Miles added to driver cost calculation</p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Job Ref Start Number</label>
+              <input type="number" min="1" value={form.jobRefStart} onChange={e => set("jobRefStart", e.target.value)} className={inp} />
+              <p className="text-xs text-slate-400 mt-0.5">First job ref number for this customer (e.g. 1 = ACC-00001)</p>
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">Internal Notes</label>

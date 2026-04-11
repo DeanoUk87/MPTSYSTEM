@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const body = await req.json();
 
-  const { chillUnitId, ambientUnitId, driverId, viaAddresses: _,
+  const { chillUnitId, ambientUnitId, driverId, viaAddresses: viaData,
           secondManContactId: _smc, cxDriverContactId: _cxc,
           deadMilesEnabled: _dme, deadMiles: _dm, ...rest } = body;
 
@@ -46,6 +46,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       updatedById: (session as any).id,
     },
   });
+
+  // Replace via addresses if provided
+  if (Array.isArray(viaData)) {
+    await prisma.viaAddress.deleteMany({ where: { bookingId: id } });
+    for (const via of viaData) {
+      if (!via.name && !via.postcode) continue;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, bookingId: _bid, createdAt: _ca, updatedAt: _ua, deletedAt: _da, ...viaFields } = via;
+      await prisma.viaAddress.create({ data: { ...viaFields, bookingId: id } });
+    }
+  }
+
   return NextResponse.json(booking);
 }
 

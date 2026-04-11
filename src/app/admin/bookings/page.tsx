@@ -10,12 +10,14 @@ import clsx from "clsx";
 
 interface Booking {
   id: string;
+  jobRef?: string;
   collectionDate?: string;
   collectionTime?: string;
   collectionPostcode?: string;
   deliveryDate?: string;
   deliveryPostcode?: string;
   customerPrice?: number;
+  driverCost?: number;
   miles?: number;
   numberOfItems?: number;
   weight?: number;
@@ -26,6 +28,7 @@ interface Booking {
   vehicle?: { name: string };
   driver?: { name: string; driverType: string };
   bookingType?: { name: string };
+  viaAddresses?: { id: string; postcode?: string; viaType?: string }[];
 }
 
 function StatusBadge({ booking }: { booking: Booking }) {
@@ -67,25 +70,29 @@ export default function BookingsPage() {
   }
 
   const columns: Column<Booking>[] = [
-    { key: "collectionDate", label: "Collection", render: (r) => (
-      <div>
-        <p className="font-medium">{r.collectionDate || "—"}</p>
-        <p className="text-xs text-slate-400">{r.collectionTime}</p>
-      </div>
+    { key: "jobRef", label: "Job Ref", render: (r) => (
+      <span className="font-mono text-xs font-semibold text-slate-700">{r.jobRef || r.id.slice(-6).toUpperCase()}</span>
     )},
+    { key: "collectionDate", label: "Date", render: (r) => r.collectionDate || "—" },
+    { key: "collectionTime", label: "Time", render: (r) => r.collectionTime || "—" },
     { key: "customer", label: "Customer", render: (r) => (
       <div>
-        <p className="font-medium">{r.customer?.name || "—"}</p>
+        <p className="font-medium whitespace-nowrap">{r.customer?.name || "—"}</p>
         <p className="text-xs text-slate-400">{r.customer?.accountNumber}</p>
       </div>
     )},
-    { key: "collectionPostcode", label: "From → To", render: (r) => (
-      <span className="text-sm">{r.collectionPostcode || "—"} → {r.deliveryPostcode || "—"}</span>
-    )},
-    { key: "vehicle", label: "Vehicle", render: (r) => r.vehicle?.name || "—" },
+    { key: "collectionPostcode", label: "From", render: (r) => r.collectionPostcode || "—" },
+    { key: "via1", label: "Via 1", render: (r) => r.viaAddresses?.[0]?.postcode || "—" },
+    { key: "via2", label: "Via 2", render: (r) => r.viaAddresses?.[1]?.postcode || "—" },
+    { key: "via3", label: "Via 3", render: (r) => r.viaAddresses?.[2]?.postcode || "—" },
+    { key: "via4", label: "Via 4", render: (r) => r.viaAddresses?.[3]?.postcode || "—" },
+    { key: "via5", label: "Via 5", render: (r) => r.viaAddresses?.[4]?.postcode || "—" },
+    { key: "via6", label: "Via 6", render: (r) => r.viaAddresses?.[5]?.postcode || "—" },
+    { key: "deliveryPostcode", label: "To", render: (r) => r.deliveryPostcode || "—" },
     { key: "driver", label: "Driver", render: (r) => r.driver?.name || <span className="text-rose-500 text-xs">Unassigned</span> },
-    { key: "miles", label: "Miles", render: (r) => r.miles ? `${r.miles.toFixed(1)}` : "—" },
-    { key: "customerPrice", label: "Price", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—" },
+    { key: "driverCost", label: "Driver Cost", render: (r) => r.driverCost ? `£${r.driverCost.toFixed(2)}` : "—" },
+    { key: "vehicle", label: "Vehicle", render: (r) => r.vehicle?.name || "—" },
+    { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—" },
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (
       <div className="flex items-center gap-1">
@@ -156,21 +163,23 @@ export default function BookingsPage() {
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-400 inline-block"></span> Completed</span>
         </div>
 
-        <DataTable
-          data={bookings}
-          columns={columns}
-          searchKeys={["collectionPostcode", "deliveryPostcode"]}
-          loading={loading}
-          emptyMessage="No bookings found. Create your first booking."
-          rowClassName={(b: Booking) => {
-            const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
-            if (isQuote) return "bg-slate-50";
-            if (b.podSignature && b.podDataVerify) return "bg-emerald-50 border-l-4 border-l-emerald-400";
-            if (b.podSignature) return "bg-blue-50 border-l-4 border-l-blue-400";
-            if (b.driver) return "bg-amber-50 border-l-4 border-l-amber-400";
-            return "bg-rose-50 border-l-4 border-l-rose-400";
-          }}
-        />
+        <div className="overflow-x-auto">
+          <DataTable
+            data={bookings}
+            columns={columns}
+            searchKeys={["collectionPostcode", "deliveryPostcode"]}
+            loading={loading}
+            emptyMessage="No bookings found. Create your first booking."
+            rowClassName={(b: Booking) => {
+              const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
+              if (isQuote) return "bg-slate-50";
+              if (b.podSignature && b.podDataVerify) return "bg-emerald-50 border-l-4 border-l-emerald-400";
+              if (b.podSignature) return "bg-blue-50 border-l-4 border-l-blue-400";
+              if (b.driver) return "bg-amber-50 border-l-4 border-l-amber-400";
+              return "bg-rose-50 border-l-4 border-l-rose-400";
+            }}
+          />
+        </div>
       </div>
 
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirm Delete" size="sm">

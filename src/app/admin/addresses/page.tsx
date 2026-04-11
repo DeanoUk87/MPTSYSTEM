@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Search, Loader2, ExternalLink, MapPin } from "lucide-react";
-import Link from "next/link";
+import { Search, Loader2, MapPin, Trash2 } from "lucide-react";
 
 interface Address {
   name: string; address1: string; address2: string; area: string;
@@ -9,10 +8,23 @@ interface Address {
   bookingId: string; type: "collection" | "delivery";
 }
 
+const HIDDEN_KEY = "mp_hidden_addresses";
+
+function getHidden(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) || "[]")); } catch { return new Set(); }
+}
+function hideAddress(key: string) {
+  const h = getHidden(); h.add(key);
+  localStorage.setItem(HIDDEN_KEY, JSON.stringify([...h]));
+}
+
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => { setHidden(getHidden()); }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -27,6 +39,14 @@ export default function AddressesPage() {
     return () => clearTimeout(t);
   }, [load]);
 
+  function handleDelete(a: Address) {
+    const key = `${a.name.toLowerCase()}||${a.postcode.toLowerCase()}`;
+    hideAddress(key);
+    setHidden(prev => new Set([...prev, key]));
+  }
+
+  const visible = addresses.filter(a => !hidden.has(`${a.name.toLowerCase()}||${a.postcode.toLowerCase()}`));
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -34,7 +54,7 @@ export default function AddressesPage() {
           <h1 className="text-2xl font-bold text-slate-800">Addresses</h1>
           <p className="text-sm text-slate-500 mt-0.5">All unique addresses from bookings — search by name or postcode</p>
         </div>
-        <span className="text-sm text-slate-400">{addresses.length} addresses</span>
+        <span className="text-sm text-slate-400">{visible.length} addresses</span>
       </div>
 
       {/* Search */}
@@ -53,11 +73,11 @@ export default function AddressesPage() {
         <div className="flex items-center justify-center py-20 text-slate-400">
           <Loader2 className="w-6 h-6 animate-spin" />
         </div>
-      ) : addresses.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="text-center py-20 text-slate-400 text-sm">No addresses found</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {addresses.map((a, i) => (
+          {visible.map((a, i) => (
             <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
@@ -87,13 +107,11 @@ export default function AddressesPage() {
                     </div>
                   )}
                 </div>
-                <Link
-                  href={`/admin/bookings/${a.bookingId}`}
-                  className="shrink-0 p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="View booking"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </Link>
+                <button type="button" onClick={() => handleDelete(a)}
+                  className="shrink-0 p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                  title="Remove from address book">
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}

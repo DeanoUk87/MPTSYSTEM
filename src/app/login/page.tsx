@@ -27,7 +27,7 @@ function LoginForm() {
       if (!res.ok) {
         toast.error(data.error || "Invalid email/username or password");
       } else {
-        router.push(callbackUrl);
+        router.push(data.redirectTo || callbackUrl);
         router.refresh();
       }
     } catch {
