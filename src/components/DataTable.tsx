@@ -18,6 +18,7 @@ interface DataTableProps<T> {
   pageSize?: number;
   loading?: boolean;
   emptyMessage?: string;
+  rowClassName?: (row: T) => string;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -28,6 +29,7 @@ export default function DataTable<T extends Record<string, any>>({
   pageSize: initialPageSize = 25,
   loading = false,
   emptyMessage = "No records found.",
+  rowClassName,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -138,7 +140,7 @@ export default function DataTable<T extends Record<string, any>>({
               paged.map((row, i) => (
                 <tr
                   key={i}
-                  className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                  className={clsx("border-b border-slate-100 hover:brightness-95 transition-colors", rowClassName ? rowClassName(row) : "hover:bg-slate-50")}
                 >
                   {columns.map((col) => (
                     <td key={col.key} className={clsx("px-4 py-3 text-slate-700", col.className)}>

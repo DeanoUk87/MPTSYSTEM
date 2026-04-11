@@ -32,7 +32,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const body = await req.json();
 
-  const { chillUnitId, ambientUnitId, driverId, viaAddresses: _, ...rest } = body;
+  const { chillUnitId, ambientUnitId, driverId, viaAddresses: _,
+          secondManContactId: _smc, cxDriverContactId: _cxc,
+          deadMilesEnabled: _dme, deadMiles: _dm, ...rest } = body;
 
   const booking = await prisma.booking.update({
     where: { id },

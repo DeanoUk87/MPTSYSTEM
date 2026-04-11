@@ -129,7 +129,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           <Link href="/admin/bookings" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
             <ArrowLeft className="w-4 h-4" /> Back to bookings
           </Link>
-          <Link href={`/admin/bookings/new?clone=${id}`}
+          <Link href={`/admin/bookings/${id}/edit`}
             className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
             <Pencil className="w-3 h-3" /> Edit
           </Link>

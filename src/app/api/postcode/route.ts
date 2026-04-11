@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// postcodes.io fallback — returns city/district when Crafty Clicks has no results
+// postcodes.io fallback — returns town info when Crafty Clicks has no results
 async function fallbackLookup(postcode: string): Promise<any[]> {
   try {
     const clean = postcode.replace(/\s+/g, "").toUpperCase();
@@ -9,14 +9,17 @@ async function fallbackLookup(postcode: string): Promise<any[]> {
     const data = await res.json();
     if (!data.result) return [];
     const r = data.result;
+    // postcodes.io gives us the admin_ward (local area name) which is more specific than admin_district
+    const town = r.admin_ward || r.admin_district || r.parliamentary_constituency || "";
     return [{
       line1: "",
       line2: "",
       line3: "",
-      city: r.admin_district || r.parliamentary_constituency || "",
-      county: r.admin_county || "",
+      city: town,
+      county: r.admin_county || r.admin_district || "",
       postcode: r.postcode,
-      label: r.admin_district || r.postcode,
+      label: `${town}${r.admin_district && r.admin_district !== town ? `, ${r.admin_district}` : ""}`,
+      fallback: true,
     }];
   } catch {
     return [];

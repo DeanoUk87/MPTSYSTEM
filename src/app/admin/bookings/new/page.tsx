@@ -92,10 +92,20 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
                 onClick={() => selectAddress(r)}
                 className="w-full text-left px-3 py-2.5 text-xs hover:bg-blue-50 border-b border-slate-100 last:border-0 transition-colors"
               >
-                <span className="font-semibold text-slate-800">{r.line1}</span>
-                {r.line2 && <span className="text-slate-500">, {r.line2}</span>}
-                <span className="text-slate-400">, {r.city} </span>
-                <span className="text-blue-600 font-mono font-semibold">{r.postcode}</span>
+                {r.fallback ? (
+                  <>
+                    <span className="font-semibold text-slate-500 italic">Town/area only — enter full address manually</span>
+                    <span className="ml-2 text-blue-600 font-mono font-semibold">{r.postcode}</span>
+                    <span className="text-slate-500"> · {r.label}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold text-slate-800">{r.line1}</span>
+                    {r.line2 && <span className="text-slate-500">, {r.line2}</span>}
+                    <span className="text-slate-400">, {r.city} </span>
+                    <span className="text-blue-600 font-mono font-semibold">{r.postcode}</span>
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -206,6 +216,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [vehicleRatesMap, setVehicleRatesMap] = useState<Record<string, number>>({});
   const [routeInfo, setRouteInfo] = useState<{ miles: number; duration: string } | null>(null);
   const [assigningUnit, setAssigningUnit] = useState<string | null>(null);
+  const [showUnitsModal, setShowUnitsModal] = useState(false);
+  const [transferDriverSearch, setTransferDriverSearch] = useState("");
+  const [transferDriverId, setTransferDriverId] = useState("");
 
   const jt = jobType;
   const rateKey = jt === 0 ? "ratePerMile" : jt === 1 ? "ratePerMileWeekends" : "ratePerMileOutOfHours";
@@ -296,8 +309,11 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     if (!miles) return;
     setF(p => {
       const next = { ...p };
+      const fuelPct = p.fuelSurchargePercent ? parseFloat(p.fuelSurchargePercent) || 0 : 0;
       if (vehicleRates.length > 0) {
-        next.customerPrice = (miles * vehicleRates[0][rateKey]).toFixed(2);
+        let cp = miles * vehicleRates[0][rateKey];
+        if (fuelPct > 0) cp = cp * (1 + fuelPct / 100);
+        next.customerPrice = cp.toFixed(2);
       }
       if (p.driverId) {
         const dr = drivers.find((d: any) => d.id === p.driverId);
@@ -420,18 +436,59 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     } catch { toast.error("Failed to assign unit"); } finally { setAssigningUnit(null); }
   }
 
-  // Init Google Map
+  // Init Google Map — retry up to 10x if DOM ref not attached yet
   function initMap() {
-    if (!mapRef.current || googleMapRef.current) return;
-    const gm = new (window as any).google.maps.Map(mapRef.current, {
-      center: { lat: 52.8, lng: -1.5 }, zoom: 7,
-      mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
-    });
-    googleMapRef.current = gm;
-    directionsRendererRef.current = new (window as any).google.maps.DirectionsRenderer({
-      polylineOptions: { strokeColor: "#2563eb", strokeWeight: 5 },
-    });
-    directionsRendererRef.current.setMap(gm);
+    if (googleMapRef.current) return;
+    let attempts = 0;
+    const tryInit = () => {
+      if (!mapRef.current) {
+        if (++attempts < 20) setTimeout(tryInit, 200);
+        return;
+      }
+      const gm = new (window as any).google.maps.Map(mapRef.current, {
+        center: { lat: 52.8, lng: -1.5 }, zoom: 7,
+        mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
+      });
+      googleMapRef.current = gm;
+      directionsRendererRef.current = new (window as any).google.maps.DirectionsRenderer({
+        polylineOptions: { strokeColor: "#2563eb", strokeWeight: 5 },
+      });
+      directionsRendererRef.current.setMap(gm);
+    };
+    tryInit();
+  }
+
+  // Central price recalculation — takes final miles and current form state
+  function recalcPrices(baseMiles: number, formState: Record<string, any>, newVehicleRates?: any[]) {
+    const rates = newVehicleRates ?? vehicleRates;
+    const deadMi = formState.deadMilesEnabled && formState.deadMiles ? parseFloat(formState.deadMiles) || 0 : 0;
+    const totalMiles = baseMiles + deadMi;
+    const billMiles = formState.waitAndReturn ? totalMiles * 2 : totalMiles;
+
+    let customerPrice = 0;
+    if (rates.length > 0) customerPrice = billMiles * rates[0][rateKey];
+
+    // Add fuel surcharge if selected
+    const fuelPct = formState.fuelSurchargePercent ? parseFloat(formState.fuelSurchargePercent) || 0 : 0;
+    if (fuelPct > 0) customerPrice = customerPrice * (1 + fuelPct / 100);
+
+    const updates: Record<string, any> = {
+      miles: String(Math.round(billMiles)),
+      customerPrice: customerPrice > 0 ? customerPrice.toFixed(2) : formState.customerPrice,
+    };
+    if (formState.driverId) {
+      const dr = drivers.find((d: any) => d.id === formState.driverId);
+      if (dr) updates.driverCost = (billMiles * dr[driverRateKey]).toFixed(2);
+    }
+    if (formState.secondManId) {
+      const dr = subcons.find((d: any) => d.id === formState.secondManId);
+      if (dr) updates.extraCost = (billMiles * dr[driverRateKey]).toFixed(2);
+    }
+    if (formState.cxDriverId) {
+      const dr = cxDrivers.find((d: any) => d.id === formState.cxDriverId);
+      if (dr) updates.cxDriverCost = (billMiles * dr[driverRateKey]).toFixed(2);
+    }
+    return { updates, billMiles };
   }
 
   async function handleGetMiles() {
@@ -447,22 +504,10 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       });
       const data = await res.json();
       if (data.miles !== undefined) {
-        const rounded = Math.round(data.miles);
-        s("miles", String(rounded));
-        setRouteInfo({ miles: rounded, duration: data.duration });
-        if (vehicleRates.length > 0) s("customerPrice", (rounded * vehicleRates[0][rateKey]).toFixed(2));
-        if (f.driverId) {
-          const dr = drivers.find((d: any) => d.id === f.driverId);
-          if (dr) s("driverCost", (rounded * dr[driverRateKey]).toFixed(2));
-        }
-        if (f.secondManId) {
-          const dr = subcons.find((d: any) => d.id === f.secondManId);
-          if (dr) s("extraCost", (rounded * dr[driverRateKey]).toFixed(2));
-        }
-        if (f.cxDriverId) {
-          const dr = cxDrivers.find((d: any) => d.id === f.cxDriverId);
-          if (dr) s("cxDriverCost", (rounded * dr[driverRateKey]).toFixed(2));
-        }
+        const rawMiles = Math.round(data.miles);
+        setRouteInfo({ miles: rawMiles, duration: data.duration });
+        const { updates } = recalcPrices(rawMiles, f);
+        setF(p => ({ ...p, ...updates }));
       }
       const g = (window as any).google;
       if (g && googleMapRef.current) {
@@ -624,12 +669,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     }}
                   />
                   <input type="text" value={f.collectionName} onChange={e => s("collectionName", e.target.value)} placeholder="Business / Place Name" className={inp} />
-                  <input type="text" value={f.collectionAddress1} onChange={e => s("collectionAddress1", e.target.value)} placeholder="Address 1" className={inp} />
                   <div className="grid grid-cols-2 gap-2">
+                    <input type="text" value={f.collectionAddress1} onChange={e => s("collectionAddress1", e.target.value)} placeholder="Address 1" className={inp} />
                     <input type="text" value={f.collectionAddress2} onChange={e => s("collectionAddress2", e.target.value)} placeholder="Address 2" className={inp} />
-                    <input type="text" value={f.collectionArea} onChange={e => s("collectionArea", e.target.value)} placeholder="Town / Area" className={inp} />
                   </div>
-                  <input type="text" value={f.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="text" value={f.collectionArea} onChange={e => s("collectionArea", e.target.value)} placeholder="Town / Area" className={inp} />
+                    <input type="text" value={f.collectionPostcode} onChange={e => s("collectionPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <input type="text" value={f.collectionContact} onChange={e => s("collectionContact", e.target.value)} placeholder="Contact Name" className={inp} />
                     <input type="text" value={f.collectionPhone} onChange={e => s("collectionPhone", e.target.value)} placeholder="Tel Number" className={inp} />
@@ -745,7 +792,18 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   {/* Fuel surcharge */}
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-medium text-slate-500 w-16 shrink-0">Fuel Surcharge</label>
-                    <select value={f.fuelSurchargePercent} onChange={e => s("fuelSurchargePercent", e.target.value)} className={inp}>
+                    <select value={f.fuelSurchargePercent} onChange={e => {
+                      const pct = e.target.value;
+                      const miles = Math.round(parseFloat(f.miles) || 0);
+                      if (miles && vehicleRates.length > 0) {
+                        let cp = miles * vehicleRates[0][rateKey];
+                        const fuelPct = pct ? parseFloat(pct) || 0 : 0;
+                        if (fuelPct > 0) cp = cp * (1 + fuelPct / 100);
+                        setF(p => ({ ...p, fuelSurchargePercent: pct, customerPrice: cp.toFixed(2) }));
+                      } else {
+                        s("fuelSurchargePercent", pct);
+                      }
+                    }} className={inp}>
                       <option value="">None</option>
                       {fuelSurcharges.map((fs: any) => (
                         <option key={fs.id} value={String(fs.percentage)}>{fs.percentage}% (diesel &gt; £{fs.price.toFixed(2)}/litre)</option>
@@ -781,21 +839,69 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
                   {/* Toggle pills */}
                   <div className="flex items-center gap-2 flex-wrap pt-1">
-                    <Toggle checked={f.avoidTolls} onChange={v => s("avoidTolls", v)} label="Avoid Tolls" />
-                    <Toggle checked={f.waitAndReturn} onChange={v => s("waitAndReturn", v)} label="Wait & Return" />
+                    <Toggle
+                      checked={f.avoidTolls}
+                      onChange={v => {
+                        setF(p => ({ ...p, avoidTolls: v }));
+                        // Re-fetch route with new tolls setting if we have postcodes
+                        if (f.collectionPostcode && f.deliveryPostcode && googleMapRef.current) {
+                          const g = (window as any).google;
+                          if (g) {
+                            new g.maps.DirectionsService().route({
+                              origin: f.collectionPostcode, destination: f.deliveryPostcode,
+                              travelMode: g.maps.TravelMode.DRIVING, avoidTolls: v,
+                            }, (result: any, status: string) => {
+                              if (status === "OK") directionsRendererRef.current?.setDirections(result);
+                            });
+                          }
+                        }
+                      }}
+                      label="Avoid Tolls"
+                    />
+                    <Toggle
+                      checked={f.waitAndReturn}
+                      onChange={v => {
+                        // Wait & Return: re-run recalc with current base miles
+                        const rawMiles = routeInfo?.miles ?? Math.round(parseFloat(f.miles) || 0);
+                        if (rawMiles) {
+                          const newState = { ...f, waitAndReturn: v };
+                          const { updates } = recalcPrices(rawMiles, newState);
+                          setF(p => ({ ...p, waitAndReturn: v, ...updates }));
+                        } else {
+                          s("waitAndReturn", v);
+                        }
+                      }}
+                      label="Wait & Return"
+                    />
                     <Toggle
                       checked={!!f.deadMilesEnabled}
                       onChange={v => {
-                        s("deadMilesEnabled", v);
-                        if (v && !f.deadMiles) s("deadMiles", String(customer.deadMileage || 15));
-                        if (!v) s("deadMiles", "");
+                        const deadMi = v ? (customer.deadMileage || 15) : 0;
+                        const rawMiles = routeInfo?.miles ?? Math.round(parseFloat(f.miles) || 0);
+                        if (rawMiles) {
+                          const newState = { ...f, deadMilesEnabled: v, deadMiles: v ? String(deadMi) : "", waitAndReturn: f.waitAndReturn };
+                          const { updates } = recalcPrices(rawMiles, newState);
+                          setF(p => ({ ...p, deadMilesEnabled: v, deadMiles: v ? String(deadMi) : "", ...updates }));
+                        } else {
+                          setF(p => ({ ...p, deadMilesEnabled: v, deadMiles: v ? String(customer.deadMileage || 15) : "" }));
+                        }
                       }}
                       label="Dead Miles"
                     />
                     {f.deadMilesEnabled && (
                       <input
                         type="number" min="0" value={f.deadMiles}
-                        onChange={e => s("deadMiles", e.target.value)}
+                        onChange={e => {
+                          const dm = e.target.value;
+                          const rawMiles = routeInfo?.miles ?? Math.round(parseFloat(f.miles) || 0);
+                          if (rawMiles) {
+                            const newState = { ...f, deadMiles: dm };
+                            const { updates } = recalcPrices(rawMiles, newState);
+                            setF(p => ({ ...p, deadMiles: dm, ...updates }));
+                          } else {
+                            s("deadMiles", dm);
+                          }
+                        }}
                         className="w-16 px-2 py-1 border border-slate-300 rounded-lg text-xs font-bold text-center text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                         placeholder="15"
                       />
@@ -859,12 +965,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     }}
                   />
                   <input type="text" value={f.deliveryName} onChange={e => s("deliveryName", e.target.value)} placeholder="Business / Place Name" className={inp} />
-                  <input type="text" value={f.deliveryAddress1} onChange={e => s("deliveryAddress1", e.target.value)} placeholder="Address 1" className={inp} />
                   <div className="grid grid-cols-2 gap-2">
+                    <input type="text" value={f.deliveryAddress1} onChange={e => s("deliveryAddress1", e.target.value)} placeholder="Address 1" className={inp} />
                     <input type="text" value={f.deliveryAddress2} onChange={e => s("deliveryAddress2", e.target.value)} placeholder="Address 2" className={inp} />
-                    <input type="text" value={f.deliveryArea} onChange={e => s("deliveryArea", e.target.value)} placeholder="Town / Area" className={inp} />
                   </div>
-                  <input type="text" value={f.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="text" value={f.deliveryArea} onChange={e => s("deliveryArea", e.target.value)} placeholder="Town / Area" className={inp} />
+                    <input type="text" value={f.deliveryPostcode} onChange={e => s("deliveryPostcode", e.target.value.toUpperCase())} placeholder="Postcode" className={inp2} />
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <input type="text" value={f.deliveryContact} onChange={e => s("deliveryContact", e.target.value)} placeholder="Contact Name" className={inp} />
                     <input type="text" value={f.deliveryPhone} onChange={e => s("deliveryPhone", e.target.value)} placeholder="Tel Number" className={inp} />
@@ -946,54 +1054,52 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     )}
                   </div>
 
-                  {/* Storage unit assignment — shown when a driver or subcon is selected */}
-                  {activeDriverId && allStorageUnits.length > 0 && (
-                    <div className="border-t border-slate-100 pt-3 space-y-2">
+                  {/* Storage unit assignment — compact dropdowns per unit type */}
+                  <div className="border-t border-slate-100 pt-3 space-y-2">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         <Thermometer className="w-3.5 h-3.5 text-blue-500" />
                         <MapPin className="w-3.5 h-3.5 text-green-500" />
-                        Assign Storage Unit (enables Temp/Tracking)
+                        Storage Units
                       </div>
-                      {allStorageUnits.map((u: any) => {
-                        const isAssigned = u.currentDriverId === activeDriverId;
-                        const assignedElsewhere = u.currentDriverId && u.currentDriverId !== activeDriverId;
-                        return (
-                          <div key={u.id} className={`flex items-center justify-between px-3 py-2 rounded-lg border text-xs ${
-                            isAssigned ? "bg-blue-50 border-blue-300" :
-                            assignedElsewhere ? "bg-slate-50 border-slate-200 opacity-50" :
-                            "bg-white border-slate-200"
-                          }`}>
-                            <div>
-                              <span className="font-semibold text-slate-700">{u.unitNumber}</span>
-                              <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs font-medium ${u.unitType === "chill" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>
-                                {u.unitType || "unit"}
-                              </span>
-                              {assignedElsewhere && (
-                                <span className="ml-2 text-slate-400">In use: {u.currentDriver?.name}</span>
-                              )}
-                              {isAssigned && (
-                                <span className="ml-2 text-blue-600 font-medium">✓ Assigned · Tracking ON</span>
-                              )}
-                            </div>
-                            {!assignedElsewhere && (
-                              <button
-                                type="button"
-                                onClick={() => assignUnit(u.id, isAssigned ? "" : activeDriverId)}
-                                disabled={assigningUnit === u.id}
-                                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                                  isAssigned
-                                    ? "bg-rose-100 text-rose-700 hover:bg-rose-200"
-                                    : "bg-blue-600 text-white hover:bg-blue-700"
-                                }`}
-                              >
-                                {assigningUnit === u.id ? <Loader2 className="w-3 h-3 animate-spin" /> : isAssigned ? "Remove" : "Assign"}
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
+                      <button type="button" onClick={() => setShowUnitsModal(true)}
+                        className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors">
+                        <Plus className="w-3 h-3" /> Show All Units
+                      </button>
                     </div>
-                  )}
+                    {/* Chill unit dropdown */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-blue-700 font-semibold w-14 shrink-0">🧊 Chill</span>
+                      <select
+                        value={f.chillUnitId}
+                        onChange={e => s("chillUnitId", e.target.value)}
+                        className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">— None —</option>
+                        {allStorageUnits.filter((u: any) => u.unitType === "chill").map((u: any) => (
+                          <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
+                            {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* Ambient unit dropdown */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-amber-700 font-semibold w-14 shrink-0">🌡 Ambient</span>
+                      <select
+                        value={f.ambientUnitId}
+                        onChange={e => s("ambientUnitId", e.target.value)}
+                        className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">— None —</option>
+                        {allStorageUnits.filter((u: any) => u.unitType === "ambient" || u.unitType === "Ambient").map((u: any) => (
+                          <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
+                            {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1020,6 +1126,101 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
           </div>
         </form>
       </div>
+
+      {/* ── All Units Modal ── */}
+      {showUnitsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <h2 className="font-bold text-slate-800 text-base">All Storage Units</h2>
+              <button type="button" onClick={() => setShowUnitsModal(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4">
+              <div className="grid grid-cols-2 gap-2">
+                {allStorageUnits.map((u: any) => {
+                  const isActiveDriver = u.currentDriverId === activeDriverId;
+                  const isAssignedElsewhere = u.currentDriverId && u.currentDriverId !== activeDriverId;
+                  return (
+                    <div key={u.id} className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
+                      isActiveDriver ? "bg-blue-50 border-blue-300" :
+                      isAssignedElsewhere ? "bg-slate-50 border-slate-200 opacity-60" :
+                      "bg-white border-slate-200"
+                    }`}>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-slate-700">{u.unitNumber}</span>
+                          <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${u.unitType === "chill" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>
+                            {u.unitType || "unit"}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded-full text-xs ${u.availability === "Yes" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                            {u.availability === "Yes" ? "In Store" : "Out"}
+                          </span>
+                        </div>
+                        {isAssignedElsewhere && <p className="text-slate-400">Driver: {u.currentDriver?.name || "other"}</p>}
+                        {isActiveDriver && <p className="text-blue-600 font-medium">✓ Assigned to this driver</p>}
+                      </div>
+                      {activeDriverId && !isAssignedElsewhere && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setAssigningUnit(u.id);
+                            await assignUnit(u.id, isActiveDriver ? "" : activeDriverId);
+                            setAssigningUnit(null);
+                          }}
+                          disabled={assigningUnit === u.id}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                            isActiveDriver ? "bg-rose-100 text-rose-700 hover:bg-rose-200" : "bg-blue-600 text-white hover:bg-blue-700"
+                          }`}
+                        >
+                          {assigningUnit === u.id ? <Loader2 className="w-3 h-3 animate-spin inline" /> : isActiveDriver ? "Remove" : "Assign"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Transfer section */}
+              {activeDriverId && (
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <p className="text-xs font-semibold text-slate-600 mb-2">Transfer units to another driver:</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <select
+                      value={transferDriverId}
+                      onChange={e => setTransferDriverId(e.target.value)}
+                      className="flex-1 min-w-48 px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">— Select driver to transfer to —</option>
+                      {[...drivers, ...subcons, ...cxDrivers].filter((d: any) => d.id !== activeDriverId).map((d: any) => (
+                        <option key={d.id} value={d.id}>{d.name} ({d.driverType})</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={!transferDriverId || assigningUnit !== null}
+                      onClick={async () => {
+                        const unitIds = allStorageUnits
+                          .filter((u: any) => u.currentDriverId === activeDriverId)
+                          .map((u: any) => u.id);
+                        if (!unitIds.length) { toast.error("No units assigned to current driver"); return; }
+                        setAssigningUnit("transfer");
+                        try {
+                          for (const uid of unitIds) await assignUnit(uid, transferDriverId);
+                          toast.success("Units transferred");
+                          setTransferDriverId("");
+                        } finally { setAssigningUnit(null); }
+                      }}
+                      className="px-3 py-2 bg-amber-500 text-white rounded-lg text-xs font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                    >
+                      {assigningUnit === "transfer" ? <Loader2 className="w-3 h-3 animate-spin inline" /> : "Transfer Units"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

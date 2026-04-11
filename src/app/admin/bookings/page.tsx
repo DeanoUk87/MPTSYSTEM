@@ -92,7 +92,7 @@ export default function BookingsPage() {
         <Link href={`/admin/bookings/${r.id}`} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors">
           <Eye className="w-4 h-4" />
         </Link>
-        <Link href={`/admin/bookings/${r.id}?edit=1`} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors">
+        <Link href={`/admin/bookings/${r.id}/edit`} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors">
           <Pencil className="w-4 h-4" />
         </Link>
         <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors">
@@ -148,12 +148,28 @@ export default function BookingsPage() {
           ))}
         </div>
 
+        {/* Colour legend */}
+        <div className="flex items-center gap-4 text-xs text-slate-500">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-400 inline-block"></span> No driver</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400 inline-block"></span> Driver allocated</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-400 inline-block"></span> POD received</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-400 inline-block"></span> Completed</span>
+        </div>
+
         <DataTable
           data={bookings}
           columns={columns}
           searchKeys={["collectionPostcode", "deliveryPostcode"]}
           loading={loading}
           emptyMessage="No bookings found. Create your first booking."
+          rowClassName={(b: Booking) => {
+            const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
+            if (isQuote) return "bg-slate-50";
+            if (b.podSignature && b.podDataVerify) return "bg-emerald-50 border-l-4 border-l-emerald-400";
+            if (b.podSignature) return "bg-blue-50 border-l-4 border-l-blue-400";
+            if (b.driver) return "bg-amber-50 border-l-4 border-l-amber-400";
+            return "bg-rose-50 border-l-4 border-l-rose-400";
+          }}
         />
       </div>
 
