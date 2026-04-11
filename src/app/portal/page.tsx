@@ -271,13 +271,6 @@ export default function CustomerPortalPage() {
   );
 }
 
-
-interface Booking {
-  id: string;
-  collectionDate?: string; collectionTime?: string; collectionName?: string; collectionPostcode?: string;
-  deliveryDate?: string; deliveryTime?: string; deliveryName?: string; deliveryPostcode?: string;
-  numberOfItems?: number; weight?: number; purchaseOrder?: string;
-  jobStatus: number; podSignature?: string; podDataVerify: boolean;
   vehicle?: { name: string }; driver?: { name: string };
   viaAddresses?: any[];
 }
