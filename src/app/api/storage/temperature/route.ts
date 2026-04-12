@@ -10,9 +10,18 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.LIVE_DEVICE_API;
   const useMock = process.env.GPSLIVE_USE_MOCK === "true";
 
-  // Get all trackable units — real API: any unit with an IMEI; mock: all trackable
+  // Only monitor units that have a driver assigned AND are attached to an active booking.
+  // Mock mode uses the trackable flag; real mode requires driver + booking.
+  const activeBookingFilter = {
+    OR: [
+      { chillBookings: { some: { deletedAt: null } } },
+      { ambientBookings: { some: { deletedAt: null } } },
+    ],
+  };
   const units = await prisma.storageUnit.findMany({
-    where: (useMock || !apiKey) ? { trackable: 1 } : { imei: { not: null } },
+    where: (useMock || !apiKey)
+      ? { trackable: 1 }
+      : { imei: { not: null }, currentDriverId: { not: null }, ...activeBookingFilter },
     include: { currentDriver: { select: { name: true } } },
   });
 
