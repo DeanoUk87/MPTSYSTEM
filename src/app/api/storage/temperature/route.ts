@@ -23,10 +23,12 @@ export async function GET(req: NextRequest) {
       // Mock mode, or no API key, or unit has no IMEI → generate demo temperature
       if (useMock || !apiKey || !unit.imei) {
         const type = (unit.unitType || "chill").toLowerCase();
-        // Bias out-of-range so the alert system is demonstrable
+        // Always out-of-range so the alert system is demonstrable
         const temp = type === "ambient"
-          ? (25 + Math.random() * 4 - 1).toFixed(1)    // 24–28°C (ambient range is 15–25)
-          : (1 + Math.random() * 1.5).toFixed(1);       // 1.0–2.5°C (chill range is 2–8)
+          ? (26 + Math.random() * 3).toFixed(1)   // 26–29°C  (ambient upper limit is 25°C)
+          : type === "frozen"
+          ? (-22 + Math.random() * 2).toFixed(1)  // -22–-20°C (frozen upper limit is -18°C)
+          : (0.2 + Math.random() * 0.8).toFixed(1); // 0.2–1.0°C (chill lower limit is 2°C)
         return {
           id: unit.id,
           unitNumber: unit.unitNumber,

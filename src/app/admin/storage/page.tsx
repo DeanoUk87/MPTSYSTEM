@@ -136,15 +136,16 @@ export default function StoragePage() {
     const td = tempData[u.id];
     if (!td?.temperature) return false;
     const temp = parseFloat(td.temperature);
-    const type = (u.unitType || "").toLowerCase();
+    const type = (u.unitType || "chill").toLowerCase();
     if (type === "chill") return temp < 2 || temp > 8;
     if (type === "ambient") return temp < 15 || temp > 25;
+    if (type === "frozen") return temp < -25 || temp > -18;
     return false;
   }).map(u => {
     const td = tempData[u.id];
     const temp = parseFloat(td.temperature);
-    const type = (u.unitType || "").toLowerCase();
-    const range = type === "chill" ? "2–8°C" : "15–25°C";
+    const type = (u.unitType || "chill").toLowerCase();
+    const range = type === "chill" ? "2–8°C" : type === "frozen" ? "-25 to -18°C" : "15–25°C";
     return { unit: u, temp, range };
   });
 

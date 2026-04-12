@@ -16,9 +16,10 @@ function GlobalTempAlert() {
         const out = data.filter((u: any) => {
           if (u.temperature == null) return false;
           const t = parseFloat(u.temperature);
-          const type = (u.unitType || "").toLowerCase();
+          const type = (u.unitType || "chill").toLowerCase();
           if (type === "chill") return t < 2 || t > 8;
           if (type === "ambient") return t < 15 || t > 25;
+          if (type === "frozen") return t < -25 || t > -18;
           return false;
         });
         setAlerts(out);
@@ -36,8 +37,8 @@ function GlobalTempAlert() {
     <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full">
       {visible.map((a: any) => {
         const t = parseFloat(a.temperature).toFixed(1);
-        const type = (a.unitType || "").toLowerCase();
-        const range = type === "chill" ? "2–8°C" : "15–25°C";
+        const type = (a.unitType || "chill").toLowerCase();
+        const range = type === "chill" ? "2–8°C" : type === "frozen" ? "-25 to -18°C" : "15–25°C";
         return (
           <div key={a.id} className="flex items-start gap-3 px-4 py-3 bg-rose-600 text-white rounded-xl shadow-lg text-sm">
             <Thermometer className="w-4 h-4 shrink-0 mt-0.5" />
