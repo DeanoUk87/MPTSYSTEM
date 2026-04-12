@@ -10,9 +10,9 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.LIVE_DEVICE_API;
   const useMock = process.env.GPSLIVE_USE_MOCK === "true";
 
-  // Get all trackable units with IMEIs
+  // Get all trackable units (in mock/dev mode, IMEI not required)
   const units = await prisma.storageUnit.findMany({
-    where: { trackable: 1, imei: { not: null } },
+    where: (useMock || !apiKey) ? { trackable: 1 } : { trackable: 1, imei: { not: null } },
     include: { currentDriver: { select: { name: true } } },
   });
 
@@ -20,9 +20,7 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.all(
     units.map(async (unit) => {
-      if (!unit.imei) return { ...unit, temperature: null, lat: null, lng: null };
-
-      if (useMock || !apiKey) {
+    if (useMock || !apiKey) {
         return {
           id: unit.id,
           unitNumber: unit.unitNumber,
@@ -37,6 +35,8 @@ export async function GET(req: NextRequest) {
           mock: true,
         };
       }
+
+      if (!unit.imei) return { ...unit, temperature: null, lat: null, lng: null };
 
       try {
         const res = await fetch(

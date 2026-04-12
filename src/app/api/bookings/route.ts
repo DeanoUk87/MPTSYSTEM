@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       driver: { select: { id: true, name: true, driverType: true } },
       secondMan: { select: { id: true, name: true } },
       bookingType: { select: { id: true, name: true } },
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true } },
+      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, signedBy: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 500,

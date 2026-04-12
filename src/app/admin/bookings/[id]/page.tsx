@@ -40,6 +40,13 @@ function InfoRow({ label, value }: { label: string; value?: string | number | nu
   );
 }
 
+function formatDate(s?: string) {
+  if (!s) return "";
+  const parts = s.split("-");
+  if (parts.length !== 3) return s;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
 function AddressBlock({ title, prefix, data }: { title: string; prefix: string; data: Booking }) {
   const addr = [
     (data as any)[`${prefix}Name`],
@@ -57,7 +64,7 @@ function AddressBlock({ title, prefix, data }: { title: string; prefix: string; 
         <h3 className="font-semibold text-slate-800">{title}</h3>
       </div>
       <div className="text-sm text-slate-600 space-y-1">
-        <p>{(data as any)[`${prefix}Date`]} {(data as any)[`${prefix}Time`]}</p>
+        <p>{formatDate((data as any)[`${prefix}Date`])} {(data as any)[`${prefix}Time`]}</p>
         <p>{addr || "No address"}</p>
         {(data as any)[`${prefix}Contact`] && <p>Contact: {(data as any)[`${prefix}Contact`]} {(data as any)[`${prefix}Phone`] ? `· ${(data as any)[`${prefix}Phone`]}` : ""}</p>}
         {(data as any)[`${prefix}Notes`]?.split("---ORDERS---")[0] && <p className="text-amber-600">Note: {(data as any)[`${prefix}Notes`].split("---ORDERS---")[0]}</p>}
@@ -211,8 +218,11 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     <h3 className="font-semibold text-slate-800">Via {booking.viaAddresses!.length > 1 ? idx + 1 : ""}</h3>
                     <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">{v.viaType}</span>
                   </div>
-                  <p className="text-xs text-slate-600">{v.postcode}</p>
-                  {v.viaDate && <p className="text-xs text-slate-400">{v.viaDate} {v.viaTime}</p>}
+                  <p className="text-xs text-slate-600 leading-snug">
+                    {[v.name, v.address1, v.address2, v.area, v.postcode].filter(Boolean).join(", ") || "No address"}
+                  </p>
+                  {v.contact && <p className="text-xs text-slate-400">Contact: {v.contact}{v.phone ? ` · ${v.phone}` : ""}</p>}
+                  {v.viaDate && <p className="text-xs text-slate-400">{formatDate(v.viaDate)} {v.viaTime}</p>}
                   {v.signedBy && <p className="text-xs text-emerald-600">✓ POD: {v.signedBy}</p>}
                   {v.notes?.split("---ORDERS---")[0] && <p className="text-xs text-amber-600">{v.notes.split("---ORDERS---")[0]}</p>}
                   {v.notes?.includes("---ORDERS---") && (() => {
@@ -278,19 +288,33 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* POD */}
-        {booking.podSignature && (
+        {(booking.podSignature || booking.viaAddresses?.some((v: any) => v.signedBy)) && (
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <h3 className="font-semibold text-slate-800 mb-3 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-600" />Proof of Delivery
             </h3>
-            <div className="grid sm:grid-cols-3 gap-4 text-sm">
-              <InfoRow label="Signed By" value={booking.podSignature} />
-              <InfoRow label="Relationship" value={booking.podRelationship} />
-              <InfoRow label="POD Date" value={booking.podDate} />
-              <InfoRow label="POD Time" value={booking.podTime} />
-              <InfoRow label="Temperature" value={booking.deliveredTemperature} />
-              {booking.driverNote && <InfoRow label="Driver Note" value={booking.driverNote} />}
-            </div>
+            {booking.podSignature && (
+              <div className="grid sm:grid-cols-3 gap-4 text-sm">
+                <InfoRow label="Signed By" value={booking.podSignature} />
+                <InfoRow label="Relationship" value={booking.podRelationship} />
+                <InfoRow label="POD Date" value={formatDate(booking.podDate)} />
+                <InfoRow label="POD Time" value={booking.podTime} />
+                <InfoRow label="Temperature" value={booking.deliveredTemperature} />
+                {booking.driverNote && <InfoRow label="Driver Note" value={booking.driverNote} />}
+              </div>
+            )}
+            {booking.viaAddresses?.map((v: any, idx: number) => v.signedBy ? (
+              <div key={v.id} className="border-t border-slate-100 pt-3 mt-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Via {idx + 1} POD</p>
+                <div className="grid sm:grid-cols-3 gap-4 text-sm">
+                  <InfoRow label="Signed By" value={v.signedBy} />
+                  <InfoRow label="Relationship" value={v.podRelationship} />
+                  <InfoRow label="POD Date" value={formatDate(v.podDate)} />
+                  <InfoRow label="POD Time" value={v.podTime} />
+                  <InfoRow label="Temperature" value={v.deliveredTemp} />
+                </div>
+              </div>
+            ) : null)}
           </div>
         )}
 

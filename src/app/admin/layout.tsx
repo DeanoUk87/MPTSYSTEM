@@ -59,10 +59,11 @@ function GlobalTempAlert() {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
-    setCollapsed(localStorage.getItem("mp_sidebar_collapsed") === "true");
+    const stored = localStorage.getItem("mp_sidebar_collapsed");
+    if (stored !== null) setCollapsed(stored === "true");
   }, []);
 
   function handleToggle(v: boolean) {

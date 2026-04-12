@@ -28,15 +28,16 @@ interface Booking {
   vehicle?: { name: string };
   driver?: { name: string; driverType: string };
   bookingType?: { name: string };
-  viaAddresses?: { id: string; postcode?: string; viaType?: string }[];
+  viaAddresses?: { id: string; postcode?: string; viaType?: string; signedBy?: string }[];
 }
 
 function StatusBadge({ booking }: { booking: Booking }) {
   const isQuote = booking.bookingType?.name?.toLowerCase() === "quote";
   if (isQuote) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>;
   if (!booking.driver) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>;
-  if (booking.podSignature && booking.podDataVerify) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">Completed</span>;
-  if (booking.podSignature) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">POD Received</span>;
+  const allViasPodded = !booking.viaAddresses?.length || booking.viaAddresses.every(v => v.signedBy);
+  if (booking.podSignature && booking.podDataVerify && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">Completed</span>;
+  if (booking.podSignature && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">POD Received</span>;
   return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>;
 }
 

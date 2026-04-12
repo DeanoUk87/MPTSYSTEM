@@ -51,6 +51,17 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setResults([]); setSearched(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
 
   async function search(v: string) {
     onChangePostcode(v.toUpperCase());
@@ -74,7 +85,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
 
   return (
     <div className="space-y-1.5">
-      <div className="relative">
+      <div className="relative" ref={containerRef}>
         <input
           type="text"
           value={postcode}
@@ -131,8 +142,21 @@ function NameSearch({ value, onChange, onApply, placeholder }: {
 }) {
   const [results, setResults] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const justSelected = useRef(false);
+  const nsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (nsContainerRef.current && !nsContainerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  useEffect(() => {
+    if (justSelected.current) { justSelected.current = false; return; }
     if (value.length < 2) { setResults([]); setOpen(false); return; }
     const t = setTimeout(async () => {
       try {
@@ -144,6 +168,7 @@ function NameSearch({ value, onChange, onApply, placeholder }: {
   }, [value]);
 
   function select(a: any) {
+    justSelected.current = true;
     onChange(a.name);
     onApply(a);
     setResults([]);
@@ -151,13 +176,11 @@ function NameSearch({ value, onChange, onApply, placeholder }: {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={nsContainerRef}>
       <input
         type="text"
         value={value}
         onChange={e => { onChange(e.target.value); }}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        onFocus={() => { if (results.length > 0) setOpen(true); }}
         placeholder={placeholder || "Business / Place Name"}
         className={inp}
       />

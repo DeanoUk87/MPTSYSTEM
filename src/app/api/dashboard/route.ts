@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
         collectionPostcode: true,
         deliveryPostcode: true,
         customerPrice: true,
+        driverCost: true,
         jobStatus: true,
         podSignature: true,
         podDataVerify: true,
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
         driver: { select: { name: true } },
         vehicle: { select: { name: true } },
         bookingType: { select: { name: true } },
+        viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, signedBy: true } },
       },
     }),
   ]);
