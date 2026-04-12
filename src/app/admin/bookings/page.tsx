@@ -72,7 +72,7 @@ export default function BookingsPage() {
 
   const columns: Column<Booking>[] = [
     { key: "jobRef", label: "Job Ref", render: (r) => (
-      <span className="font-mono text-xs font-semibold text-slate-700">{r.jobRef || r.id.slice(-6).toUpperCase()}</span>
+      <Link href={`/admin/bookings/${r.id}`} className="font-mono text-xs font-semibold text-blue-600 hover:underline">{r.jobRef || r.id.slice(-6).toUpperCase()}</Link>
     )},
     { key: "collectionDate", label: "Date", render: (r) => r.collectionDate ? r.collectionDate.split("-").reverse().join("-") : "—" },
     { key: "collectionTime", label: "Time", render: (r) => r.collectionTime || "—" },

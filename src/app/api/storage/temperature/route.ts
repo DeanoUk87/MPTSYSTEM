@@ -50,7 +50,33 @@ export async function GET(req: NextRequest) {
           { cache: "no-store" }
         );
         const data = res.ok ? await res.json() : {};
-        const temp = data.temperature ?? data.temp ?? data.Temperature ?? data.Temp ?? null;
+
+        // Try common field names then scan all keys for anything containing "temp"
+        function extractTemp(obj: any): string | null {
+          if (!obj || typeof obj !== "object") return null;
+          const direct = ["temperature", "temp", "Temperature", "Temp",
+            "temperature1", "temp1", "Temperature1", "Temp1", "tempC", "tempF",
+            "sensorTemp", "sensor_temp", "probe_temp", "reefer_temp"];
+          for (const f of direct) {
+            if (obj[f] != null && !isNaN(parseFloat(obj[f]))) return String(obj[f]);
+          }
+          // Scan all keys containing "temp"
+          for (const k of Object.keys(obj)) {
+            if (k.toLowerCase().includes("temp") && obj[k] != null && !isNaN(parseFloat(obj[k]))) {
+              return String(obj[k]);
+            }
+          }
+          // Recurse into nested objects
+          for (const k of Object.keys(obj)) {
+            if (obj[k] && typeof obj[k] === "object" && !Array.isArray(obj[k])) {
+              const nested = extractTemp(obj[k]);
+              if (nested !== null) return nested;
+            }
+          }
+          return null;
+        }
+        const temp = extractTemp(data);
+
         return {
           id: unit.id,
           unitNumber: unit.unitNumber,

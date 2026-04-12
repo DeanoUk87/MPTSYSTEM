@@ -438,16 +438,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     }
     const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = drivers.find((d: any) => d.id === driverId);
-    // Auto-fill units already assigned to this driver
+    // Auto-fill units already assigned to this driver — fill positionally, first 2 units
     const driverUnits = allStorageUnits.filter((u: any) => u.currentDriverId === driverId);
-    const autoChillUnit = driverUnits.find((u: any) => (u.unitType || "").toLowerCase() !== "ambient");
-    const autoAmbientUnit = driverUnits.find((u: any) => (u.unitType || "").toLowerCase() === "ambient");
     setF(p => ({
       ...p,
       driverId,
       driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost,
-      chillUnitId: autoChillUnit?.id ?? "",
-      ambientUnitId: autoAmbientUnit?.id ?? "",
+      chillUnitId: driverUnits[0]?.id ?? "",
+      ambientUnitId: driverUnits[1]?.id ?? "",
     }));
   }
 
