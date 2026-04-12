@@ -204,11 +204,12 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           <div className="grid grid-cols-3 gap-4 items-start">
             <AddressBlock title="Collection" prefix="collection" data={booking} />
             <div className="space-y-3">
-              {booking.viaAddresses?.map((v: any) => (
+              {booking.viaAddresses?.map((v: any, idx: number) => (
                 <div key={v.id} className="bg-white rounded-xl border border-slate-200 p-4 space-y-1 text-sm">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">{v.viaType}</span>
-                    <span className="font-semibold text-slate-800">{v.name}</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-4 h-4 text-indigo-600" />
+                    <h3 className="font-semibold text-slate-800">Via {booking.viaAddresses!.length > 1 ? idx + 1 : ""}</h3>
+                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">{v.viaType}</span>
                   </div>
                   <p className="text-xs text-slate-600">{v.postcode}</p>
                   {v.viaDate && <p className="text-xs text-slate-400">{v.viaDate} {v.viaTime}</p>}

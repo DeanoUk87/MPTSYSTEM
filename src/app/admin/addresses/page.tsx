@@ -94,7 +94,9 @@ export default function AddressesPage() {
                       </span>
                     )}
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      a.type === "collection" ? "bg-green-50 text-green-700" : "bg-purple-50 text-purple-700"
+                      a.type === "collection" ? "bg-green-50 text-green-700"
+                      : a.type === "via" ? "bg-indigo-50 text-indigo-700"
+                      : "bg-purple-50 text-purple-700"
                     }`}>
                       {a.type}
                     </span>

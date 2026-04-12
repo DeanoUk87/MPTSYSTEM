@@ -9,19 +9,28 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search")?.toLowerCase() ?? "";
 
-  // Pull distinct collection and delivery addresses from bookings
-  const bookings = await prisma.booking.findMany({
-    where: { deletedAt: null },
-    select: {
-      id: true,
-      collectionName: true, collectionAddress1: true, collectionAddress2: true,
-      collectionArea: true, collectionPostcode: true, collectionCountry: true,
-      collectionContact: true, collectionPhone: true,
-      deliveryName: true, deliveryAddress1: true, deliveryAddress2: true,
-      deliveryArea: true, deliveryPostcode: true, deliveryCountry: true,
-      deliveryContact: true, deliveryPhone: true,
-    },
-  });
+  // Pull distinct collection and delivery addresses from all bookings (incl. soft-deleted)
+  const [bookings, viaAddresses] = await Promise.all([
+    prisma.booking.findMany({
+      select: {
+        id: true,
+        collectionName: true, collectionAddress1: true, collectionAddress2: true,
+        collectionArea: true, collectionPostcode: true, collectionCountry: true,
+        collectionContact: true, collectionPhone: true,
+        deliveryName: true, deliveryAddress1: true, deliveryAddress2: true,
+        deliveryArea: true, deliveryPostcode: true, deliveryCountry: true,
+        deliveryContact: true, deliveryPhone: true,
+      },
+    }),
+    prisma.viaAddress.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true, bookingId: true, name: true,
+        address1: true, address2: true, area: true,
+        postcode: true, country: true, contact: true, phone: true, viaType: true,
+      },
+    }),
+  ]);
 
   // Build unique address map keyed by name+postcode
   const map = new Map<string, any>();
@@ -45,6 +54,25 @@ export async function GET(req: NextRequest) {
           type: prefix,
         });
       }
+    }
+  }
+  // Add via addresses
+  for (const v of viaAddresses) {
+    if (!v.name && !v.postcode) continue;
+    const key = `${(v.name ?? "").toLowerCase()}||${(v.postcode ?? "").toLowerCase()}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        name: v.name ?? "",
+        address1: v.address1 ?? "",
+        address2: v.address2 ?? "",
+        area: v.area ?? "",
+        postcode: v.postcode ?? "",
+        country: v.country ?? "",
+        contact: v.contact ?? "",
+        phone: v.phone ?? "",
+        bookingId: v.bookingId ?? "",
+        type: "via",
+      });
     }
   }
 

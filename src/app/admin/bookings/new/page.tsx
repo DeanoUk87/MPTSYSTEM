@@ -627,25 +627,23 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
 
-          {/* ── ROW 1: Customer | Purchase Order ── */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className={panel}>
-              <SHead color="bg-blue-700" icon="👤" label="Customer" />
-              <div className="p-4">
+          {/* ── ROW 1: Customer + Purchase Order (combined) ── */}
+          <div className={panel}>
+            <SHead color="bg-blue-700" icon="👤" label="Customer &amp; Order Info" />
+            <div className="p-4 grid grid-cols-2 gap-4">
+              {/* Left: customer info */}
+              <div className="space-y-2">
                 <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50">
                   <span className="flex-1 text-sm font-semibold text-slate-700">{customer.name}</span>
                   <button type="button" onClick={onBack} className="text-xs text-blue-500 hover:text-blue-700 font-medium underline shrink-0">Change</button>
                 </div>
-                <div className="mt-2 flex gap-2">
+                <div className="flex gap-2">
                   <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-blue-100 text-blue-700">{jtLabel}</span>
                   {customer.accountNumber && <span className="text-xs text-slate-400 self-center">{customer.accountNumber}</span>}
                 </div>
               </div>
-            </div>
-
-            <div className={panel}>
-              <SHead color="bg-blue-700" icon="📋" label="Purchase Order" />
-              <div className="p-4 grid grid-cols-2 gap-3">
+              {/* Right: PO + Booked By */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Purchase Order <span className="text-rose-500">*</span></label>
                   <input type="text" value={f.purchaseOrder} onChange={e => s("purchaseOrder", e.target.value)}
@@ -1203,8 +1201,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <input type="text" value={via.name || ""} onChange={e => updateVia(i, "name", e.target.value)} placeholder="Business / Place Name" className={inp} />
                       <div className="grid grid-cols-2 gap-1.5">
                         <input type="text" value={via.address1 || ""} onChange={e => updateVia(i, "address1", e.target.value)} placeholder="Address 1" className={inp} />
-                        <input type="text" value={via.area || ""} onChange={e => updateVia(i, "area", e.target.value)} placeholder="Town / Area" className={inp} />
+                        <input type="text" value={via.address2 || ""} onChange={e => updateVia(i, "address2", e.target.value)} placeholder="Address 2" className={inp} />
                       </div>
+                      <input type="text" value={via.area || ""} onChange={e => updateVia(i, "area", e.target.value)} placeholder="Town / Area" className={inp} />
                       <div className="grid grid-cols-2 gap-1.5">
                         <input type="text" value={via.contact || ""} onChange={e => updateVia(i, "contact", e.target.value)} placeholder="Contact" className={inp} />
                         <input type="text" value={via.phone || ""} onChange={e => updateVia(i, "phone", e.target.value)} placeholder="Phone" className={inp} />
@@ -1227,7 +1226,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                               {["Chill","Amb","Pump","Stores"].map(t => (
                                 <button key={t} type="button" onClick={() => updateViaOrder(i, oi, "type", t)}
                                   className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
-                                    (order.type || "Chill") === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                   }`}>{t}</button>
                               ))}
                             </div>

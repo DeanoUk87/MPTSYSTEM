@@ -246,6 +246,26 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
     });
   }, [id]);
 
+  // Auto-draw route on map once booking data and map are both ready
+  useEffect(() => {
+    if (!f.collectionPostcode || !f.deliveryPostcode) return;
+    const tryDraw = () => {
+      const g = (window as any).google;
+      if (!g?.maps || !googleMapRef.current) { setTimeout(tryDraw, 300); return; }
+      const viaPostcodes = vias.filter((v: any) => v.postcode).map((v: any) => v.postcode);
+      new g.maps.DirectionsService().route({
+        origin: f.collectionPostcode,
+        destination: f.deliveryPostcode,
+        waypoints: viaPostcodes.map((p: string) => ({ location: p, stopover: true })),
+        travelMode: g.maps.TravelMode.DRIVING,
+      }, (result: any, status: string) => {
+        if (status === "OK") directionsRendererRef.current?.setDirections(result);
+      });
+    };
+    tryDraw();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [f.collectionPostcode, f.deliveryPostcode]);
+
   // Load vehicle rates when vehicle changes
   useEffect(() => {
     if (!f.vehicleId || !customer?.id) { setVehicleRates([]); return; }
@@ -926,8 +946,9 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <input type="text" value={via.name || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))} placeholder="Business / Place Name" className={inp} />
                       <div className="grid grid-cols-2 gap-1.5">
                         <input type="text" value={via.address1 || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address1: e.target.value } : x))} placeholder="Address 1" className={inp} />
-                        <input type="text" value={via.area || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, area: e.target.value } : x))} placeholder="Town / Area" className={inp} />
+                        <input type="text" value={via.address2 || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address2: e.target.value } : x))} placeholder="Address 2" className={inp} />
                       </div>
+                      <input type="text" value={via.area || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, area: e.target.value } : x))} placeholder="Town / Area" className={inp} />
                       <div className="grid grid-cols-2 gap-1.5">
                         <input type="text" value={via.contact || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, contact: e.target.value } : x))} placeholder="Contact" className={inp} />
                         <input type="text" value={via.phone || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, phone: e.target.value } : x))} placeholder="Phone" className={inp} />
@@ -953,7 +974,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                               {["Chill","Amb","Pump","Stores"].map(t => (
                                 <button key={t} type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.map((o: any, oIdx: number) => oIdx === oi ? { ...o, type: t } : o) } : x))}
                                   className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
-                                    (order.type || "Chill") === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                  order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                   }`}>{t}</button>
                               ))}
                             </div>

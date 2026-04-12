@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     sentInvoices,
     unsent,
     archivedSales,
-    recentInvoices,
+    recentBookings,
   ] = await Promise.all([
     prisma.customer.count(),
     prisma.sale.count(),
@@ -28,22 +28,27 @@ export async function GET(req: NextRequest) {
     prisma.invoice.count({ where: { emailStatus: 1 } }),
     prisma.invoice.count({ where: { emailStatus: 0 } }),
     prisma.saleArchive.count(),
-    prisma.invoice.findMany({
-      take: 10,
-      orderBy: { dateCreated: "desc" },
+    prisma.booking.findMany({
+      where: { deletedAt: null },
+      take: 15,
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
-        invoiceNumber: true,
-        customerAccount: true,
-        invoiceDate: true,
-        emailStatus: true,
-        printer: true,
+        jobRef: true,
+        collectionDate: true,
+        collectionPostcode: true,
+        deliveryPostcode: true,
+        jobStatus: true,
+        podSignature: true,
+        customer: { select: { name: true } },
+        driver: { select: { name: true } },
+        bookingType: { select: { name: true } },
       },
     }),
   ]);
 
   return NextResponse.json({
     stats: { totalCustomers, totalSales, totalInvoices, pendingInvoices, sentInvoices, unsent, archivedSales },
-    recentInvoices,
+    recentBookings,
   });
 }

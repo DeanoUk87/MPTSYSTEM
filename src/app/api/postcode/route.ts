@@ -37,7 +37,9 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.CRAFTY_CLICKS_API_KEY || "b6156-93a8a-c5122-0314a";
 
   try {
-    const url = `https://api.craftyclicks.co.uk/address/1.1/find?postcode=${encodeURIComponent(postcode)}&key=${apiKey}&response=data_formatted`;
+    // Crafty Clicks v1.1 requires `query` + `country` parameters (not `postcode`)
+    const clean = postcode.replace(/\s+/g, "").toUpperCase();
+    const url = `https://api.craftyclicks.co.uk/address/1.1/find?query=${encodeURIComponent(clean)}&country=GB&key=${apiKey}`;
     const res = await fetch(url);
 
     if (!res.ok) {
@@ -57,23 +59,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ results: fallback, _cc_error: data.error_code ?? data.error });
     }
 
-    // Support both `result` array (Crafty Clicks v1.1) and `results`/`addresses` arrays
-    const raw: any[] = data.result ?? data.results ?? data.addresses ?? [];
+    // Crafty Clicks find returns: { results: [{ id, count, labels: [postcode, "line1, line2, city"] }] }
+    const raw: any[] = data.results ?? [];
     if (raw.length === 0) {
       const fallback = await fallbackLookup(postcode);
       return NextResponse.json({ results: fallback });
     }
 
-    // Return normalised address list
-    const results = raw.map((r: any) => ({
-      line1: r.line_1 ?? r.address_line_1 ?? "",
-      line2: r.line_2 ?? r.address_line_2 ?? "",
-      line3: r.line_3 ?? r.address_line_3 ?? "",
-      city: r.town ?? r.locality ?? r.town_or_city ?? r.post_town ?? "",
-      county: r.county ?? "",
-      postcode: postcode.toUpperCase(),
-      label: r.line_1 ? `${r.line_1}, ${r.town ?? r.locality ?? r.town_or_city ?? ""}` : (r.place_name ?? ""),
-    }));
+    // Parse each result's label into structured address fields
+    const results = raw.map((r: any) => {
+      const addressStr: string = r.labels?.[1] ?? "";
+      const parts = addressStr.split(", ").map((p: string) => p.trim()).filter(Boolean);
+      const line1 = parts[0] ?? "";
+      const city = parts.length > 1 ? parts[parts.length - 1] : "";
+      const line2 = parts.length > 2 ? parts.slice(1, -1).join(", ") : (parts.length === 2 ? "" : "");
+      return {
+        line1,
+        line2,
+        line3: "",
+        city,
+        county: "",
+        postcode: (r.labels?.[0] ?? postcode).toUpperCase(),
+        label: addressStr,
+      };
+    });
 
     return NextResponse.json({ results });
   } catch (e: any) {
