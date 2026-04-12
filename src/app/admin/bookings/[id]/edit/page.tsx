@@ -9,12 +9,12 @@ import Link from "next/link";
 const inp = "w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-colors";
 const inp2 = "w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono transition-colors";
 const inpReq = "w-full px-3 py-2 border-2 border-rose-400 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 bg-rose-50 transition-colors";
-const panel = "bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden";
+const panel = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden";
 const costInp = "w-24 px-2 py-2 border border-slate-200 rounded-xl text-sm text-right text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
 
-function SHead({ color, icon, label }: { color: string; icon: string; label: string }) {
+function SHead({ color: _color, icon, label }: { color: string; icon: string; label: string }) {
   return (
-    <div className={`flex items-center gap-2 px-4 py-3 text-white text-xs font-bold uppercase tracking-widest ${color}`}>
+    <div className="flex items-center gap-2 px-4 py-3 text-slate-100 text-xs font-semibold uppercase tracking-wider bg-slate-700 border-b border-slate-600">
       <span className="text-base">{icon}</span> {label}
     </div>
   );
