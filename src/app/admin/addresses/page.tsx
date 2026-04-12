@@ -5,7 +5,7 @@ import { Search, Loader2, MapPin, Trash2 } from "lucide-react";
 interface Address {
   name: string; address1: string; address2: string; area: string;
   postcode: string; country: string; contact: string; phone: string;
-  bookingId: string; type: "collection" | "delivery";
+  bookingId: string; type: "collection" | "delivery" | "via";
 }
 
 const HIDDEN_KEY = "mp_hidden_addresses";
