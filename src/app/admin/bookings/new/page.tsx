@@ -430,18 +430,24 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       .then(r => r.json()).then(d => setCxContacts(d.contacts ?? []));
   }, [f.cxDriverId]);
 
-  // Handle driver change — update cost or clear if deselected
+  // Handle driver change — update cost, auto-fill that driver's assigned units, or clear if deselected
   function handleDriverChange(driverId: string) {
     if (!driverId) {
-      setF(p => ({ ...p, driverId: "", driverCost: "" }));
+      setF(p => ({ ...p, driverId: "", driverCost: "", chillUnitId: "", ambientUnitId: "" }));
       return;
     }
     const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = drivers.find((d: any) => d.id === driverId);
+    // Auto-fill units already assigned to this driver
+    const driverUnits = allStorageUnits.filter((u: any) => u.currentDriverId === driverId);
+    const autoChillUnit = driverUnits.find((u: any) => (u.unitType || "").toLowerCase() !== "ambient");
+    const autoAmbientUnit = driverUnits.find((u: any) => (u.unitType || "").toLowerCase() === "ambient");
     setF(p => ({
       ...p,
       driverId,
       driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost,
+      chillUnitId: autoChillUnit?.id ?? "",
+      ambientUnitId: autoAmbientUnit?.id ?? "",
     }));
   }
 

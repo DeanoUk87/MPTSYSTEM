@@ -857,7 +857,20 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         const id = e.target.value;
                         const miles = Math.round(parseFloat(f.miles) || 0);
                         const dr = drivers.find((d: any) => d.id === id);
-                        setF(p => ({ ...p, driverId: id, driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost }));
+                        if (!id) {
+                          setF(p => ({ ...p, driverId: "", driverCost: "", chillUnitId: "", ambientUnitId: "" }));
+                          return;
+                        }
+                        const driverUnits = allStorageUnits.filter((u: any) => u.currentDriverId === id);
+                        const autoChillUnit = driverUnits.find((u: any) => (u.unitType || "").toLowerCase() !== "ambient");
+                        const autoAmbientUnit = driverUnits.find((u: any) => (u.unitType || "").toLowerCase() === "ambient");
+                        setF(p => ({
+                          ...p,
+                          driverId: id,
+                          driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost,
+                          chillUnitId: autoChillUnit?.id ?? p.chillUnitId,
+                          ambientUnitId: autoAmbientUnit?.id ?? p.ambientUnitId,
+                        }));
                       }} className={inp}>
                         <option value="">— Select Driver —</option>
                         {drivers.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
