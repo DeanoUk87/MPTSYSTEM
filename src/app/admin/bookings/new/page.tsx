@@ -16,8 +16,8 @@ const costInp = "w-24 px-2 py-2 border border-slate-200 rounded-xl text-sm text-
 
 function SHead({ color: _color, icon, label }: { color: string; icon: string; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-3 text-slate-100 text-xs font-semibold uppercase tracking-wider bg-slate-700 border-b border-slate-600">
-      <span className="text-base">{icon}</span> {label}
+    <div className="flex items-center gap-2 px-4 py-2 text-slate-100 text-xs font-semibold uppercase tracking-wider bg-slate-700 border-b border-slate-600">
+      <span className="text-sm">{icon}</span> {label}
     </div>
   );
 }
@@ -48,6 +48,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   onApply: (r: any) => void;
   placeholder?: string;
 }) {
+  const [searchVal, setSearchVal] = useState(""); // always starts blank — search only
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -64,7 +65,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   }, []);
 
   async function search(v: string) {
-    onChangePostcode(v.toUpperCase());
+    setSearchVal(v.toUpperCase());
     const pc = v.replace(/\s/g, "");
     if (pc.length < 5) { setResults([]); setSearched(false); return; }
     setLoading(true);
@@ -79,6 +80,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   function selectAddress(r: any) {
     onApply(r);
     onChangePostcode(r.postcode);
+    setSearchVal(""); // clear search field after picking
     setResults([]);
     setSearched(false);
   }
@@ -88,7 +90,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
       <div className="relative" ref={containerRef}>
         <input
           type="text"
-          value={postcode}
+          value={searchVal}
           onChange={e => search(e.target.value)}
           placeholder={placeholder || "Enter postcode to find address..."}
           className={inp + " pr-8 uppercase font-mono"}
@@ -143,6 +145,7 @@ function NameSearch({ value, onChange, onApply, placeholder }: {
   const [results, setResults] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const justSelected = useRef(false);
+  const initialised = useRef(false);
   const nsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -156,6 +159,7 @@ function NameSearch({ value, onChange, onApply, placeholder }: {
   }, []);
 
   useEffect(() => {
+    if (!initialised.current) { initialised.current = true; return; } // skip initial mount
     if (justSelected.current) { justSelected.current = false; return; }
     if (value.length < 2) { setResults([]); setOpen(false); return; }
     const t = setTimeout(async () => {
@@ -708,7 +712,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
           {/* ── ROW 1: Customer + Purchase Order (combined) ── */}
           <div className={panel}>
             <SHead color="bg-blue-700" icon="👤" label="Customer &amp; Order Info" />
-            <div className="p-4 grid grid-cols-2 gap-4">
+            <div className="p-4 grid grid-cols-2 gap-6">
               {/* Left: customer info */}
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 px-2.5 py-1.5 border border-slate-200 rounded-xl bg-slate-50">
@@ -1228,7 +1232,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         onChange={e => s("chillUnitId", e.target.value)}
                         className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">— Chill Unit: None —</option>
+                        <option value="">— Select Unit —</option>
                         {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
@@ -1243,7 +1247,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         onChange={e => s("ambientUnitId", e.target.value)}
                         className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">— Ambient Unit: None —</option>
+                        <option value="">— Select Unit —</option>
                         {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}

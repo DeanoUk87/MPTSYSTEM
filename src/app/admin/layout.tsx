@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar collapsed={collapsed} onToggle={handleToggle} />
-      <main className={`flex-1 min-h-screen flex flex-col transition-[margin] duration-200 ${collapsed ? "ml-16" : "ml-64"}`}>
+      <main className={`flex-1 min-w-0 min-h-screen flex flex-col transition-[margin] duration-200 ${collapsed ? "ml-16" : "ml-64"}`}>
         {children}
       </main>
       <GlobalTempAlert />

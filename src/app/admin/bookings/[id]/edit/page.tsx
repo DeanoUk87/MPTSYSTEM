@@ -14,8 +14,8 @@ const costInp = "w-24 px-2 py-2 border border-slate-200 rounded-xl text-sm text-
 
 function SHead({ color: _color, icon, label }: { color: string; icon: string; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-3 text-slate-100 text-xs font-semibold uppercase tracking-wider bg-slate-700 border-b border-slate-600">
-      <span className="text-base">{icon}</span> {label}
+    <div className="flex items-center gap-2 px-4 py-2 text-slate-100 text-xs font-semibold uppercase tracking-wider bg-slate-700 border-b border-slate-600">
+      <span className="text-sm">{icon}</span> {label}
     </div>
   );
 }
@@ -36,6 +36,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   onChangePostcode: (v: string) => void; onChangeCountry: (v: string) => void;
   onApply: (r: any) => void; placeholder?: string;
 }) {
+  const [searchVal, setSearchVal] = useState(""); // always starts blank — search only
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -52,7 +53,7 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   }, []);
 
   async function search(v: string) {
-    onChangePostcode(v.toUpperCase());
+    setSearchVal(v.toUpperCase());
     const pc = v.replace(/\s/g, "");
     if (pc.length < 5) { setResults([]); setSearched(false); return; }
     setLoading(true);
@@ -64,12 +65,12 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
     } catch { setResults([]); } finally { setLoading(false); }
   }
 
-  function selectAddress(r: any) { onApply(r); onChangePostcode(r.postcode); setResults([]); setSearched(false); }
+  function selectAddress(r: any) { onApply(r); onChangePostcode(r.postcode); setSearchVal(""); setResults([]); setSearched(false); }
 
   return (
     <div className="space-y-1.5">
       <div className="relative" ref={containerRef}>
-        <input type="text" value={postcode} onChange={e => search(e.target.value)}
+        <input type="text" value={searchVal} onChange={e => search(e.target.value)}
           placeholder={placeholder || "Enter postcode to find address..."}
           className={inp + " pr-8 uppercase font-mono"} />
         {loading && <Loader2 className="absolute right-2.5 top-2.5 w-4 h-4 animate-spin text-slate-400" />}
@@ -111,6 +112,7 @@ function NameSearch({ value, onChange, onApply }: {
   const [results, setResults] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const justSelected = useRef(false);
+  const initialised = useRef(false);
   const nsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,6 +126,7 @@ function NameSearch({ value, onChange, onApply }: {
   }, []);
 
   useEffect(() => {
+    if (!initialised.current) { initialised.current = true; return; } // skip initial mount
     if (justSelected.current) { justSelected.current = false; return; }
     if (value.length < 2) { setResults([]); setOpen(false); return; }
     const t = setTimeout(async () => {
@@ -545,23 +548,22 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {/* Row 1: Customer info + PO */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className={panel}>
-              <SHead color="bg-blue-700" icon="👤" label="Customer" />
-              <div className="p-4">
-                <div className="flex items-center gap-3 px-3 py-2.5 border border-slate-200 rounded-xl bg-slate-50">
-                  <span className="flex-1 text-sm font-semibold text-slate-700">{customer?.name}</span>
+          {/* Row 1: Customer info + PO — combined into one panel, matching create layout */}
+          <div className={panel}>
+            <SHead color="bg-blue-700" icon="👤" label="Customer &amp; Order Info" />
+            <div className="p-4 grid grid-cols-2 gap-6">
+              {/* Left: customer info */}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 px-2.5 py-1.5 border border-slate-200 rounded-xl bg-slate-50">
+                  <span className="text-xs font-semibold text-slate-700 truncate flex-1">{customer?.name}</span>
                 </div>
-                <div className="mt-2 flex gap-2">
+                <div className="flex gap-2">
                   <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-blue-100 text-blue-700">{jtLabel}</span>
                   {customer?.accountNumber && <span className="text-xs text-slate-400 self-center">{customer.accountNumber}</span>}
                 </div>
               </div>
-            </div>
-            <div className={panel}>
-              <SHead color="bg-blue-700" icon="📋" label="Purchase Order" />
-              <div className="p-4 grid grid-cols-2 gap-3">
+              {/* Right: PO + Booked By */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Purchase Order <span className="text-rose-500">*</span></label>
                   <input type="text" value={f.purchaseOrder || ""} onChange={e => s("purchaseOrder", e.target.value)}
@@ -921,11 +923,10 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         <Plus className="w-3 h-3" /> Show All Units
                       </button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-blue-700 font-semibold w-14 shrink-0">🧊 Chill</span>
+                    <div>
                       <select value={f.chillUnitId || ""} onChange={e => s("chillUnitId", e.target.value)}
-                        className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">— None —</option>
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">— Select Unit —</option>
                         {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
@@ -933,11 +934,10 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         ))}
                       </select>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-amber-700 font-semibold w-14 shrink-0">🌡 Ambient</span>
+                    <div>
                       <select value={f.ambientUnitId || ""} onChange={e => s("ambientUnitId", e.target.value)}
-                        className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">— None —</option>
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">— Select Unit —</option>
                         {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
