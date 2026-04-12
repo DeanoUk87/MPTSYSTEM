@@ -515,10 +515,11 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       return;
     }
     setCalcMiles(true);
+    const viaPostcodes = vias.filter((v: any) => v.postcode).map((v: any) => v.postcode);
     try {
       const res = await fetch("/api/bookings/miles", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: f.collectionPostcode, destination: f.deliveryPostcode, avoidTolls: f.avoidTolls }),
+        body: JSON.stringify({ origin: f.collectionPostcode, destination: f.deliveryPostcode, avoidTolls: f.avoidTolls, waypoints: viaPostcodes }),
       });
       const data = await res.json();
       if (data.miles !== undefined) {
@@ -531,6 +532,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       if (g && googleMapRef.current) {
         new g.maps.DirectionsService().route({
           origin: f.collectionPostcode, destination: f.deliveryPostcode,
+          waypoints: viaPostcodes.map((p: string) => ({ location: p, stopover: true })),
           travelMode: g.maps.TravelMode.DRIVING, avoidTolls: f.avoidTolls,
         }, (result: any, status: string) => {
           if (status === "OK") directionsRendererRef.current?.setDirections(result);
@@ -937,7 +939,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-full text-xs font-semibold transition-colors disabled:opacity-60">
                       Apply New Mileage
                     </button>
-                    <span className="text-slate-300 text-xs">|</span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 mt-1">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider w-full">Customer View Controls</span>
                     <Toggle checked={!!f.hideTrackingTemperature} onChange={v => s("hideTrackingTemperature", v)} label="Hide Temp" />
                     <Toggle checked={!!f.hideTrackingMap} onChange={v => s("hideTrackingMap", v)} label="Hide Map" />
                   </div>

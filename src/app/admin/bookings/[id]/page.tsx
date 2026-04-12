@@ -26,6 +26,7 @@ interface Booking {
   podSignature?: string; podTime?: string; podDate?: string; podDataVerify: boolean;
   podRelationship?: string; driverNote?: string; deliveredTemperature?: string;
   hideTrackingTemperature: boolean; hideTrackingMap: boolean;
+  jobRef?: string;
   viaAddresses?: any[];
 }
 
@@ -60,6 +61,18 @@ function AddressBlock({ title, prefix, data }: { title: string; prefix: string; 
         <p>{addr || "No address"}</p>
         {(data as any)[`${prefix}Contact`] && <p>Contact: {(data as any)[`${prefix}Contact`]} {(data as any)[`${prefix}Phone`] ? `· ${(data as any)[`${prefix}Phone`]}` : ""}</p>}
         {(data as any)[`${prefix}Notes`]?.split("---ORDERS---")[0] && <p className="text-amber-600">Note: {(data as any)[`${prefix}Notes`].split("---ORDERS---")[0]}</p>}
+        {(data as any)[`${prefix}Notes`]?.includes("---ORDERS---") && (() => {
+          try {
+            const orders = JSON.parse((data as any)[`${prefix}Notes`].split("---ORDERS---")[1] || "[]");
+            return orders.length > 0 ? (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {orders.map((o: any, i: number) => (
+                  <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
+                ))}
+              </div>
+            ) : null;
+          } catch { return null; }
+        })()}
       </div>
     </div>
   );
@@ -122,7 +135,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex-1">
-      <Topbar title={`Booking #${id.slice(-8).toUpperCase()}`} subtitle={booking.customer?.name} />
+      <Topbar title={`Booking #${booking.jobRef || id.slice(-8).toUpperCase()}`} subtitle={booking.customer?.name} />
       <div className="p-6 space-y-4 max-w-5xl">
         {/* Header actions */}
         <div className="flex items-center justify-between">
@@ -205,6 +218,18 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     {v.viaDate && <p className="text-xs text-slate-400">{v.viaDate} {v.viaTime}</p>}
                     {v.signedBy && <p className="text-xs text-emerald-600">✓ POD: {v.signedBy}</p>}
                     {v.notes?.split("---ORDERS---")[0] && <p className="text-xs text-amber-600">{v.notes.split("---ORDERS---")[0]}</p>}
+                    {v.notes?.includes("---ORDERS---") && (() => {
+                      try {
+                        const orders = JSON.parse(v.notes.split("---ORDERS---")[1] || "[]");
+                        return orders.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {orders.map((o: any, i: number) => (
+                              <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
+                            ))}
+                          </div>
+                        ) : null;
+                      } catch { return null; }
+                    })()}
                   </div>
                 </div>
               ))}
