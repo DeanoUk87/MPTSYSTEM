@@ -45,39 +45,38 @@ export async function GET(req: NextRequest) {
       }
 
       try {
+        // GET /v1/devices/sensor-values — returns all devices with sensor arrays
+        // Auth: Bearer token in header (not query param)
         const res = await fetch(
-          `https://gpslive.co.uk/api/device?imei=${unit.imei}&key=${apiKey}`,
-          { cache: "no-store" }
+          `https://api.gpslive.app/v1/devices/sensor-values`,
+          { cache: "no-store", headers: { Authorization: `Bearer ${apiKey}` } }
         );
         const rawText = await res.text();
-        let data: any = {};
-        try { data = JSON.parse(rawText); } catch { /* non-JSON response — API URL may be wrong */ }
+        let allDevices: any[] = [];
+        try {
+          const json = JSON.parse(rawText);
+          // API may return plain array or { data: [...] }
+          allDevices = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+        } catch { /* non-JSON — leave allDevices empty */ }
 
-        // Try common field names then scan all keys for anything containing "temp"
-        function extractTemp(obj: any): string | null {
-          if (!obj || typeof obj !== "object") return null;
-          const direct = ["temperature", "temp", "Temperature", "Temp",
-            "temperature1", "temp1", "Temperature1", "Temp1", "tempC", "tempF",
-            "sensorTemp", "sensor_temp", "probe_temp", "reefer_temp"];
-          for (const f of direct) {
-            if (obj[f] != null && !isNaN(parseFloat(obj[f]))) return String(obj[f]);
+        // Find the device matching this unit's IMEI
+        const device = allDevices.find((d: any) => String(d.imei) === String(unit.imei));
+
+        // Extract temperature from sensors array (first sensor whose name contains "Temperature")
+        let temp: string | null = null;
+        if (device?.sensors) {
+          const tSensor = device.sensors.find((s: any) => /temperature/i.test(s.name ?? ""));
+          if (tSensor?.data?.computed_value != null) {
+            temp = String(tSensor.data.computed_value);
           }
-          // Scan all keys containing "temp"
-          for (const k of Object.keys(obj)) {
-            if (k.toLowerCase().includes("temp") && obj[k] != null && !isNaN(parseFloat(obj[k]))) {
-              return String(obj[k]);
-            }
-          }
-          // Recurse into nested objects
-          for (const k of Object.keys(obj)) {
-            if (obj[k] && typeof obj[k] === "object" && !Array.isArray(obj[k])) {
-              const nested = extractTemp(obj[k]);
-              if (nested !== null) return nested;
-            }
-          }
-          return null;
         }
-        const temp = extractTemp(data);
+        // Fallback: objectData.data.params.temp1 is stored ×10 (e.g. 206 = 20.6°C)
+        if (temp === null && device?.objectData?.data?.params?.temp1 != null) {
+          temp = (parseFloat(device.objectData.data.params.temp1) / 10).toFixed(1);
+        }
+
+        const lat = device?.objectData?.data?.latitude ?? device?.lat ?? null;
+        const lng = device?.objectData?.data?.longitude ?? device?.lng ?? null;
 
         return {
           id: unit.id,
@@ -87,9 +86,9 @@ export async function GET(req: NextRequest) {
           availability: unit.availability,
           currentDriver: unit.currentDriver,
           temperature: temp,
-          lat: data.lat ?? data.latitude ?? null,
-          lng: data.lng ?? data.longitude ?? null,
-          timestamp: data.timestamp ?? data.datetime ?? new Date().toISOString(),
+          lat: lat,
+          lng: lng,
+          timestamp: device?.objectData?.data?.dtTracker ?? new Date().toISOString(),
         };
       } catch {
         return { id: unit.id, unitNumber: unit.unitNumber, imei: unit.imei, temperature: null, lat: null, lng: null };

@@ -14,30 +14,18 @@ export async function GET(req: NextRequest) {
   const unit = await prisma.storageUnit.findFirst({ where: { imei: { not: null } } });
   if (!unit) return NextResponse.json({ error: "No units with IMEI found" }, { status: 404 });
 
-  // GPSLive is an Angular SPA — every gpslive.co.uk URL returns HTML.
-  // The JSON API must be on a separate host/subdomain.
+  // The real API is api.gpslive.app with Bearer auth (from old Laravel StorageService)
   const IMEI = unit.imei;
   const KEY = apiKey;
   const urlsToTry = [
-    // API subdomain variants
-    `https://api.gpslive.co.uk/device?imei=${IMEI}&key=${KEY}`,
-    `https://api.gpslive.co.uk/v1/device?imei=${IMEI}&key=${KEY}`,
-    `https://api.gpslive.co.uk/devices/${IMEI}?key=${KEY}`,
-    `https://api.gpslive.co.uk/track?imei=${IMEI}&key=${KEY}`,
-    // Tracker subdomain
-    `https://tracker.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
-    // app subdomain
-    `https://app.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
-    // portal subdomain
-    `https://portal.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
-    // server subdomain
-    `https://server.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
+    `https://api.gpslive.app/v1/devices/sensor-values`,  // temperature + ignition
+    `https://api.gpslive.app/v1/devices`,                // positions + objectData
   ];
 
   const results: any[] = [];
   for (const url of urlsToTry) {
     try {
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { cache: "no-store", headers: { Authorization: `Bearer ${KEY}` } });
       const rawText = await res.text();
       let parsed = null;
       let parseError = null;

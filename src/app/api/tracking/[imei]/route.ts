@@ -24,25 +24,41 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ imei
   }
 
   try {
-    // GPS Live API call
-    const url = `https://gpslive.co.uk/api/device?imei=${imei}&key=${apiKey}`;
-    const res = await fetch(url, { next: { revalidate: 30 } });
+    // GET /v1/devices — includes objectData.data with lat/lng and params.temp1
+    // Auth: Bearer token in header
+    const res = await fetch(`https://api.gpslive.app/v1/devices`, {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
 
     if (!res.ok) {
       return NextResponse.json({ error: "Tracking API unavailable", status: res.status }, { status: 502 });
     }
 
-    const data = await res.json();
+    const allDevices: any[] = await res.json().catch(() => []);
+    const device = allDevices.find((d: any) => String(d.imei) === String(imei));
+
+    if (!device) {
+      return NextResponse.json({ error: "Device not found", imei }, { status: 404 });
+    }
+
+    const data = device.objectData?.data ?? {};
+    const lat = data.latitude ?? null;
+    const lng = data.longitude ?? null;
+
+    // temp1 is stored ×10 (e.g. 206 = 20.6°C)
+    const rawTemp = data.params?.temp1 ?? null;
+    const temperature = rawTemp !== null ? (parseFloat(rawTemp) / 10).toFixed(1) : null;
 
     // Normalise response to our schema
     return NextResponse.json({
       imei,
-      lat: data.lat ?? data.latitude ?? null,
-      lng: data.lng ?? data.longitude ?? null,
-      temperature: data.temperature ?? data.temp ?? null,
+      lat,
+      lng,
+      temperature,
       speed: data.speed ?? null,
-      timestamp: data.timestamp ?? data.datetime ?? new Date().toISOString(),
-      raw: data,
+      timestamp: data.dtTracker ?? new Date().toISOString(),
+      raw: device,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
