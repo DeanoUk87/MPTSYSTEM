@@ -18,8 +18,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       calibrationDate: body.calibrationDate || null,
       // Only update currentDriverId if it was explicitly sent in the request
       ...(body.currentDriverId !== undefined && { currentDriverId: body.currentDriverId || null }),
-      // Auto-enable live tracking when an IMEI is set; respect explicit trackable field otherwise
-      trackable: body.imei ? 1 : (body.trackable ?? 0),
+      // Preserve existing trackable state — only the booking system controls this
+      ...(body.trackable !== undefined && { trackable: body.trackable }),
     },
   });
   return NextResponse.json(unit);

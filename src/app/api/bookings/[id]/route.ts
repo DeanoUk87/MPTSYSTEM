@@ -38,6 +38,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           secondManContactId: _smc, cxDriverContactId: _cxc,
           deadMilesEnabled: _dme, deadMiles: _dm, ...rest } = body;
 
+  // Load current booking so we can detect which units are being removed
+  const existing = await prisma.booking.findUnique({
+    where: { id },
+    select: { chillUnitId: true, ambientUnitId: true },
+  });
+
   const booking = await prisma.booking.update({
     where: { id },
     data: {
@@ -49,6 +55,34 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     },
   });
 
+  // Handle units being REMOVED from this booking — reset them
+  const oldUnits = [existing?.chillUnitId, existing?.ambientUnitId].filter(Boolean) as string[];
+  const newUnits = [chillUnitId, ambientUnitId].filter(Boolean) as string[];
+  const removedUnits = oldUnits.filter(uid => !newUnits.includes(uid));
+  for (const uid of removedUnits) {
+    await prisma.storageUnit.update({
+      where: { id: uid },
+      data: { trackable: 0, availability: "Yes", currentDriverId: null, jobId: null },
+    }).catch(() => {});
+  }
+
+  // Update storage unit records for currently-assigned units
+  for (const unitId of newUnits) {
+    if (driverId) {
+      // Driver + unit: enable tracking
+      await prisma.storageUnit.update({
+        where: { id: unitId },
+        data: { trackable: 1, availability: "No", currentDriverId: driverId, jobId: id },
+      }).catch(() => {});
+    } else {
+      // Unit assigned but no driver — unavailable, tracking OFF
+      await prisma.storageUnit.update({
+        where: { id: unitId },
+        data: { trackable: 0, availability: "No", currentDriverId: null },
+      }).catch(() => {});
+    }
+  }
+
   // Replace via addresses if provided
   if (Array.isArray(viaData)) {
     await prisma.viaAddress.deleteMany({ where: { bookingId: id } });
@@ -58,14 +92,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const { id: _id, bookingId: _bid, createdAt: _ca, updatedAt: _ua, deletedAt: _da, collectedOrders: _co, ...viaFields } = via;
       await prisma.viaAddress.create({ data: { ...viaFields, bookingId: id } });
     }
-  }
-
-  // Update storage unit records when assigned
-  for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
-    await prisma.storageUnit.update({
-      where: { id: unitId as string },
-      data: { trackable: 1, availability: "No", currentDriverId: driverId || null },
-    }).catch(() => {/* non-critical */});
   }
 
   return NextResponse.json(booking);
@@ -79,6 +105,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+
+  // Reset any storage units assigned to this booking before soft-deleting
+  const bookingToDelete = await prisma.booking.findUnique({
+    where: { id },
+    select: { chillUnitId: true, ambientUnitId: true },
+  });
+  for (const uid of [bookingToDelete?.chillUnitId, bookingToDelete?.ambientUnitId].filter(Boolean) as string[]) {
+    await prisma.storageUnit.update({
+      where: { id: uid },
+      data: { trackable: 0, availability: "Yes", currentDriverId: null, jobId: null },
+    }).catch(() => {});
+  }
+
   await prisma.booking.update({ where: { id }, data: { deletedAt: new Date() } });
   return NextResponse.json({ success: true });
 }

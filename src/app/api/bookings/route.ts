@@ -77,16 +77,20 @@ export async function POST(req: NextRequest) {
       } catch (_) { /* non-critical */ }
     }
 
-    // Allocate storage units
+    // Allocate storage units — trackable only when a driver is also assigned
     for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
-      const unit = await prisma.storageUnit.findUnique({ where: { id: unitId } });
-      if (unit && unit.availability === "Yes" && driverId) {
+      if (driverId) {
+        // Driver + unit assigned: mark in-use and enable tracking
         await prisma.storageUnit.update({
           where: { id: unitId },
           data: { availability: "No", currentDriverId: driverId, jobId: booking.id, trackable: 1 },
-        });
-      } else if (unit) {
-        await prisma.storageUnit.update({ where: { id: unitId }, data: { trackable: 1 } });
+        }).catch(() => {});
+      } else {
+        // Unit assigned to job but no driver yet — unavailable but NOT trackable
+        await prisma.storageUnit.update({
+          where: { id: unitId },
+          data: { availability: "No", jobId: booking.id, trackable: 0 },
+        }).catch(() => {});
       }
       if (unitId) {
         await prisma.storageUsage.create({
