@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
           `https://gpslive.co.uk/api/device?imei=${unit.imei}&key=${apiKey}`,
           { cache: "no-store" }
         );
-        const data = res.ok ? await res.json() : {};
+        const rawText = await res.text();
+        let data: any = {};
+        try { data = JSON.parse(rawText); } catch { /* non-JSON response — API URL may be wrong */ }
 
         // Try common field names then scan all keys for anything containing "temp"
         function extractTemp(obj: any): string | null {

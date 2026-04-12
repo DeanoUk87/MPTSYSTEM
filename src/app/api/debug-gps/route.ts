@@ -14,17 +14,37 @@ export async function GET(req: NextRequest) {
   const unit = await prisma.storageUnit.findFirst({ where: { imei: { not: null } } });
   if (!unit) return NextResponse.json({ error: "No units with IMEI found" }, { status: 404 });
 
-  try {
-    const url = `https://gpslive.co.uk/api/device?imei=${unit.imei}&key=${apiKey}`;
-    const res = await fetch(url, { cache: "no-store" });
-    const raw = res.ok ? await res.json() : null;
-    return NextResponse.json({
-      unit: { id: unit.id, unitNumber: unit.unitNumber, imei: unit.imei, unitType: unit.unitType },
-      httpStatus: res.status,
-      rawResponse: raw,
-      fields: raw ? Object.keys(raw) : [],
-    });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  // Try several URL patterns — GPSLive docs are not publicly accessible
+  const urlsToTry = [
+    `https://gpslive.co.uk/api/device?imei=${unit.imei}&key=${apiKey}`,
+    `https://gpslive.co.uk/api/v1/device?imei=${unit.imei}&key=${apiKey}`,
+    `https://gpslive.co.uk/api/devices/${unit.imei}?key=${apiKey}`,
+    `https://gpslive.co.uk/api/position?imei=${unit.imei}&key=${apiKey}`,
+  ];
+
+  const results: any[] = [];
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      const rawText = await res.text();
+      let parsed = null;
+      let parseError = null;
+      try { parsed = JSON.parse(rawText); } catch (e: any) { parseError = e.message; }
+      results.push({
+        url,
+        httpStatus: res.status,
+        contentType: res.headers.get("content-type"),
+        rawText: rawText.slice(0, 500), // first 500 chars
+        parsed,
+        parseError,
+      });
+    } catch (e: any) {
+      results.push({ url, fetchError: e.message });
+    }
   }
+
+  return NextResponse.json({
+    unit: { id: unit.id, unitNumber: unit.unitNumber, imei: unit.imei, unitType: unit.unitType },
+    results,
+  });
 }
