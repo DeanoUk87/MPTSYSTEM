@@ -14,12 +14,24 @@ export async function GET(req: NextRequest) {
   const unit = await prisma.storageUnit.findFirst({ where: { imei: { not: null } } });
   if (!unit) return NextResponse.json({ error: "No units with IMEI found" }, { status: 404 });
 
-  // Try several URL patterns — GPSLive docs are not publicly accessible
+  // GPSLive is an Angular SPA — every gpslive.co.uk URL returns HTML.
+  // The JSON API must be on a separate host/subdomain.
+  const IMEI = unit.imei;
+  const KEY = apiKey;
   const urlsToTry = [
-    `https://gpslive.co.uk/api/device?imei=${unit.imei}&key=${apiKey}`,
-    `https://gpslive.co.uk/api/v1/device?imei=${unit.imei}&key=${apiKey}`,
-    `https://gpslive.co.uk/api/devices/${unit.imei}?key=${apiKey}`,
-    `https://gpslive.co.uk/api/position?imei=${unit.imei}&key=${apiKey}`,
+    // API subdomain variants
+    `https://api.gpslive.co.uk/device?imei=${IMEI}&key=${KEY}`,
+    `https://api.gpslive.co.uk/v1/device?imei=${IMEI}&key=${KEY}`,
+    `https://api.gpslive.co.uk/devices/${IMEI}?key=${KEY}`,
+    `https://api.gpslive.co.uk/track?imei=${IMEI}&key=${KEY}`,
+    // Tracker subdomain
+    `https://tracker.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
+    // app subdomain
+    `https://app.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
+    // portal subdomain
+    `https://portal.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
+    // server subdomain
+    `https://server.gpslive.co.uk/api/device?imei=${IMEI}&key=${KEY}`,
   ];
 
   const results: any[] = [];
