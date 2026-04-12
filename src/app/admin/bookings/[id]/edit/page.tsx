@@ -403,9 +403,10 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       delete payload.deadMiles;
       // Encode collected orders into via notes
       const encodedVias = vias.filter((v: any) => v.name || v.postcode).map((v: any) => {
-        const orders = v.collectedOrders ?? [];
-        const baseNotes = v.notes || "";
-        return { ...v, notes: orders.length > 0 ? `${baseNotes}---ORDERS---${JSON.stringify(orders)}` : baseNotes };
+        const { collectedOrders, ...vRest } = v;
+        const orders = collectedOrders ?? [];
+        const baseNotes = vRest.notes || "";
+        return { ...vRest, notes: orders.length > 0 ? `${baseNotes}---ORDERS---${JSON.stringify(orders)}` : baseNotes };
       });
       // Encode delivery orders into deliveryNotes
       const baseDeliveryNotes = payload.deliveryNotes || "";

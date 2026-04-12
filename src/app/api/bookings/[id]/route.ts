@@ -30,6 +30,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+
+  try {
   const body = await req.json();
 
   const { chillUnitId, ambientUnitId, driverId, viaAddresses: viaData,
@@ -53,7 +55,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     for (const via of viaData) {
       if (!via.name && !via.postcode) continue;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id: _id, bookingId: _bid, createdAt: _ca, updatedAt: _ua, deletedAt: _da, ...viaFields } = via;
+      const { id: _id, bookingId: _bid, createdAt: _ca, updatedAt: _ua, deletedAt: _da, collectedOrders: _co, ...viaFields } = via;
       await prisma.viaAddress.create({ data: { ...viaFields, bookingId: id } });
     }
   }
@@ -67,6 +69,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   return NextResponse.json(booking);
+  } catch (e: any) {
+    console.error("Booking update error:", e);
+    return NextResponse.json({ error: e.message || "Failed to update booking" }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
