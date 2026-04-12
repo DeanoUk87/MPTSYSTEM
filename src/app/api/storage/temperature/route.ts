@@ -10,12 +10,20 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.LIVE_DEVICE_API;
   const useMock = process.env.GPSLIVE_USE_MOCK === "true";
 
-  // Only monitor units that have a driver assigned AND are attached to an active booking.
+  // Only monitor units that have a driver assigned AND are attached to an active booking
+  // that has NOT yet had full POD entered (podDate + podTime + signature/upload = delivery done).
   // Mock mode uses the trackable flag; real mode requires driver + booking.
+  const podIncomplete = {
+    OR: [
+      { podDate: null },
+      { podTime: null },
+      { AND: [{ podSignature: null }, { podUpload: null }] },
+    ],
+  };
   const activeBookingFilter = {
     OR: [
-      { chillBookings: { some: { deletedAt: null } } },
-      { ambientBookings: { some: { deletedAt: null } } },
+      { chillBookings: { some: { deletedAt: null, ...podIncomplete } } },
+      { ambientBookings: { some: { deletedAt: null, ...podIncomplete } } },
     ],
   };
   const units = await prisma.storageUnit.findMany({
