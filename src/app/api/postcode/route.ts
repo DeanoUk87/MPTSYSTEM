@@ -51,8 +51,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ results: fallback });
     }
 
-    // Support both `results` array and `addresses` array (different API versions)
-    const raw: any[] = data.results ?? data.addresses ?? [];
+    // Support both `result` array (Crafty Clicks v1.1) and `results`/`addresses` arrays
+    const raw: any[] = data.result ?? data.results ?? data.addresses ?? [];
     if (raw.length === 0) {
       const fallback = await fallbackLookup(postcode);
       return NextResponse.json({ results: fallback });
