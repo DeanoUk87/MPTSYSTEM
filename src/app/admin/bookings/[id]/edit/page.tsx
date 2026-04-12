@@ -718,7 +718,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   <div className="border-t border-slate-200 pt-2 space-y-1.5 mt-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
-                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: "Chill"}])}
+                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: ""}])}
                         className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
                         <Plus className="w-3 h-3" /> Add
                       </button>
@@ -825,9 +825,9 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <select value={f.chillUnitId || ""} onChange={e => s("chillUnitId", e.target.value)}
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "chill" || u.id === f.chillUnitId).map((u: any) => (
+                        {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
-                            {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
+                            {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
                           </option>
                         ))}
                       </select>
@@ -837,9 +837,9 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <select value={f.ambientUnitId || ""} onChange={e => s("ambientUnitId", e.target.value)}
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "ambient" || u.id === f.ambientUnitId).map((u: any) => (
+                        {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
-                            {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
+                            {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use)` : ""}
                           </option>
                         ))}
                       </select>
@@ -940,7 +940,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <div className="border-t border-slate-200 pt-2 space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
-                          <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: [...(x.collectedOrders || []), { ref: "", type: "Chill" }] } : x))}
+                          <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: [...(x.collectedOrders || []), { ref: "", type: "" }] } : x))}
                             className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
                             <Plus className="w-3 h-3" /> Add
                           </button>

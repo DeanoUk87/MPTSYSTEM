@@ -14,7 +14,7 @@ interface StorageUnit {
   currentDriver?: { name: string };
 }
 
-const emptyForm = { unitNumber: "", imei: "", unitSize: "", unitType: "chill", availability: "Yes", calibrationDate: "" };
+const emptyForm = { unitNumber: "", imei: "", unitSize: "", unitType: "chill", availability: "Yes", calibrationDate: "", trackable: 0 };
 
 export default function StoragePage() {
   const [units, setUnits] = useState<StorageUnit[]>([]);
@@ -59,7 +59,7 @@ export default function StoragePage() {
   function openCreate() { setEditTarget(null); setForm(emptyForm); setModalOpen(true); }
   function openEdit(u: StorageUnit) {
     setEditTarget(u);
-    setForm({ unitNumber: u.unitNumber, imei: u.imei || "", unitSize: u.unitSize || "", unitType: u.unitType || "chill", availability: u.availability, calibrationDate: u.calibrationDate || "" });
+    setForm({ unitNumber: u.unitNumber, imei: u.imei || "", unitSize: u.unitSize || "", unitType: u.unitType || "chill", availability: u.availability, calibrationDate: u.calibrationDate || "", trackable: u.trackable ?? 0 });
     setModalOpen(true);
   }
 

@@ -199,41 +199,42 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           </button>
         </div>
 
-        {/* Addresses */}
-        <div className="grid sm:grid-cols-2 gap-4">
-          <AddressBlock title="Collection" prefix="collection" data={booking} />
-          <AddressBlock title="Delivery" prefix="delivery" data={booking} />
-        </div>
-
-        {/* Via addresses */}
-        {(booking.viaAddresses?.length ?? 0) > 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 className="font-semibold text-slate-800 mb-3">Via Stops ({booking.viaAddresses?.length})</h3>
-            <div className="space-y-2">
+        {/* Addresses + Via stops — collection left, via(s) middle, delivery right */}
+        {(booking.viaAddresses?.length ?? 0) > 0 ? (
+          <div className="grid grid-cols-3 gap-4 items-start">
+            <AddressBlock title="Collection" prefix="collection" data={booking} />
+            <div className="space-y-3">
               {booking.viaAddresses?.map((v: any) => (
-                <div key={v.id} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg text-sm">
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">{v.viaType}</span>
-                  <div>
-                    <p className="font-medium">{v.name} — {v.postcode}</p>
-                    {v.viaDate && <p className="text-xs text-slate-400">{v.viaDate} {v.viaTime}</p>}
-                    {v.signedBy && <p className="text-xs text-emerald-600">✓ POD: {v.signedBy}</p>}
-                    {v.notes?.split("---ORDERS---")[0] && <p className="text-xs text-amber-600">{v.notes.split("---ORDERS---")[0]}</p>}
-                    {v.notes?.includes("---ORDERS---") && (() => {
-                      try {
-                        const orders = JSON.parse(v.notes.split("---ORDERS---")[1] || "[]");
-                        return orders.length > 0 ? (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {orders.map((o: any, i: number) => (
-                              <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
-                            ))}
-                          </div>
-                        ) : null;
-                      } catch { return null; }
-                    })()}
+                <div key={v.id} className="bg-white rounded-xl border border-slate-200 p-4 space-y-1 text-sm">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">{v.viaType}</span>
+                    <span className="font-semibold text-slate-800">{v.name}</span>
                   </div>
+                  <p className="text-xs text-slate-600">{v.postcode}</p>
+                  {v.viaDate && <p className="text-xs text-slate-400">{v.viaDate} {v.viaTime}</p>}
+                  {v.signedBy && <p className="text-xs text-emerald-600">✓ POD: {v.signedBy}</p>}
+                  {v.notes?.split("---ORDERS---")[0] && <p className="text-xs text-amber-600">{v.notes.split("---ORDERS---")[0]}</p>}
+                  {v.notes?.includes("---ORDERS---") && (() => {
+                    try {
+                      const orders = JSON.parse(v.notes.split("---ORDERS---")[1] || "[]");
+                      return orders.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {orders.map((o: any, i: number) => (
+                            <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
+                          ))}
+                        </div>
+                      ) : null;
+                    } catch { return null; }
+                  })()}
                 </div>
               ))}
             </div>
+            <AddressBlock title="Delivery" prefix="delivery" data={booking} />
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-4">
+            <AddressBlock title="Collection" prefix="collection" data={booking} />
+            <AddressBlock title="Delivery" prefix="delivery" data={booking} />
           </div>
         )}
 

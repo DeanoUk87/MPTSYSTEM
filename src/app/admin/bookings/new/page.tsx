@@ -471,7 +471,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   function addVia(type = "Via") { setVias(prev => [...prev.slice(0, 5), { ...viaEmpty(), viaType: type }]); }
   function updateVia(i: number, k: string, v: any) { setVias(prev => prev.map((x, idx) => idx === i ? { ...x, [k]: v } : x)); }
   function removeVia(i: number) { setVias(prev => prev.filter((_, idx) => idx !== i)); }
-  function addViaOrder(i: number) { updateVia(i, "collectedOrders", [...(vias[i].collectedOrders || []), {ref: "", type: "Chill"}]); }
+  function addViaOrder(i: number) { updateVia(i, "collectedOrders", [...(vias[i].collectedOrders || []), {ref: "", type: ""}]); }
   function updateViaOrder(i: number, oi: number, k: string, v: string) { const orders = [...(vias[i].collectedOrders || [])]; orders[oi] = {...orders[oi], [k]: v}; updateVia(i, "collectedOrders", orders); }
   function removeViaOrder(i: number, oi: number) { updateVia(i, "collectedOrders", (vias[i].collectedOrders || []).filter((_: any, idx: number) => idx !== oi)); }
 
@@ -1016,7 +1016,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   <div className="border-t border-slate-200 pt-2 space-y-1.5 mt-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
-                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: "Chill"}])}
+                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: ""}])}
                         className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
                         <Plus className="w-3 h-3" /> Add
                       </button>
@@ -1136,9 +1136,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "chill").map((u: any) => (
+                        {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
-                            {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
+                            {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
                           </option>
                         ))}
                       </select>
@@ -1152,9 +1152,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">— None —</option>
-                        {allStorageUnits.filter((u: any) => u.unitType?.toLowerCase() === "ambient").map((u: any) => (
+                        {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
-                            {u.unitNumber}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
+                            {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
                           </option>
                         ))}
                       </select>
