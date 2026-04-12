@@ -164,6 +164,14 @@ export default function StoragePage() {
         </div>
         <DataTable data={units} columns={columns} searchKeys={["unitNumber", "imei", "unitType"]} loading={loading} emptyMessage="No storage units yet." />
 
+        {/* GPS API info */}
+        <div className="flex items-start gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800">
+          <Thermometer className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-semibold">Live GPS temperature:</span> add <code className="bg-blue-100 px-1 rounded">LIVE_DEVICE_API=your_gpslive_key</code> to your <code className="bg-blue-100 px-1 rounded">.env</code> file on the server (gpslive.co.uk API key). Without it, demo temperatures are generated for units that have an IMEI set.
+          </div>
+        </div>
+
         {/* Temperature alerts */}
         {tempAlerts.length > 0 && (
           <div className="space-y-2">
@@ -198,6 +206,19 @@ export default function StoragePage() {
               </select>
             </div>
             <div><label className="block text-xs font-medium text-slate-600 mb-1">Calibration Date</label><input type="date" value={form.calibrationDate} onChange={e => setForm(f => ({ ...f, calibrationDate: e.target.value }))} className={inputCls} /></div>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="flex-1">
+              <p className="text-xs font-medium text-slate-700">Live Temperature Tracking</p>
+              <p className="text-xs text-slate-400 mt-0.5">Auto-enabled when an IMEI is set. Requires LIVE_DEVICE_API in .env for real data.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm(f => ({ ...f, trackable: f.trackable ? 0 : 1 }))}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${form.trackable ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-500 border-slate-300"}`}
+            >
+              {form.trackable ? "✓ Enabled" : "Disabled"}
+            </button>
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={() => setModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>

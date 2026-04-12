@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
       unitType: body.unitType || null,
       availability: body.availability || "Yes",
       calibrationDate: body.calibrationDate || null,
+      // Auto-enable live tracking when an IMEI is provided
+      trackable: body.imei ? 1 : (body.trackable ?? 0),
     },
   });
   return NextResponse.json(unit, { status: 201 });
