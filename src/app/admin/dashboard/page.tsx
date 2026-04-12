@@ -64,7 +64,7 @@ export default function DashboardPage() {
                         <td className="px-4 py-3 font-mono text-xs font-semibold text-blue-600">
                           <Link href={`/admin/bookings/${b.id}`} className="hover:underline">{b.jobRef || b.id.slice(-6).toUpperCase()}</Link>
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-600">{b.collectionDate ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-slate-600">{b.collectionDate ? b.collectionDate.split("-").reverse().join("-") : "—"}</td>
                         <td className="px-4 py-3 text-xs text-slate-500">{b.collectionTime ?? "—"}</td>
                         <td className="px-4 py-3 text-sm font-medium text-slate-700">{b.customer?.name ?? "—"}</td>
                         <td className="px-4 py-3 font-mono text-xs text-slate-600">{b.collectionPostcode ?? "—"}</td>

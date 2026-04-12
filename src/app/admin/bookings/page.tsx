@@ -74,7 +74,7 @@ export default function BookingsPage() {
     { key: "jobRef", label: "Job Ref", render: (r) => (
       <span className="font-mono text-xs font-semibold text-slate-700">{r.jobRef || r.id.slice(-6).toUpperCase()}</span>
     )},
-    { key: "collectionDate", label: "Date", render: (r) => r.collectionDate || "—" },
+    { key: "collectionDate", label: "Date", render: (r) => r.collectionDate ? r.collectionDate.split("-").reverse().join("-") : "—" },
     { key: "collectionTime", label: "Time", render: (r) => r.collectionTime || "—" },
     { key: "customer", label: "Customer", render: (r) => (
       <p className="font-medium whitespace-nowrap">{r.customer?.name || "—"}</p>

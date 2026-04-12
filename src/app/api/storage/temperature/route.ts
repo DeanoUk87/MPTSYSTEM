@@ -10,9 +10,9 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.LIVE_DEVICE_API;
   const useMock = process.env.GPSLIVE_USE_MOCK === "true";
 
-  // Get all trackable units — with real GPS: IMEI required; otherwise all
+  // Get all trackable units — real API: any unit with an IMEI; mock: all trackable
   const units = await prisma.storageUnit.findMany({
-    where: (useMock || !apiKey) ? { trackable: 1 } : { trackable: 1, imei: { not: null } },
+    where: (useMock || !apiKey) ? { trackable: 1 } : { imei: { not: null } },
     include: { currentDriver: { select: { name: true } } },
   });
 
@@ -47,9 +47,10 @@ export async function GET(req: NextRequest) {
       try {
         const res = await fetch(
           `https://gpslive.co.uk/api/device?imei=${unit.imei}&key=${apiKey}`,
-          { next: { revalidate: 60 } }
+          { cache: "no-store" }
         );
         const data = res.ok ? await res.json() : {};
+        const temp = data.temperature ?? data.temp ?? data.Temperature ?? data.Temp ?? null;
         return {
           id: unit.id,
           unitNumber: unit.unitNumber,
@@ -57,10 +58,10 @@ export async function GET(req: NextRequest) {
           unitType: unit.unitType,
           availability: unit.availability,
           currentDriver: unit.currentDriver,
-          temperature: data.temperature ?? data.temp ?? null,
+          temperature: temp,
           lat: data.lat ?? data.latitude ?? null,
           lng: data.lng ?? data.longitude ?? null,
-          timestamp: data.timestamp ?? new Date().toISOString(),
+          timestamp: data.timestamp ?? data.datetime ?? new Date().toISOString(),
         };
       } catch {
         return { id: unit.id, unitNumber: unit.unitNumber, imei: unit.imei, temperature: null, lat: null, lng: null };
