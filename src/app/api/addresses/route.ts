@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
 
   // Pull distinct collection and delivery addresses from bookings
   const bookings = await prisma.booking.findMany({
+    where: { deletedAt: null },
     select: {
       id: true,
       collectionName: true, collectionAddress1: true, collectionAddress2: true,

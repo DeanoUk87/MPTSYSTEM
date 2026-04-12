@@ -59,7 +59,7 @@ function AddressBlock({ title, prefix, data }: { title: string; prefix: string; 
         <p>{(data as any)[`${prefix}Date`]} {(data as any)[`${prefix}Time`]}</p>
         <p>{addr || "No address"}</p>
         {(data as any)[`${prefix}Contact`] && <p>Contact: {(data as any)[`${prefix}Contact`]} {(data as any)[`${prefix}Phone`] ? `· ${(data as any)[`${prefix}Phone`]}` : ""}</p>}
-        {(data as any)[`${prefix}Notes`] && <p className="text-amber-600">Note: {(data as any)[`${prefix}Notes`]}</p>}
+        {(data as any)[`${prefix}Notes`]?.split("---ORDERS---")[0] && <p className="text-amber-600">Note: {(data as any)[`${prefix}Notes`].split("---ORDERS---")[0]}</p>}
       </div>
     </div>
   );
@@ -204,6 +204,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     <p className="font-medium">{v.name} — {v.postcode}</p>
                     {v.viaDate && <p className="text-xs text-slate-400">{v.viaDate} {v.viaTime}</p>}
                     {v.signedBy && <p className="text-xs text-emerald-600">✓ POD: {v.signedBy}</p>}
+                    {v.notes?.split("---ORDERS---")[0] && <p className="text-xs text-amber-600">{v.notes.split("---ORDERS---")[0]}</p>}
                   </div>
                 </div>
               ))}

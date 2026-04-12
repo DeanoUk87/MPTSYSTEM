@@ -9,16 +9,16 @@ async function fallbackLookup(postcode: string): Promise<any[]> {
     const data = await res.json();
     if (!data.result) return [];
     const r = data.result;
-    // postcodes.io gives us the admin_ward (local area name) which is more specific than admin_district
     const town = r.admin_ward || r.admin_district || r.parliamentary_constituency || "";
+    const district = r.admin_district || "";
     return [{
       line1: "",
       line2: "",
       line3: "",
       city: town,
-      county: r.admin_county || r.admin_district || "",
+      county: r.admin_county || district || "",
       postcode: r.postcode,
-      label: `${town}${r.admin_district && r.admin_district !== town ? `, ${r.admin_district}` : ""}`,
+      label: `${town}${district && district !== town ? `, ${district}` : ""}`,
       fallback: true,
     }];
   } catch {

@@ -1021,13 +1021,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <div key={oi} className="flex items-center gap-1.5">
                         <input type="text" value={order.ref} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, ref: e.target.value} : o))}
                           placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
-                        <select value={order.type} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, type: e.target.value} : o))}
-                          className="px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
-                          <option value="Chill">Chill</option>
-                          <option value="Amb">Amb</option>
-                          <option value="Pump">Pump</option>
-                          <option value="Stores">Stores</option>
-                        </select>
+                        <div className="flex gap-0.5">
+                          {["Chill","Amb","Pump","Stores"].map(t => (
+                            <button key={t} type="button" onClick={() => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, type: t} : o))}
+                              className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
+                                order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              }`}>{t}</button>
+                          ))}
+                        </div>
                         <button type="button" onClick={() => setDeliveryOrders(prev => prev.filter((_, i) => i !== oi))}
                           className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
                       </div>
@@ -1179,7 +1180,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <select value={via.viaType} onChange={e => updateVia(i, "viaType", e.target.value)}
                           className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 font-semibold">
-                          <option value="Via">📍 Via Stop</option>
+                          <option value="Via">📍 Via</option>
                           <option value="Collection">📦 Collection</option>
                           <option value="Delivery">🏭 Delivery</option>
                         </select>
@@ -1218,13 +1219,14 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                           <div key={oi} className="flex items-center gap-1.5">
                             <input type="text" value={order.ref || ""} onChange={e => updateViaOrder(i, oi, "ref", e.target.value)}
                               placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
-                            <select value={order.type || "Chill"} onChange={e => updateViaOrder(i, oi, "type", e.target.value)}
-                              className="px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400">
-                              <option value="Chill">Chill</option>
-                              <option value="Amb">Amb</option>
-                              <option value="Pump">Pump</option>
-                              <option value="Stores">Stores</option>
-                            </select>
+                            <div className="flex gap-0.5">
+                              {["Chill","Amb","Pump","Stores"].map(t => (
+                                <button key={t} type="button" onClick={() => updateViaOrder(i, oi, "type", t)}
+                                  className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
+                                    (order.type || "Chill") === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                  }`}>{t}</button>
+                              ))}
+                            </div>
                             <button type="button" onClick={() => removeViaOrder(i, oi)}
                               className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
                           </div>

@@ -131,6 +131,23 @@ export default function StoragePage() {
   const inStore = units.filter(u => u.availability === "Yes").length;
   const assigned = units.filter(u => u.availability === "No").length;
 
+  // Temperature range checks
+  const tempAlerts = units.filter(u => {
+    const td = tempData[u.id];
+    if (!td?.temperature) return false;
+    const temp = parseFloat(td.temperature);
+    const type = (u.unitType || "").toLowerCase();
+    if (type === "chill") return temp < 2 || temp > 8;
+    if (type === "ambient") return temp < 15 || temp > 25;
+    return false;
+  }).map(u => {
+    const td = tempData[u.id];
+    const temp = parseFloat(td.temperature);
+    const type = (u.unitType || "").toLowerCase();
+    const range = type === "chill" ? "2–8°C" : "15–25°C";
+    return { unit: u, temp, range };
+  });
+
   return (
     <div className="flex-1">
       <Topbar title="Storage Units" subtitle="Temperature-controlled unit management" />
@@ -151,6 +168,19 @@ export default function StoragePage() {
           </button>
         </div>
         <DataTable data={units} columns={columns} searchKeys={["unitNumber", "imei", "unitType"]} loading={loading} emptyMessage="No storage units yet." />
+
+        {/* Temperature alerts */}
+        {tempAlerts.length > 0 && (
+          <div className="space-y-2">
+            {tempAlerts.map(({ unit, temp, range }) => (
+              <div key={unit.id} className="flex items-center gap-3 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-800">
+                <Thermometer className="w-4 h-4 text-rose-600 shrink-0" />
+                <span><strong>{unit.unitNumber}</strong> ({unit.unitType}) — temperature <strong>{temp.toFixed(1)}°C</strong> is outside the expected range <strong>{range}</strong></span>
+                {unit.currentDriver && <span className="ml-auto text-xs text-rose-600 shrink-0">Driver: {unit.currentDriver.name}</span>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editTarget ? "Edit Unit" : "Add Unit"}>

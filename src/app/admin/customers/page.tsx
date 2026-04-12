@@ -24,6 +24,7 @@ interface Customer {
   poEmail?: string;
   deadMileage?: number;
   jobRefStart?: number;
+  hasLoginAccess?: boolean;
   _count?: { bookings: number };
 }
 
@@ -44,6 +45,8 @@ export default function CustomersPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
+  const [loginLoading, setLoginLoading] = useState<string | null>(null);
+  const [credsModal, setCredsModal] = useState<{ name: string; username: string; password: string } | null>(null);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -106,6 +109,17 @@ export default function CustomersPage() {
     } catch (e: any) { toast.error(e.message); }
   }
 
+  async function handleGrantAccess(c: Customer) {
+    setLoginLoading(c.id);
+    try {
+      const res = await fetch(`/api/customers/${c.id}/access`, { method: "POST" });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      const data = await res.json();
+      setCredsModal({ name: c.name, username: data.username, password: data.password });
+      fetchCustomers();
+    } catch (e: any) { toast.error(e.message); } finally { setLoginLoading(null); }
+  }
+
   function exportCSV() {
     if (!customers.length) return;
     const headers = ["Name", "Account", "Email", "Phone", "City", "Postcode", "Contact"];
@@ -128,6 +142,18 @@ export default function CustomersPage() {
       key: "actions", label: "Actions",
       render: r => (
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleGrantAccess(r)}
+            disabled={loginLoading === r.id}
+            title={r.hasLoginAccess ? "Reset portal login credentials" : "Grant portal login access"}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              r.hasLoginAccess
+                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+            }`}
+          >
+            {loginLoading === r.id ? "..." : r.hasLoginAccess ? "🔓 Login" : "🔒 Login"}
+          </button>
           <Link href={`/admin/customers/${r.id}`}
             className="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
             Rates
@@ -243,6 +269,21 @@ export default function CustomersPage() {
           <button onClick={() => setDeleteTarget(null)} className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
           <button onClick={() => deleteTarget && handleDelete(deleteTarget)} className="flex-1 px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700">Delete</button>
         </div>
+      </Modal>
+
+      {/* Portal Credentials Modal */}
+      <Modal open={!!credsModal} onClose={() => setCredsModal(null)} title="Portal Login Credentials" size="sm">
+        {credsModal && (
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">Portal access granted for <strong>{credsModal.name}</strong>. Share these credentials securely:</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2 font-mono text-sm">
+              <div className="flex justify-between"><span className="text-slate-500">Username:</span><span className="font-semibold text-slate-800">{credsModal.username}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Password:</span><span className="font-semibold text-slate-800">{credsModal.password}</span></div>
+            </div>
+            <p className="text-xs text-amber-600">This password won't be shown again. Copy it now.</p>
+            <button onClick={() => setCredsModal(null)} className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Done</button>
+          </div>
+        )}
       </Modal>
     </div>
   );

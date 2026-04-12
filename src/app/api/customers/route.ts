@@ -19,7 +19,16 @@ export async function GET(req: NextRequest) {
     orderBy: { name: "asc" },
     include: { _count: { select: { bookings: true } } },
   });
-  return NextResponse.json(customers);
+
+  // Efficiently determine which customers have portal login access
+  const usersWithCustomer = await prisma.user.findMany({
+    where: { customerId: { not: null } },
+    select: { customerId: true },
+  });
+  const accessSet = new Set(usersWithCustomer.map(u => u.customerId));
+  const result = customers.map(c => ({ ...c, hasLoginAccess: accessSet.has(c.id) }));
+
+  return NextResponse.json(result);
 }
 
 export async function POST(req: NextRequest) {
