@@ -93,13 +93,6 @@ export default function AddressesPage() {
                         <MapPin className="w-3 h-3" /> {a.postcode}
                       </span>
                     )}
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      a.type === "collection" ? "bg-green-50 text-green-700"
-                      : a.type === "via" ? "bg-indigo-50 text-indigo-700"
-                      : "bg-purple-50 text-purple-700"
-                    }`}>
-                      {a.type}
-                    </span>
                   </div>
                   {(a.contact || a.phone) && (
                     <div className="mt-2 text-xs text-slate-400">

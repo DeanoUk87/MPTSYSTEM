@@ -33,11 +33,11 @@ interface Booking {
 
 function StatusBadge({ booking }: { booking: Booking }) {
   const isQuote = booking.bookingType?.name?.toLowerCase() === "quote";
-  if (isQuote) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Quote</span>;
-  if (!booking.driver) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">No Driver</span>;
-  if (booking.podSignature && booking.podDataVerify) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Completed</span>;
-  if (booking.podSignature) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">POD Received</span>;
-  return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">In Progress</span>;
+  if (isQuote) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>;
+  if (!booking.driver) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>;
+  if (booking.podSignature && booking.podDataVerify) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">Completed</span>;
+  if (booking.podSignature) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">POD Received</span>;
+  return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>;
 }
 
 export default function BookingsPage() {
@@ -154,10 +154,10 @@ export default function BookingsPage() {
 
         {/* Colour legend */}
         <div className="flex items-center gap-4 text-xs text-slate-500">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-400 inline-block"></span> No driver</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500 inline-block"></span> No driver</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400 inline-block"></span> Driver allocated</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-400 inline-block"></span> POD received</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-400 inline-block"></span> Completed</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-500 inline-block"></span> POD received</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Completed</span>
         </div>
 
         <div className="overflow-x-auto">

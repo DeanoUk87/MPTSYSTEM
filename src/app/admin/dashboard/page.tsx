@@ -48,32 +48,38 @@ export default function DashboardPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    {["Job Ref", "Customer", "Collection", "From", "To", "Driver", "Status"].map((h) => (
+                    {["Job Ref", "Date", "Time", "Customer", "From", "To", "Driver", "Vehicle", "Total", "Status"].map((h) => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {bookings.map((b: any) => (
-                    <tr key={b.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium text-blue-600">
-                        <Link href={`/admin/bookings/${b.id}`} className="hover:underline">{b.jobRef || b.id.slice(-8).toUpperCase()}</Link>
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{b.customer?.name ?? "—"}</td>
-                      <td className="px-4 py-3 text-slate-500">{b.collectionDate ?? "—"}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-600">{b.collectionPostcode ?? "—"}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-600">{b.deliveryPostcode ?? "—"}</td>
-                      <td className="px-4 py-3 text-slate-600">{b.driver?.name ?? <span className="text-slate-300">Unassigned</span>}</td>
-                      <td className="px-4 py-3">
-                        {b.podSignature
-                          ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">POD</span>
-                          : b.jobStatus === 1
-                          ? <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Invoiced</span>
-                          : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Active</span>
-                        }
-                      </td>
-                    </tr>
-                  ))}
+                  {bookings.map((b: any) => {
+                    const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
+                    const rowCls = isQuote ? "bg-slate-50" : b.podSignature && b.podDataVerify ? "bg-emerald-50 border-l-4 border-l-emerald-500" : b.podSignature ? "bg-blue-50 border-l-4 border-l-blue-500" : b.driver ? "bg-amber-50 border-l-4 border-l-amber-400" : "bg-rose-50 border-l-4 border-l-rose-500";
+                    return (
+                      <tr key={b.id} className={`border-b border-slate-100 hover:brightness-95 transition-all ${rowCls}`}>
+                        <td className="px-4 py-3 font-mono text-xs font-semibold text-blue-600">
+                          <Link href={`/admin/bookings/${b.id}`} className="hover:underline">{b.jobRef || b.id.slice(-6).toUpperCase()}</Link>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-600">{b.collectionDate ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-slate-500">{b.collectionTime ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-slate-700">{b.customer?.name ?? "—"}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-600">{b.collectionPostcode ?? "—"}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-600">{b.deliveryPostcode ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs text-slate-600">{b.driver?.name ?? <span className="text-rose-500 font-semibold">Unassigned</span>}</td>
+                        <td className="px-4 py-3 text-xs text-slate-500">{b.vehicle?.name ?? "—"}</td>
+                        <td className="px-4 py-3 text-xs font-semibold text-slate-700">{b.customerPrice ? `£${Number(b.customerPrice).toFixed(2)}` : "—"}</td>
+                        <td className="px-4 py-3">
+                          {isQuote ? <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>
+                            : !b.driver ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>
+                            : b.podSignature && b.podDataVerify ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">Completed</span>
+                            : b.podSignature ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">POD Received</span>
+                            : <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

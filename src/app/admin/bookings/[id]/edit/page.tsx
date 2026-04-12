@@ -92,6 +92,49 @@ function PostcodeSearch({ postcode, country, onChangePostcode, onChangeCountry, 
   );
 }
 
+function NameSearch({ value, onChange, onApply }: {
+  value: string;
+  onChange: (v: string) => void;
+  onApply: (a: any) => void;
+}) {
+  const [results, setResults] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (value.length < 2) { setResults([]); setOpen(false); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/addresses?search=${encodeURIComponent(value)}`);
+        if (res.ok) { setResults(await res.json()); setOpen(true); }
+      } catch { /* ignore */ }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  function select(a: any) { onChange(a.name); onApply(a); setResults([]); setOpen(false); }
+
+  return (
+    <div className="relative">
+      <input type="text" value={value} onChange={e => onChange(e.target.value)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onFocus={() => { if (results.length > 0) setOpen(true); }}
+        placeholder="Business / Place Name" className={inp} />
+      {open && results.length > 0 && (
+        <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-2xl mt-1 max-h-52 overflow-y-auto">
+          {results.map((a: any, i: number) => (
+            <button key={i} type="button" onMouseDown={() => select(a)}
+              className="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b border-slate-100 last:border-0 transition-colors">
+              <span className="font-semibold text-slate-800">{a.name}</span>
+              {a.address1 && <span className="text-slate-500">, {a.address1}</span>}
+              {a.postcode && <span className="text-blue-600 font-mono ml-1">{a.postcode}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EditBookingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -532,8 +575,16 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="p-4 space-y-2">
                   <PostcodeSearch postcode={f.collectionPostcode || ""} country={f.collectionCountry || "UK"}
                     onChangePostcode={v => s("collectionPostcode", v)} onChangeCountry={v => s("collectionCountry", v)}
-                    onApply={r => { s("collectionAddress1", r.line1); s("collectionAddress2", r.line2 || ""); s("collectionArea", r.city); s("collectionPostcode", r.postcode); }} />
-                  <input type="text" value={f.collectionName || ""} onChange={e => s("collectionName", e.target.value)} placeholder="Business / Place Name" className={inp} />
+                    onApply={r => { s("collectionName", r.line1 || ""); s("collectionAddress1", r.line2 || ""); s("collectionAddress2", r.line3 || ""); s("collectionArea", r.city); s("collectionPostcode", r.postcode); }} />
+                  <NameSearch value={f.collectionName || ""} onChange={v => s("collectionName", v)}
+                    onApply={a => {
+                      s("collectionAddress1", a.address1 || "");
+                      s("collectionAddress2", a.address2 || "");
+                      s("collectionArea", a.area || "");
+                      if (a.postcode) s("collectionPostcode", a.postcode);
+                      if (a.contact) s("collectionContact", a.contact);
+                      if (a.phone) s("collectionPhone", a.phone);
+                    }} />
                   <div className="grid grid-cols-2 gap-2">
                     <input type="text" value={f.collectionAddress1 || ""} onChange={e => s("collectionAddress1", e.target.value)} placeholder="Address 1" className={inp} />
                     <input type="text" value={f.collectionAddress2 || ""} onChange={e => s("collectionAddress2", e.target.value)} placeholder="Address 2" className={inp} />
@@ -719,8 +770,16 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="p-4 space-y-2">
                   <PostcodeSearch postcode={f.deliveryPostcode || ""} country={f.deliveryCountry || "UK"}
                     onChangePostcode={v => s("deliveryPostcode", v)} onChangeCountry={v => s("deliveryCountry", v)}
-                    onApply={r => { s("deliveryAddress1", r.line1); s("deliveryAddress2", r.line2 || ""); s("deliveryArea", r.city); s("deliveryPostcode", r.postcode); }} />
-                  <input type="text" value={f.deliveryName || ""} onChange={e => s("deliveryName", e.target.value)} placeholder="Business / Place Name" className={inp} />
+                    onApply={r => { s("deliveryName", r.line1 || ""); s("deliveryAddress1", r.line2 || ""); s("deliveryAddress2", r.line3 || ""); s("deliveryArea", r.city); s("deliveryPostcode", r.postcode); }} />
+                  <NameSearch value={f.deliveryName || ""} onChange={v => s("deliveryName", v)}
+                    onApply={a => {
+                      s("deliveryAddress1", a.address1 || "");
+                      s("deliveryAddress2", a.address2 || "");
+                      s("deliveryArea", a.area || "");
+                      if (a.postcode) s("deliveryPostcode", a.postcode);
+                      if (a.contact) s("deliveryContact", a.contact);
+                      if (a.phone) s("deliveryPhone", a.phone);
+                    }} />
                   <div className="grid grid-cols-2 gap-2">
                     <input type="text" value={f.deliveryAddress1 || ""} onChange={e => s("deliveryAddress1", e.target.value)} placeholder="Address 1" className={inp} />
                     <input type="text" value={f.deliveryAddress2 || ""} onChange={e => s("deliveryAddress2", e.target.value)} placeholder="Address 2" className={inp} />
@@ -941,14 +1000,18 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <PostcodeSearch postcode={via.postcode || ""} country="UK"
                         onChangePostcode={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, postcode: v.toUpperCase() } : x))}
                         onChangeCountry={() => {}}
-                        onApply={r => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address1: r.line1, address2: r.line2 || "", area: r.city, postcode: r.postcode } : x))}
+                        onApply={r => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: r.line1 || "", address1: r.line2 || "", address2: r.line3 || "", area: r.city, postcode: r.postcode } : x))}
                         placeholder="Postcode lookup..." />
-                      <input type="text" value={via.name || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))} placeholder="Business / Place Name" className={inp} />
+                      <NameSearch value={via.name || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: v } : x))}
+                        onApply={a => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address1: a.address1 || "", address2: a.address2 || "", area: a.area || "", ...(a.postcode ? { postcode: a.postcode } : {}), ...(a.contact ? { contact: a.contact } : {}), ...(a.phone ? { phone: a.phone } : {}) } : x))} />
                       <div className="grid grid-cols-2 gap-1.5">
                         <input type="text" value={via.address1 || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address1: e.target.value } : x))} placeholder="Address 1" className={inp} />
                         <input type="text" value={via.address2 || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address2: e.target.value } : x))} placeholder="Address 2" className={inp} />
                       </div>
-                      <input type="text" value={via.area || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, area: e.target.value } : x))} placeholder="Town / Area" className={inp} />
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <input type="text" value={via.area || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, area: e.target.value } : x))} placeholder="Town / Area" className={inp} />
+                        <input type="text" value={via.postcode || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, postcode: e.target.value.toUpperCase() } : x))} placeholder="Postcode" className={inp2} />
+                      </div>
                       <div className="grid grid-cols-2 gap-1.5">
                         <input type="text" value={via.contact || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, contact: e.target.value } : x))} placeholder="Contact" className={inp} />
                         <input type="text" value={via.phone || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, phone: e.target.value } : x))} placeholder="Phone" className={inp} />

@@ -5,6 +5,8 @@ import { requireAuth } from "@/lib/api-auth";
 export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Ensure "Quote" booking type exists
+  await prisma.bookingType.upsert({ where: { name: "Quote" }, update: {}, create: { name: "Quote" } });
   const types = await prisma.bookingType.findMany({ orderBy: { name: "asc" } });
   return NextResponse.json(types);
 }

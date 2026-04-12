@@ -105,6 +105,11 @@ async function main() {
     },
   });
 
+  // Ensure default booking types exist
+  for (const name of ["Quote", "Sameday", "Overnight", "Economy"]) {
+    await prisma.bookingType.upsert({ where: { name }, update: {}, create: { name } });
+  }
+
   console.log("Seed complete.");
   console.log("Admin login: admin@mpbooking.com / admin123");
 }
