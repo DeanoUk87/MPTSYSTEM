@@ -16,7 +16,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       unitType: body.unitType || null,
       availability: body.availability,
       calibrationDate: body.calibrationDate || null,
-      currentDriverId: body.currentDriverId || null,
+      // Only update currentDriverId if it was explicitly sent in the request
+      ...(body.currentDriverId !== undefined && { currentDriverId: body.currentDriverId || null }),
       trackable: body.trackable ?? 0,
     },
   });

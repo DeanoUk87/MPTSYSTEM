@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const apiKey = process.env.LIVE_DEVICE_API;
   const useMock = process.env.GPSLIVE_USE_MOCK === "true";
 
-  // Get all trackable units (in mock/dev mode, IMEI not required)
+  // Get all trackable units — with real GPS: IMEI required; otherwise all
   const units = await prisma.storageUnit.findMany({
     where: (useMock || !apiKey) ? { trackable: 1 } : { trackable: 1, imei: { not: null } },
     include: { currentDriver: { select: { name: true } } },
@@ -20,7 +20,13 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.all(
     units.map(async (unit) => {
-    if (useMock || !apiKey) {
+      // Mock mode, or no API key, or unit has no IMEI → generate demo temperature
+      if (useMock || !apiKey || !unit.imei) {
+        const type = (unit.unitType || "chill").toLowerCase();
+        // Bias out-of-range so the alert system is demonstrable
+        const temp = type === "ambient"
+          ? (25 + Math.random() * 4 - 1).toFixed(1)    // 24–28°C (ambient range is 15–25)
+          : (1 + Math.random() * 1.5).toFixed(1);       // 1.0–2.5°C (chill range is 2–8)
         return {
           id: unit.id,
           unitNumber: unit.unitNumber,
@@ -28,15 +34,13 @@ export async function GET(req: NextRequest) {
           unitType: unit.unitType,
           availability: unit.availability,
           currentDriver: unit.currentDriver,
-          temperature: (Math.random() * 8 - 2).toFixed(1),
-          lat: 51.5074 + (Math.random() - 0.5) * 0.05,
-          lng: -0.1278 + (Math.random() - 0.5) * 0.05,
+          temperature: temp,
+          lat: 53.5 + (Math.random() - 0.5) * 0.05,
+          lng: -1.15 + (Math.random() - 0.5) * 0.05,
           timestamp: new Date().toISOString(),
           mock: true,
         };
       }
-
-      if (!unit.imei) return { ...unit, temperature: null, lat: null, lng: null };
 
       try {
         const res = await fetch(

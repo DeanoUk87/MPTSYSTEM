@@ -4,7 +4,7 @@ import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
-import { Plus, Pencil, Trash2, Thermometer, RefreshCw, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, Thermometer, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 
@@ -158,11 +158,6 @@ export default function StoragePage() {
             <span className="text-emerald-600">{inStore} in store</span>
             <span className="text-amber-600">{assigned} assigned</span>
           </div>
-          <button onClick={fetchTemperatures} disabled={tempLoading}
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-60">
-            <RefreshCw className={clsx("w-4 h-4", tempLoading && "animate-spin")} />
-            Refresh Temps
-          </button>
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
             <Plus className="w-4 h-4" />Add Unit
           </button>

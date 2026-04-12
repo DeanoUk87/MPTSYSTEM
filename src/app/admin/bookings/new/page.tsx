@@ -1222,14 +1222,13 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       </button>
                     </div>
                     {/* Chill unit dropdown */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-blue-700 font-semibold w-14 shrink-0">🧊 Chill</span>
+                    <div>
                       <select
                         value={f.chillUnitId}
                         onChange={e => s("chillUnitId", e.target.value)}
-                        className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">— None —</option>
+                        <option value="">— Chill Unit: None —</option>
                         {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
@@ -1238,14 +1237,13 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       </select>
                     </div>
                     {/* Ambient unit dropdown */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-amber-700 font-semibold w-14 shrink-0">🌡 Ambient</span>
+                    <div>
                       <select
                         value={f.ambientUnitId}
                         onChange={e => s("ambientUnitId", e.target.value)}
-                        className="flex-1 px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">— None —</option>
+                        <option value="">— Ambient Unit: None —</option>
                         {allStorageUnits.map((u: any) => (
                           <option key={u.id} value={u.id} disabled={!!u.currentDriverId && u.currentDriverId !== activeDriverId}>
                             {u.unitNumber}{u.unitType ? ` (${u.unitType})` : ""}{u.currentDriverId && u.currentDriverId !== activeDriverId ? ` (in use: ${u.currentDriver?.name || "other"})` : u.currentDriverId === activeDriverId ? " ✓ assigned" : ""}
