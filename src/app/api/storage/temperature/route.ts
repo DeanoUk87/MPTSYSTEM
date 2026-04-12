@@ -20,8 +20,8 @@ export async function GET(req: NextRequest) {
 
   const results = await Promise.all(
     units.map(async (unit) => {
-      // Mock mode, or no API key, or unit has no IMEI → generate demo temperature
-      if (useMock || !apiKey || !unit.imei) {
+      // Mock mode, or no API key → generate demo temperature
+      if (useMock || !apiKey) {
         const type = (unit.unitType || "chill").toLowerCase();
         // Always out-of-range so the alert system is demonstrable
         const temp = type === "ambient"
@@ -42,6 +42,11 @@ export async function GET(req: NextRequest) {
           timestamp: new Date().toISOString(),
           mock: true,
         };
+      }
+
+      // Real API mode but unit has no valid IMEI — skip silently
+      if (!unit.imei) {
+        return { id: unit.id, unitNumber: unit.unitNumber, imei: null, temperature: null, lat: null, lng: null };
       }
 
       try {

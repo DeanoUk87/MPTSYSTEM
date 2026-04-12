@@ -1,11 +1,31 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Thermometer, X } from "lucide-react";
+
+function playAlertSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    // Two short beeps
+    [0, 0.35].forEach((startOffset) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.35, ctx.currentTime + startOffset);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startOffset + 0.28);
+      osc.start(ctx.currentTime + startOffset);
+      osc.stop(ctx.currentTime + startOffset + 0.28);
+    });
+  } catch { /* AudioContext not available (e.g. SSR) */ }
+}
 
 function GlobalTempAlert() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const prevAlertIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     async function check() {
@@ -22,6 +42,10 @@ function GlobalTempAlert() {
           if (type === "frozen") return t < -25 || t > -18;
           return false;
         });
+        // Play sound if any alert ID is new (not seen before and not dismissed)
+        const hasNew = out.some((u: any) => !prevAlertIds.current.has(String(u.id)));
+        if (hasNew) playAlertSound();
+        prevAlertIds.current = new Set(out.map((u: any) => String(u.id)));
         setAlerts(out);
       } catch {}
     }
