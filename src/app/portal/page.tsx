@@ -38,8 +38,8 @@ function parseOrders(notes?: string): { ref: string; type: string }[] {
   try { return JSON.parse(notes.slice(idx + ORDERS_SEP.length)); } catch { return []; }
 }
 
-function typeChipCls(type: string) {
-  const t = type.toLowerCase();
+function typeChipCls(type?: string) {
+  const t = (type ?? "").toLowerCase();
   if (t.startsWith("chill")) return "bg-blue-100 text-blue-700 border-blue-200";
   if (t.startsWith("amb"))   return "bg-green-100 text-green-700 border-green-200";
   if (t === "pump")          return "bg-orange-100 text-orange-700 border-orange-200";
