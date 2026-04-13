@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ imei
       imei,
       lat: 51.5074 + (Math.random() - 0.5) * 0.1,
       lng: -0.1278 + (Math.random() - 0.5) * 0.1,
-      temperature: (Math.random() * 10 - 2).toFixed(1),
+      temperature: parseFloat((Math.random() * 10 - 2).toFixed(1)),
       speed: Math.floor(Math.random() * 60),
       timestamp: new Date().toISOString(),
       status: "mock",
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ imei
 
     // temp1 is stored ×10 (e.g. 206 = 20.6°C)
     const rawTemp = data.params?.temp1 ?? null;
-    const temperature = rawTemp !== null ? (parseFloat(rawTemp) / 10).toFixed(1) : null;
+    const temperature = rawTemp !== null ? parseFloat((parseFloat(rawTemp) / 10).toFixed(1)) : null;
 
     // Normalise response to our schema
     return NextResponse.json({
