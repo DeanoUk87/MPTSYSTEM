@@ -3,7 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
 import clsx from "clsx";
-import Script from "next/script";
+
+const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
 // --- Types ---
 interface ViaAddress {
@@ -112,7 +113,16 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
   }
 
   useEffect(() => {
+    if (!MAPS_API_KEY) return;
     if (window.google?.maps) { init(); return; }
+    // Inject Maps script once if not already present
+    if (!document.getElementById("gmap-script")) {
+      const s = document.createElement("script");
+      s.id = "gmap-script";
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}`;
+      s.async = true;
+      document.head.appendChild(s);
+    }
     const t = setInterval(() => { if (!window.google?.maps) return; clearInterval(t); init(); }, 250);
     return () => clearInterval(t);
   }, []);
@@ -161,9 +171,9 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
   const chillTrack = useTracking(b.chillUnit?.imei);
   const ambTrack   = useTracking(b.ambientUnit?.imei);
 
-  const hasUnits = !!(b.chillUnit?.imei || b.ambientUnit?.imei);
-  const showMap  = !st.green && !b.hideTrackingMap  && hasUnits;
-  const showTemp = !st.green && !b.hideTrackingTemperature && hasUnits;
+  const hasUnits = !!(b.chillUnit?.imei || b.ambientUnit?.imei) && !!MAPS_API_KEY;
+  const showMap  = !st.green && !b.hideTrackingMap  && !!(b.chillUnit?.imei || b.ambientUnit?.imei) && !!MAPS_API_KEY;
+  const showTemp = !st.green && !b.hideTrackingTemperature && !!(b.chillUnit?.imei || b.ambientUnit?.imei);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -403,7 +413,6 @@ export default function CustomerPortalPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}`} />
       <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div>
           <h1 className="text-xl font-bold tracking-tight">MP Transport — Customer Portal</h1>
@@ -479,22 +488,15 @@ export default function CustomerPortalPage() {
                         <td className="px-3 py-3 whitespace-nowrap text-slate-700">{fmt(b.collectionDate)}</td>
                         <td className="px-3 py-3 whitespace-nowrap text-slate-500">{b.collectionTime || "—"}</td>
                         <td className="px-3 py-3">
-                          <div className="font-medium text-slate-800 truncate max-w-[130px]">{b.collectionName || "—"}</div>
-                          {b.collectionPostcode && <div className="text-xs text-slate-400">{b.collectionPostcode}</div>}
+                          <div className="font-medium text-slate-800 truncate max-w-[130px]">{b.collectionPostcode || "—"}</div>
                         </td>
                         {[0,1,2,3,4,5].map(i => (
-                          <td key={i} className="px-3 py-3 text-slate-500">
-                            {via[i] ? (
-                              <div>
-                                <div className="truncate max-w-[90px]">{via[i].name || via[i].postcode || "—"}</div>
-                                {via[i].postcode && via[i].name && <div className="text-xs text-slate-400">{via[i].postcode}</div>}
-                              </div>
-                            ) : <span className="text-slate-300">—</span>}
+                          <td key={i} className="px-3 py-3 font-mono text-slate-800">
+                            {via[i]?.postcode ?? <span className="text-slate-300">—</span>}
                           </td>
                         ))}
                         <td className="px-3 py-3">
-                          <div className="font-medium text-slate-800 truncate max-w-[130px]">{b.deliveryName || "—"}</div>
-                          {b.deliveryPostcode && <div className="text-xs text-slate-400">{b.deliveryPostcode}</div>}
+                          <div className="font-medium text-slate-800">{b.deliveryPostcode || "—"}</div>
                         </td>
                         <td className="px-3 py-3 whitespace-nowrap text-slate-500">{b.deliveryTime || "—"}</td>
                       </tr>

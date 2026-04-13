@@ -312,8 +312,8 @@ export default function BookingsPage() {
             columns={columns}
             searchKeys={["collectionPostcode", "deliveryPostcode"]}
             loading={loading}
-            emptyMessage="No bookings found. Create your first booking."
-            rowClassName={(b: Booking) => {
+            emptyMessage="No bookings found. Create your first booking."          defaultSortKey="collectionDate"
+          defaultSortDir="desc"            rowClassName={(b: Booking) => {
               const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
               const allViasPodded = !b.viaAddresses?.length || b.viaAddresses.every(v => v.signedBy);
               if (isQuote) return "bg-slate-50";

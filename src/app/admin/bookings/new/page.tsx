@@ -1107,8 +1107,22 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   </div>
                   <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 mt-1">
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider w-full">Customer View Controls</span>
-                    <Toggle checked={!!f.hideTrackingTemperature} onChange={v => s("hideTrackingTemperature", v)} label="Hide Temp" />
-                    <Toggle checked={!!f.hideTrackingMap} onChange={v => s("hideTrackingMap", v)} label="Hide Map" />
+                    <button type="button" onClick={() => s("hideTrackingTemperature", !f.hideTrackingTemperature)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        !f.hideTrackingTemperature
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                          : "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
+                      }`}>
+                      🌡️ {!f.hideTrackingTemperature ? "Temp Tracking ON" : "Temp Tracking OFF"}
+                    </button>
+                    <button type="button" onClick={() => s("hideTrackingMap", !f.hideTrackingMap)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        !f.hideTrackingMap
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                          : "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
+                      }`}>
+                      🗺️ {!f.hideTrackingMap ? "Map Tracking ON" : "Map Tracking OFF"}
+                    </button>
                   </div>
                 </div>
               </div>

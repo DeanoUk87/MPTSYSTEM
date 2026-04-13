@@ -19,6 +19,8 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   rowClassName?: (row: T) => string;
+  defaultSortKey?: string;
+  defaultSortDir?: "asc" | "desc";
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -30,12 +32,14 @@ export default function DataTable<T extends Record<string, any>>({
   loading = false,
   emptyMessage = "No records found.",
   rowClassName,
+  defaultSortKey = null,
+  defaultSortDir = "asc",
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const [sortKey, setSortKey] = useState<string | null>(null);
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sortKey, setSortKey] = useState<string | null>(defaultSortKey);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(defaultSortDir);
 
   const filtered = useMemo(() => {
     if (!search || !searchKeys.length) return data;
