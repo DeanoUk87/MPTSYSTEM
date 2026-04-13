@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { searchParams } = new URL(req.url);
-  const search = searchParams.get("search");
+  const search = searchParams.get("search") || searchParams.get("q");
 
   const customers = await prisma.customer.findMany({
     where: search ? {

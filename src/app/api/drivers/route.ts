@@ -8,11 +8,16 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type"); // Driver | SubContractor | CXDriver
+  const q = searchParams.get("q");
 
   const drivers = await prisma.driver.findMany({
-    where: type ? { driverType: type } : undefined,
+    where: {
+      ...(type ? { driverType: type } : {}),
+      ...(q ? { name: { contains: q } } : {}),
+    },
     include: { contacts: { where: { deletedAt: null } } },
     orderBy: { name: "asc" },
+    ...(q ? { take: 20 } : {}),
   });
   return NextResponse.json(drivers);
 }

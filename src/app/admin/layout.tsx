@@ -100,6 +100,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar collapsed={collapsed} onToggle={handleToggle} />
       <main className={`flex-1 min-w-0 min-h-screen flex flex-col transition-[margin] duration-200 ${collapsed ? "ml-16" : "ml-64"}`}>
+        {/* Sidebar expand handle — only visible when collapsed, sits on the edge so it's never under the page content */}
+        {collapsed && (
+          <button
+            onClick={() => handleToggle(false)}
+            className="fixed top-1/2 -translate-y-1/2 left-16 z-50 flex items-center justify-center w-5 h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-r-lg shadow-md transition-colors"
+            title="Expand sidebar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-2.5 h-4">
+              <polyline points="1 1 5 5 1 9" />
+            </svg>
+          </button>
+        )}
         {children}
       </main>
       <GlobalTempAlert />

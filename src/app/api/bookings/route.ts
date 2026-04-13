@@ -11,12 +11,36 @@ export async function GET(req: NextRequest) {
   const driverId = searchParams.get("driverId");
   const status = searchParams.get("status");
   const date = searchParams.get("date");
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
+  // podOnly=1 → only jobs with podDate+podTime+signature (completed) — for reports
+  const podOnly = searchParams.get("podOnly") === "1";
 
   const where: any = { deletedAt: null };
   if (customerId) where.customerId = customerId;
-  if (driverId) where.driverId = driverId;
+  // driverId filter: match main driver OR second man OR CX driver
+  if (driverId) {
+    where.OR = [
+      { driverId },
+      { secondManId: driverId },
+      { cxDriverId: driverId },
+    ];
+  }
   if (status !== null && status !== "") where.jobStatus = parseInt(status);
   if (date) where.collectionDate = date;
+  if (dateFrom || dateTo) {
+    where.collectionDate = {
+      ...(dateFrom ? { gte: dateFrom } : {}),
+      ...(dateTo ? { lte: dateTo } : {}),
+    };
+  }
+  if (podOnly) {
+    where.podDate = { not: null };
+    where.podTime = { not: null };
+    where.AND = [
+      { OR: [{ podSignature: { not: null } }, { podUpload: { not: null } }] },
+    ];
+  }
 
   // Customer role scoping
   const user = session as any;
@@ -31,11 +55,12 @@ export async function GET(req: NextRequest) {
       vehicle: { select: { id: true, name: true } },
       driver: { select: { id: true, name: true, driverType: true } },
       secondMan: { select: { id: true, name: true } },
+      cxDriver: { select: { id: true, name: true } },
       bookingType: { select: { id: true, name: true } },
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, signedBy: true } },
+      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, address1: true, city: true, signedBy: true } },
     },
-    orderBy: { createdAt: "desc" },
-    take: 500,
+    orderBy: { collectionDate: "asc" },
+    take: 1000,
   });
 
   return NextResponse.json(bookings);
