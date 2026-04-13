@@ -75,7 +75,7 @@ function fmt(dateStr?: string) {
 }
 
 // --- Live tracking hook ---
-interface TrackData { lat: number; lng: number; temperature?: number; }
+interface TrackData { lat: number; lng: number; temperature?: number | string; }
 declare global { interface Window { google?: any; } }
 
 function useTracking(imei?: string | null) {
@@ -174,7 +174,7 @@ function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: { temperat
         {isAmb ? "🌡" : "❄️"} {unit.unitType || unit.unitNumber}
       </p>
       {trackData?.temperature !== undefined
-        ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{trackData.temperature.toFixed(1)}°C</p>
+        ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{Number(trackData.temperature).toFixed(1)}°C</p>
         : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
       <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{unit.unitNumber}</p>
     </div>
