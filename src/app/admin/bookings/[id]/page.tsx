@@ -186,23 +186,23 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Customer View:</span>
           <button
             onClick={() => toggleField("hideTrackingTemperature")}
-            className={clsx("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
-              booking.hideTrackingTemperature
-                ? "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
-                : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+            className={clsx("px-3 py-1.5 rounded-full text-xs font-semibold border transition-all select-none",
+              !booking.hideTrackingTemperature
+                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                : "bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600"
             )}
           >
-            {booking.hideTrackingTemperature ? "🌡️ Temp Tracking OFF" : "🌡️ Temp Tracking ON"}
+            {!booking.hideTrackingTemperature ? "✓ Temp Tracking On" : "Temp Tracking Off"}
           </button>
           <button
             onClick={() => toggleField("hideTrackingMap")}
-            className={clsx("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all",
-              booking.hideTrackingMap
-                ? "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100"
-                : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+            className={clsx("px-3 py-1.5 rounded-full text-xs font-semibold border transition-all select-none",
+              !booking.hideTrackingMap
+                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                : "bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600"
             )}
           >
-            {booking.hideTrackingMap ? "🗺️ Map Tracking OFF" : "🗺️ Map Tracking ON"}
+            {!booking.hideTrackingMap ? "✓ Map Tracking On" : "Map Tracking Off"}
           </button>
         </div>
 

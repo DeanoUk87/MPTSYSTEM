@@ -153,32 +153,17 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
   );
 }
 
-// --- Toggle button ---
-function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <button type="button" onClick={() => onChange(!checked)}
-      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all select-none ${
-        checked ? "bg-blue-600 text-white border-blue-600 shadow-sm" : "bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600"
-      }`}>
-      {checked ? "✓ " : ""}{label}
-    </button>
-  );
-}
-
 // --- Detail View ---
 function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack: () => void; onLogout: () => void }) {
   const st   = statusInfo(b);
   const vias = b.viaAddresses ?? [];
 
-  const [showMapLocal,  setShowMapLocal]  = useState(!b.hideTrackingMap);
-  const [showTempLocal, setShowTempLocal] = useState(!b.hideTrackingTemperature);
-
   const chillTrack = useTracking(b.chillUnit?.imei);
   const ambTrack   = useTracking(b.ambientUnit?.imei);
 
   const hasUnits = !!(b.chillUnit?.imei || b.ambientUnit?.imei);
-  const showMap  = !st.green && showMapLocal  && hasUnits;
-  const showTemp = !st.green && showTempLocal && hasUnits;
+  const showMap  = !st.green && !b.hideTrackingMap  && hasUnits;
+  const showTemp = !st.green && !b.hideTrackingTemperature && hasUnits;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -299,12 +284,6 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
             <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Live Tracking</h3>
-                {hasUnits && !st.green && (
-                  <div className="flex gap-2">
-                    <Toggle checked={showMapLocal}  onChange={setShowMapLocal}  label={showMapLocal  ? "Map On"  : "Map Off"}  />
-                    <Toggle checked={showTempLocal} onChange={setShowTempLocal} label={showTempLocal ? "Temp On" : "Temp Off"} />
-                  </div>
-                )}
               </div>
 
               {!hasUnits && (
