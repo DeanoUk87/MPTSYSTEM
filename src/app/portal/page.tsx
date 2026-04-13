@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Loader2, LogOut, CheckCircle2, MapPin, EyeOff } from "lucide-react";
+import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
 import clsx from "clsx";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -163,8 +163,26 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
   );
 }
 
-// --- Detail View ---
-function DetailView({ booking: b, onLogout }: { booking: Booking; onLogout: () => void }) {
+// --- Temp Box ---
+function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: { temperature?: number } | null }) {
+  const isAmb = unit.unitType?.toLowerCase().startsWith("amb") ?? false;
+  const ambStyle = { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" };
+  const chillStyle = { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" };
+  return (
+    <div className="flex-1 rounded-xl p-3 text-center" style={isAmb ? ambStyle : chillStyle}>
+      <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
+        {isAmb ? "🌡" : "❄️"} {unit.unitType || unit.unitNumber}
+      </p>
+      {trackData?.temperature !== undefined
+        ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{trackData.temperature.toFixed(1)}°C</p>
+        : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
+      <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{unit.unitNumber}</p>
+    </div>
+  );
+}
+
+
+function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack: () => void; onLogout: () => void }) {
   const st   = statusInfo(b);
   const vias = b.viaAddresses ?? [];
 
@@ -179,6 +197,10 @@ function DetailView({ booking: b, onLogout }: { booking: Booking; onLogout: () =
     <div className="min-h-screen bg-slate-50">
       <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
+          <button onClick={onBack}
+            className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
+            <ArrowLeft className="w-3.5 h-3.5" /> Back
+          </button>
           <div>
             <h1 className="text-xl font-bold">{b.jobRef || b.id.slice(-6).toUpperCase()}</h1>
             <p className="text-blue-200 text-xs">{fmt(b.collectionDate)} · {b.collectionTime || "—"}</p>
@@ -311,40 +333,8 @@ function DetailView({ booking: b, onLogout }: { booking: Booking; onLogout: () =
                   {showTemp && (
                     <div>
                       <div className="flex gap-3">
-                        {b.chillUnit?.imei && (() => {
-                          const isAmb = b.chillUnit!.unitType?.toLowerCase().startsWith("amb");
-                          return (
-                            <div className="flex-1 rounded-xl p-3 text-center"
-                              style={isAmb
-                                ? { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" }
-                                : { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" }}>
-                              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
-                                {isAmb ? "🌡" : "❄️"} {b.chillUnit!.unitType || b.chillUnit!.unitNumber}
-                              </p>
-                              {chillTrack?.temperature !== undefined
-                                ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{chillTrack.temperature.toFixed(1)}°C</p>
-                                : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
-                              <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{b.chillUnit!.unitNumber}</p>
-                            </div>
-                          );
-                        })()}
-                        {b.ambientUnit?.imei && (() => {
-                          const isAmb = b.ambientUnit!.unitType?.toLowerCase().startsWith("amb") ?? true;
-                          return (
-                            <div className="flex-1 rounded-xl p-3 text-center"
-                              style={isAmb
-                                ? { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" }
-                                : { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" }}>
-                              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
-                                {isAmb ? "🌡" : "❄️"} {b.ambientUnit!.unitType || b.ambientUnit!.unitNumber}
-                              </p>
-                              {ambTrack?.temperature !== undefined
-                                ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{ambTrack.temperature.toFixed(1)}°C</p>
-                                : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
-                              <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{b.ambientUnit!.unitNumber}</p>
-                            </div>
-                          );
-                        })()}
+                        {b.chillUnit?.imei && <TempBox unit={b.chillUnit} trackData={chillTrack} />}
+                        {b.ambientUnit?.imei && <TempBox unit={b.ambientUnit} trackData={ambTrack} />}
                       </div>
                     </div>
                   )}
@@ -456,7 +446,7 @@ export default function CustomerPortalPage() {
     </div>
   );
 
-  if (selected) return <DetailView booking={selected} onLogout={handleLogout} />;
+  if (selected) return <DetailView booking={selected} onBack={handleBack} onLogout={handleLogout} />;
 
   return (
     <div className="min-h-screen bg-slate-50">
