@@ -75,7 +75,7 @@ function fmt(dateStr?: string) {
 }
 
 // --- Live tracking hook ---
-interface TrackData { lat: number; lng: number; temperature?: number | string; }
+interface TrackData { lat: number; lng: number; temperature?: number; }
 declare global { interface Window { google?: any; } }
 
 function useTracking(imei?: string | null) {
@@ -164,7 +164,7 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
 }
 
 // --- Temp Box ---
-function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: { temperature?: number } | null }) {
+function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: TrackData | null }) {
   const isAmb = unit.unitType?.toLowerCase().startsWith("amb") ?? false;
   const ambStyle = { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" };
   const chillStyle = { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" };
