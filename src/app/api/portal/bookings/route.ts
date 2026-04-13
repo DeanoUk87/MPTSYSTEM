@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       ambientUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
       viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
     },
-    orderBy: [{ collectionDate: "asc" }, { collectionTime: "asc" }],
+    orderBy: [{ collectionDate: "desc" }, { collectionTime: "desc" }],
   });
   return NextResponse.json(bookings);
 }

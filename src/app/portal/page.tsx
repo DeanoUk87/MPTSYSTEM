@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Loader2, LogOut, CheckCircle2, Truck, ArrowLeft, MapPin, EyeOff } from "lucide-react";
+import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
 import clsx from "clsx";
 import Script from "next/script";
 
@@ -57,15 +57,15 @@ function viasAllPodded(b: Booking) {
   return !b.viaAddresses?.length || b.viaAddresses.every(v => !!v.signedBy);
 }
 
-function statusInfo(b: Booking): { label: string; cls: string; green: boolean } {
+function statusInfo(b: Booking) {
   const vp = viasAllPodded(b);
   if (b.podSignature && b.podDataVerify && vp)
-    return { label: "Delivered",   cls: "bg-emerald-100 text-emerald-700 border-emerald-200", green: true };
+    return { label: "Completed",        cls: "bg-blue-500 text-white",    rowCls: "bg-blue-50 border-l-4 border-l-blue-400",       green: true  };
   if (b.podSignature && vp)
-    return { label: "POD Pending", cls: "bg-blue-100 text-blue-700 border-blue-200",          green: false };
+    return { label: "POD Received",     cls: "bg-emerald-500 text-white", rowCls: "bg-emerald-50 border-l-4 border-l-emerald-400", green: false };
   if (b.driver)
-    return { label: "In Progress", cls: "bg-amber-100 text-amber-700 border-amber-200",        green: false };
-  return   { label: "Booked",      cls: "bg-slate-100 text-slate-600 border-slate-200",        green: false };
+    return { label: "Driver Allocated", cls: "bg-amber-400 text-white",   rowCls: "bg-amber-50 border-l-4 border-l-amber-400",     green: false };
+  return   { label: "Booked",           cls: "bg-rose-500 text-white",    rowCls: "bg-rose-50 border-l-4 border-l-rose-400",      green: false };
 }
 
 function fmt(dateStr?: string) {
@@ -111,7 +111,11 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
     });
   }
 
-  useEffect(() => { if (window.google?.maps) init(); }, []);
+  useEffect(() => {
+    if (window.google?.maps) { init(); return; }
+    const t = setInterval(() => { if (!window.google?.maps) return; clearInterval(t); init(); }, 250);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (!map.current || !chillData) return;
@@ -140,10 +144,6 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
 
   return (
     <>
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}`}
-        onLoad={init}
-      />
       <div ref={divRef} className="w-full h-52 rounded-xl border border-slate-200 bg-slate-100" />
       <div className="flex gap-4 mt-2 text-xs text-slate-500">
         {chillImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Chill</span>}
@@ -179,7 +179,7 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className={clsx("px-3 py-1 rounded-full text-xs font-semibold border", st.cls)}>{st.label}</span>
+          <span className={clsx("px-3 py-1 rounded-full text-xs font-semibold", st.cls)}>{st.label}</span>
           <button onClick={onLogout}
             className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
             <LogOut className="w-3.5 h-3.5" /> Sign Out
@@ -200,15 +200,6 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                 {b.collectionName && <div><p className="text-xs text-slate-400">Location</p><p className="font-medium text-slate-800">{b.collectionName}</p></div>}
                 {b.collectionPostcode && <div><p className="text-xs text-slate-400">Postcode</p><p className="font-mono font-medium text-slate-700">{b.collectionPostcode}</p></div>}
                 {b.collectionTime && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-700">{b.collectionTime}</p></div>}
-                {b.purchaseOrder && <div><p className="text-xs text-slate-400">PO Number</p><p className="font-medium text-slate-700">{b.purchaseOrder}</p></div>}
-                {b.driver && (
-                  <div>
-                    <p className="text-xs text-slate-400">Driver</p>
-                    <p className="font-medium text-slate-700 flex items-center gap-1">
-                      <Truck className="w-3.5 h-3.5 text-slate-400" /> {b.driver.name}
-                    </p>
-                  </div>
-                )}
               </div>
               {b.jobNotes && (
                 <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-amber-800 text-xs">
@@ -228,7 +219,6 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                       VIA {i + 1}
                     </span>
                     {v.postcode && <span className="font-mono text-sm text-slate-600">{v.postcode}</span>}
-                    {v.name && <span className="text-sm text-slate-500 truncate">{v.name}</span>}
                     {v.signedBy && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
                   </div>
                   {orders.length > 0 && (
@@ -263,7 +253,6 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                   FINAL DEL
                 </span>
                 {b.deliveryPostcode && <span className="font-mono text-sm text-slate-600">{b.deliveryPostcode}</span>}
-                {b.deliveryName && <span className="text-sm text-slate-500 truncate">{b.deliveryName}</span>}
                 {b.podSignature && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
@@ -414,6 +403,7 @@ export default function CustomerPortalPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}`} />
       <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div>
           <h1 className="text-xl font-bold tracking-tight">MP Transport — Customer Portal</h1>
@@ -470,7 +460,7 @@ export default function CustomerPortalPage() {
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    {["Job Ref", "Date", "Time", "Collection", "Via 1", "Via 2", "Via 3", "Via 4", "Via 5", "Via 6", "Final Delivery", "ETA", "Status"].map(h => (
+                    {["Job Ref", "Date", "Time", "Collection", "Via 1", "Via 2", "Via 3", "Via 4", "Via 5", "Via 6", "Final Delivery", "ETA"].map(h => (
                       <th key={h} className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -481,7 +471,7 @@ export default function CustomerPortalPage() {
                     const via = b.viaAddresses ?? [];
                     return (
                       <tr key={b.id}
-                        className="border-b border-slate-100 hover:bg-blue-50 cursor-pointer transition-colors"
+                        className={clsx("border-b border-slate-100 cursor-pointer transition-colors hover:brightness-95", st.rowCls)}
                         onClick={() => setSelected(b)}>
                         <td className="px-3 py-3 font-semibold text-blue-700 whitespace-nowrap">
                           {b.jobRef || b.id.slice(-6).toUpperCase()}
@@ -507,9 +497,6 @@ export default function CustomerPortalPage() {
                           {b.deliveryPostcode && <div className="text-xs text-slate-400">{b.deliveryPostcode}</div>}
                         </td>
                         <td className="px-3 py-3 whitespace-nowrap text-slate-500">{b.deliveryTime || "—"}</td>
-                        <td className="px-3 py-3">
-                          <span className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", st.cls)}>{st.label}</span>
-                        </td>
                       </tr>
                     );
                   })}
@@ -523,12 +510,11 @@ export default function CustomerPortalPage() {
                 const st = statusInfo(b);
                 const via = b.viaAddresses ?? [];
                 return (
-                  <div key={b.id} className="p-4 cursor-pointer" onClick={() => setSelected(b)}>
+                  <div key={b.id} className={clsx("p-4 cursor-pointer", st.rowCls)} onClick={() => setSelected(b)}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-blue-700 font-semibold text-sm">{b.jobRef || b.id.slice(-6).toUpperCase()}</span>
-                          <span className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", st.cls)}>{st.label}</span>
                         </div>
                         <p className="text-xs text-slate-500">{fmt(b.collectionDate)} {b.collectionTime}</p>
                         <div className="mt-2 text-sm">
