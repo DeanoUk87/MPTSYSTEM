@@ -521,6 +521,17 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       });
       const updated = await fetch("/api/storage").then(r => r.json());
       setAllStorageUnits(updated);
+
+      // Sync form chillUnitId / ambientUnitId to match units now assigned to this driver
+      const driverUnits: any[] = updated.filter((u: any) => u.currentDriverId === activeDriverId);
+      const chillUnit = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? driverUnits[0] ?? null;
+      const ambUnit   = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb"))   ?? driverUnits[1] ?? null;
+      setF((prev: any) => ({
+        ...prev,
+        chillUnitId:   chillUnit?.id ?? "",
+        ambientUnitId: ambUnit?.id   ?? "",
+      }));
+
       toast.success(driverId ? "Unit assigned" : "Unit unassigned");
     } catch { toast.error("Failed to assign unit"); } finally { setAssigningUnit(null); }
   }

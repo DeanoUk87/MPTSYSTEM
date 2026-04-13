@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
 import clsx from "clsx";
 
-const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
 
 // --- Types ---
 interface ViaAddress {
@@ -347,38 +347,7 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                 </>
               )}
 
-              {/* Units info */}
-              {(b.chillUnit || b.ambientUnit) && (
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Units</p>
-                  {b.chillUnit && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">{b.chillUnit.unitNumber}</span>
-                      <span className={clsx("px-2 py-0.5 rounded-full text-xs border",
-                        b.chillUnit.unitType?.toLowerCase().startsWith("amb")
-                          ? "bg-amber-100 text-amber-700 border-amber-200"
-                          : b.chillUnit.unitType?.toLowerCase().startsWith("chill")
-                            ? "bg-blue-100 text-blue-700 border-blue-200"
-                            : "bg-slate-100 text-slate-600 border-slate-200")}>
-                        {b.chillUnit.unitType || "Unit"}
-                      </span>
-                    </div>
-                  )}
-                  {b.ambientUnit && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">{b.ambientUnit.unitNumber}</span>
-                      <span className={clsx("px-2 py-0.5 rounded-full text-xs border",
-                        b.ambientUnit.unitType?.toLowerCase().startsWith("amb")
-                          ? "bg-amber-100 text-amber-700 border-amber-200"
-                          : b.ambientUnit.unitType?.toLowerCase().startsWith("chill")
-                            ? "bg-blue-100 text-blue-700 border-blue-200"
-                            : "bg-slate-100 text-slate-600 border-slate-200")}>
-                        {b.ambientUnit.unitType || "Unit"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Units section removed */}
             </div>
           </div>
 
@@ -399,10 +368,12 @@ export default function CustomerPortalPage() {
   const [selected, setSelected] = useState<Booking | null>(null);
 
   function selectBooking(b: Booking) {
+    try { sessionStorage.setItem("portal_job", JSON.stringify(b)); } catch {}
     setSelected(b);
   }
 
   function handleBack() {
+    try { sessionStorage.removeItem("portal_job"); } catch {}
     setSelected(null);
   }
 
@@ -419,6 +390,14 @@ export default function CustomerPortalPage() {
   }
 
   useEffect(() => { loadBookings(); }, []);
+
+  // On refresh: restore selected booking from sessionStorage (client-only, after hydration)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("portal_job");
+      if (raw) setSelected(JSON.parse(raw) as Booking);
+    } catch {}
+  }, []);
 
 
   async function handleLogout() {
