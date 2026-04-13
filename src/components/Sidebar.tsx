@@ -63,8 +63,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside className={clsx(
-      "fixed top-0 left-0 h-screen bg-slate-900 text-white flex flex-col z-40 transition-[width] duration-200 overflow-hidden",
-      collapsed ? "w-16" : "w-64"
+      "fixed top-0 left-0 h-screen bg-slate-900 text-white flex flex-col z-40 transition-[width] duration-200",
+      collapsed ? "w-16" : "w-64 overflow-hidden"
     )}>
       {/* Logo + Toggle */}
       <div className={clsx(
@@ -90,7 +90,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden px-2 space-y-0.5">
+      <nav className={clsx("flex-1 py-3 overflow-y-auto px-2 space-y-0.5", !collapsed && "overflow-x-hidden")}>
         {navGroups.map((group, gi) => (
           <div key={group.label} className={gi > 0 ? "pt-2" : ""}>
             {collapsed
