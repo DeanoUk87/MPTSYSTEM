@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search, RefreshCw, Plus, ExternalLink, Thermometer, MapPin } from "lucide-react";
+import { Loader2, Search, RefreshCw, Plus, ExternalLink, Thermometer, MapPin, Clock, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import Script from "next/script";
 
@@ -36,6 +36,54 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
     >
       {checked ? "✓ " : ""}{label}
     </button>
+  );
+}
+
+// Cross-browser time picker — replaces <input type="time"> (Firefox renders it as plain text)
+function TimePicker({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const parts = (value || "00:00").split(":");
+  const hh = parseInt(parts[0]) || 0;
+  const mm = parseInt(parts[1]) || 0;
+  useEffect(() => {
+    function outside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", outside);
+    return () => document.removeEventListener("mousedown", outside);
+  }, []);
+  const set = (h: number, m: number) => onChange(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+  return (
+    <div className="relative" ref={ref}>
+      <button type="button" onClick={() => setOpen(p => !p)}
+        className={(className ?? "") + " flex items-center gap-2 text-left"}>
+        <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        <span>{value || "00:00"}</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 mt-1" style={{ width: 236 }}>
+          <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Hour</p>
+          <div className="grid grid-cols-6 gap-1 mb-3">
+            {Array.from({ length: 24 }, (_, i) => (
+              <button key={i} type="button" onClick={() => set(i, mm)}
+                className={`text-xs py-1 rounded-lg font-mono font-medium transition-colors ${hh === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}>
+                {String(i).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Minute</p>
+          <div className="grid grid-cols-6 gap-1">
+            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
+              <button key={m} type="button" onClick={() => { set(hh, m); setOpen(false); }}
+                className={`text-xs py-1 rounded-lg font-mono font-medium transition-colors ${mm === m ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}>
+                {String(m).padStart(2, "0")}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -394,10 +442,10 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     if (!miles) return;
     setF(p => {
       const next = { ...p };
-      const fuelPct = p.fuelSurchargePercent ? parseFloat(p.fuelSurchargePercent) || 0 : 0;
+      const pencePerMile = p.fuelSurchargePercent ? parseFloat(p.fuelSurchargePercent) || 0 : 0;
       if (vehicleRates.length > 0) {
         let cp = miles * vehicleRates[0][rateKey];
-        if (fuelPct > 0) cp = cp * (1 + fuelPct / 100);
+        if (pencePerMile > 0) cp = cp + (miles * pencePerMile / 100);
         next.customerPrice = cp.toFixed(2);
       }
       if (p.driverId) {
@@ -573,8 +621,8 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     if (rates.length > 0) customerPrice = billMiles * rates[0][rateKey];
 
     // Add fuel surcharge if selected
-    const fuelPct = formState.fuelSurchargePercent ? parseFloat(formState.fuelSurchargePercent) || 0 : 0;
-    if (fuelPct > 0) customerPrice = customerPrice * (1 + fuelPct / 100);
+    const pencePerMile = formState.fuelSurchargePercent ? parseFloat(formState.fuelSurchargePercent) || 0 : 0;
+    if (pencePerMile > 0) customerPrice = customerPrice + (billMiles * pencePerMile / 100);
 
     const updates: Record<string, any> = {
       miles: String(Math.round(billMiles)),
@@ -711,7 +759,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4" noValidate>
 
           {/* ── ROW 1: Customer + Purchase Order (combined) ── */}
           <div className={panel}>
@@ -759,7 +807,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   </div>
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Time</label>
-                    <input type="time" value={f.collectionTime} onChange={e => s("collectionTime", e.target.value)} className={inp} />
+                    <TimePicker value={f.collectionTime} onChange={v => s("collectionTime", v)} className={inp} />
                   </div>
                 </div>
               </div>
@@ -774,9 +822,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     onChangePostcode={v => s("collectionPostcode", v)}
                     onChangeCountry={v => s("collectionCountry", v)}
                     onApply={r => {
-                      s("collectionName", r.line1 || "");
-                      s("collectionAddress1", r.line2 || "");
-                      s("collectionAddress2", r.line3 || "");
+                      s("collectionName", "");
+                      s("collectionAddress1", r.line1 || "");
+                      s("collectionAddress2", r.line2 || "");
                       s("collectionArea", r.city);
                       s("collectionPostcode", r.postcode);
                       s("collectionCountry", "UK");
@@ -919,17 +967,23 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       const miles = Math.round(parseFloat(f.miles) || 0);
                       if (miles && vehicleRates.length > 0) {
                         let cp = miles * vehicleRates[0][rateKey];
-                        const fuelPct = pct ? parseFloat(pct) || 0 : 0;
-                        if (fuelPct > 0) cp = cp * (1 + fuelPct / 100);
+                        const pencePerMile = pct ? parseFloat(pct) || 0 : 0;
+                        if (pencePerMile > 0) cp = cp + (miles * pencePerMile / 100);
                         setF(p => ({ ...p, fuelSurchargePercent: pct, customerPrice: cp.toFixed(2) }));
                       } else {
                         s("fuelSurchargePercent", pct);
                       }
                     }} className={inp}>
-                      <option value="">None</option>
-                      {fuelSurcharges.map((fs: any) => (
-                        <option key={fs.id} value={String(fs.percentage)}>{fs.percentage}% (diesel &gt; £{fs.price.toFixed(2)}/litre)</option>
-                      ))}
+                      <option value="">None{fuelSurcharges.length > 0 ? ` (Up to £${[...fuelSurcharges].sort((a: any, b: any) => a.price - b.price)[0].price.toFixed(2)}/litre)` : ""}</option>
+                      {(() => {
+                        const sorted = [...fuelSurcharges].sort((a: any, b: any) => a.price - b.price);
+                        return sorted.map((fs: any, idx: number) => {
+                          const lo = Number((fs.price + 0.01).toFixed(2));
+                          const next = sorted[idx + 1];
+                          const range = next ? `£${lo.toFixed(2)} – £${(next.price - 0.01).toFixed(2)}/litre` : `£${lo.toFixed(2)}+/litre`;
+                          return <option key={fs.id} value={String(fs.percentage)}>{range} (+{fs.percentage}p/mile)</option>;
+                        });
+                      })()}
                     </select>
                   </div>
 
@@ -937,7 +991,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs font-medium text-slate-500 block mb-1">No. Items <span className="text-rose-500">*</span></label>
-                      <input type="number" min="1" value={f.numberOfItems} onChange={e => s("numberOfItems", e.target.value)}
+                      <input type="number" min="0" value={f.numberOfItems} onChange={e => s("numberOfItems", e.target.value)}
                         className={f.numberOfItems ? inp : inpReq} placeholder="e.g. 1" />
                     </div>
                     <div>
@@ -1069,7 +1123,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   </div>
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Time</label>
-                    <input type="time" value={f.deliveryTime} onChange={e => s("deliveryTime", e.target.value)} className={inp} />
+                    <TimePicker value={f.deliveryTime} onChange={v => s("deliveryTime", v)} className={inp} />
                   </div>
                 </div>
               </div>
@@ -1084,9 +1138,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     onChangePostcode={v => s("deliveryPostcode", v)}
                     onChangeCountry={v => s("deliveryCountry", v)}
                     onApply={r => {
-                      s("deliveryName", r.line1 || "");
-                      s("deliveryAddress1", r.line2 || "");
-                      s("deliveryAddress2", r.line3 || "");
+                      s("deliveryName", "");
+                      s("deliveryAddress1", r.line1 || "");
+                      s("deliveryAddress2", r.line2 || "");
                       s("deliveryArea", r.city);
                       s("deliveryPostcode", r.postcode);
                       s("deliveryCountry", "UK");
@@ -1290,7 +1344,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         </select>
                         <input type="date" value={via.viaDate || ""} onChange={e => updateVia(i, "viaDate", e.target.value)}
                           className="flex-1 min-w-0 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                        <input type="time" value={via.viaTime || ""} onChange={e => updateVia(i, "viaTime", e.target.value)}
+                        <TimePicker value={via.viaTime || ""} onChange={v => updateVia(i, "viaTime", v)}
                           className="w-24 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
                         <button type="button" onClick={() => removeVia(i)}
                           className="ml-auto text-slate-400 hover:text-rose-600 text-lg font-bold leading-none">&times;</button>
@@ -1298,7 +1352,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <PostcodeSearch postcode={via.postcode} country="UK"
                         onChangePostcode={v => updateVia(i, "postcode", v.toUpperCase())}
                         onChangeCountry={() => {}}
-                        onApply={r => { updateVia(i, "name", r.line1 || ""); updateVia(i, "address1", r.line2 || ""); updateVia(i, "address2", r.line3 || ""); updateVia(i, "area", r.city); updateVia(i, "postcode", r.postcode); }}
+                        onApply={r => { updateVia(i, "name", ""); updateVia(i, "address1", r.line1 || ""); updateVia(i, "address2", r.line2 || ""); updateVia(i, "area", r.city); updateVia(i, "postcode", r.postcode); }}
                         placeholder="Postcode lookup..." />
                       <NameSearch value={via.name || ""} onChange={v => updateVia(i, "name", v)}
                         onApply={a => {
@@ -1376,6 +1430,13 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
           </div>
         </form>
       </div>
+
+      {/* ── Floating Save Button ── */}
+      <button type="button" onClick={(e) => handleSubmit(e as any)} disabled={saving}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-sm shadow-xl disabled:opacity-70 transition-all">
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        {saving ? "Saving..." : "Save"}
+      </button>
 
       {/* ── All Units Modal ── */}
       {showUnitsModal && (

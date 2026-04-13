@@ -78,8 +78,8 @@ export default function FuelSurchargesPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-100">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Diesel Price (p/litre)</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Surcharge %</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Diesel Price Range</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pence Per Mile</th>
               <th className="px-5 py-3"></th>
             </tr>
           </thead>
@@ -92,14 +92,25 @@ export default function FuelSurchargesPage() {
             {!loading && items.length === 0 && !adding && (
               <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-400 text-sm">No fuel surcharges configured</td></tr>
             )}
+            {!loading && items.length > 0 && (
+              <tr className="bg-slate-50/60 border-b border-slate-100">
+                <td className="px-5 py-3">
+                  <span className="text-slate-500 text-sm italic">Up to £{Math.min(...items.map(i => i.price)).toFixed(2)}/litre</span>
+                </td>
+                <td className="px-5 py-3">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">No surcharge</span>
+                </td>
+                <td className="px-5 py-3"></td>
+              </tr>
+            )}
             {adding && (
               <tr className="bg-blue-50">
                 <td className="px-5 py-3">
-                  <input type="number" step="0.1" placeholder="e.g. 150" value={newData.price}
+                  <input type="number" step="0.01" placeholder="e.g. 1.70" value={newData.price}
                     onChange={e => setNewData(p => ({ ...p, price: e.target.value }))} className={inp} autoFocus />
                 </td>
                 <td className="px-5 py-3">
-                  <input type="number" step="0.1" placeholder="e.g. 5.5" value={newData.percentage}
+                  <input type="number" step="1" placeholder="e.g. 6" value={newData.percentage}
                     onChange={e => setNewData(p => ({ ...p, percentage: e.target.value }))} className={inp} />
                 </td>
                 <td className="px-5 py-3">
@@ -115,21 +126,29 @@ export default function FuelSurchargesPage() {
                 </td>
               </tr>
             )}
-            {items.map(item => (
+            {items.map((item, idx) => {
+              const sorted = [...items].sort((a, b) => a.price - b.price);
+              const sidx = sorted.findIndex(x => x.id === item.id);
+              const lo = Number((item.price + 0.01).toFixed(2));
+              const next = sorted[sidx + 1];
+              const priceRange = next
+                ? `£${lo.toFixed(2)} – £${(next.price - 0.01).toFixed(2)}/litre`
+                : `£${lo.toFixed(2)}+/litre`;
+              return (
               <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-5 py-3">
                   {editId === item.id
-                    ? <input type="number" step="0.1" value={editData.price}
+                    ? <input type="number" step="0.01" value={editData.price}
                         onChange={e => setEditData(p => ({ ...p, price: e.target.value }))} className={inp} autoFocus />
-                    : <span className="font-medium text-slate-800">{item.price}p</span>
+                    : <span className="font-medium text-slate-800">{priceRange}</span>
                   }
                 </td>
                 <td className="px-5 py-3">
                   {editId === item.id
-                    ? <input type="number" step="0.1" value={editData.percentage}
+                    ? <input type="number" step="1" value={editData.percentage}
                         onChange={e => setEditData(p => ({ ...p, percentage: e.target.value }))} className={inp} />
                     : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                        {item.percentage}%
+                        +{item.percentage}p/mile
                       </span>
                   }
                 </td>
@@ -158,7 +177,7 @@ export default function FuelSurchargesPage() {
                   </div>
                 </td>
               </tr>
-            ))}
+            );})}
           </tbody>
         </table>
       </div>
