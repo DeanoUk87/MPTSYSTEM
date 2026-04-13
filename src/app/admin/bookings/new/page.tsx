@@ -581,6 +581,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
           ...unit,
           currentDriverId: driverId || null,
           trackable: driverId ? 1 : 0,
+          availability: driverId ? "No" : "Yes",
         }),
       });
       // Refresh storage units

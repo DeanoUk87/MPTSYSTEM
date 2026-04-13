@@ -7,6 +7,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const body = await req.json();
+  const clearedDriver = body.currentDriverId !== undefined && !body.currentDriverId;
   const unit = await prisma.storageUnit.update({
     where: { id },
     data: {
@@ -14,7 +15,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       imei: body.imei || null,
       unitSize: body.unitSize || null,
       unitType: body.unitType || null,
-      availability: body.availability,
+      // If availability is explicitly provided use it; if driver is being cleared, reset to Yes
+      availability: body.availability ?? (clearedDriver ? "Yes" : undefined),
       calibrationDate: body.calibrationDate || null,
       // Only update currentDriverId if it was explicitly sent in the request
       ...(body.currentDriverId !== undefined && { currentDriverId: body.currentDriverId || null }),

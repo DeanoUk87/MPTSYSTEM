@@ -368,13 +368,14 @@ export default function CustomerPortalPage() {
   const [selected, setSelected] = useState<Booking | null>(null);
 
   function selectBooking(b: Booking) {
-    try { sessionStorage.setItem("portal_job", JSON.stringify(b)); } catch {}
+    try { sessionStorage.setItem("portal_job", JSON.stringify({ id: b.id, date: b.collectionDate || today })); } catch {}
     setSelected(b);
   }
 
   function handleBack() {
     try { sessionStorage.removeItem("portal_job"); } catch {}
     setSelected(null);
+    loadBookings();
   }
 
   function loadBookings() {
@@ -389,14 +390,35 @@ export default function CustomerPortalPage() {
       .catch(() => { setError("Failed to load bookings"); setLoading(false); });
   }
 
-  useEffect(() => { loadBookings(); }, []);
-
-  // On refresh: restore selected booking from sessionStorage (client-only, after hydration)
   useEffect(() => {
+    // On refresh: if a stored job exists, fetch fresh data for that date and restore selection
     try {
       const raw = sessionStorage.getItem("portal_job");
-      if (raw) setSelected(JSON.parse(raw) as Booking);
+      if (raw) {
+        const { id, date } = JSON.parse(raw) as { id: string; date: string };
+        const d = date || today;
+        setLoading(true);
+        fetch(`/api/portal/bookings?dateFrom=${d}&dateTo=${d}`)
+          .then(r => {
+            if (r.status === 403) { setError("This account does not have customer portal access."); setLoading(false); return null; }
+            if (r.status === 401) { router.push("/login"); return null; }
+            return r.json();
+          })
+          .then(list => {
+            if (!list) return;
+            setBookings(list);
+            setDateFrom(d);
+            setDateTo(d);
+            setLoading(false);
+            const fresh = list.find((b: Booking) => b.id === id);
+            if (fresh) setSelected(fresh);
+            else { sessionStorage.removeItem("portal_job"); loadBookings(); }
+          })
+          .catch(() => { setLoading(false); loadBookings(); });
+        return;
+      }
     } catch {}
+    loadBookings();
   }, []);
 
 

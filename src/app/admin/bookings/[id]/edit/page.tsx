@@ -517,7 +517,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       if (!unit) return;
       await fetch(`/api/storage/${unitId}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...unit, currentDriverId: driverId || null, trackable: driverId ? 1 : 0 }),
+        body: JSON.stringify({ ...unit, currentDriverId: driverId || null, trackable: driverId ? 1 : 0, availability: driverId ? "No" : "Yes" }),
       });
       const updated = await fetch("/api/storage").then(r => r.json());
       setAllStorageUnits(updated);
@@ -606,8 +606,8 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         <div className="bg-gradient-to-r from-[#1a3a5c] to-[#1e4976] px-5 py-3 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-white font-bold text-base tracking-tight">Edit Job — {customer?.name}</h1>
-              <p className="text-blue-300 text-xs mt-0.5">{customer?.accountNumber}</p>
+              <h1 className="text-white font-bold text-base tracking-tight">Edit Job — {f.jobRef || id.slice(-6).toUpperCase()}</h1>
+              <p className="text-blue-300 text-xs mt-0.5">{customer?.name}</p>
             </div>
             <select value={jt} onChange={e => setJt(Number(e.target.value))}
               className="bg-white/10 border border-white/20 text-white text-xs rounded-lg px-2 py-1.5 focus:outline-none hover:bg-white/20 transition-colors">
