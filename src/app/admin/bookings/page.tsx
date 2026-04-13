@@ -44,8 +44,8 @@ function StatusBadge({ booking }: { booking: Booking }) {
   if (isQuote) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>;
   if (!booking.driver) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>;
   const allViasPodded = !booking.viaAddresses?.length || booking.viaAddresses.every(v => v.signedBy);
-  if (booking.podSignature && booking.podDataVerify && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">Completed</span>;
-  if (booking.podSignature && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">POD Received</span>;
+  if (booking.podSignature && booking.podDataVerify && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">Completed</span>;
+  if (booking.podSignature && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>;
   return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>;
 }
 
@@ -235,12 +235,14 @@ export default function BookingsPage() {
             <div className="flex items-center gap-1.5">
               <label className="text-xs text-slate-500 font-medium whitespace-nowrap">Date from</label>
               <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
+                className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
             </div>
             <div className="flex items-center gap-1.5">
               <label className="text-xs text-slate-500 font-medium whitespace-nowrap">to</label>
               <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
+                className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
             </div>
             <SearchPick placeholder="Search customer..." onPick={r => setPickedCustomer({ id: r.id, label: r.name })} onClear={() => setPickedCustomer(null)} picked={pickedCustomer} />
             <SearchPick placeholder="Search driver / subcon..." onPick={r => setPickedDriver({ id: r.id, label: r.name })} onClear={() => setPickedDriver(null)} picked={pickedDriver} />
@@ -282,7 +284,7 @@ export default function BookingsPage() {
             { label: "Total", value: bookings.length, icon: CheckCircle, color: "text-blue-600 bg-blue-50" },
             { label: "No Driver", value: bookings.filter(b => !b.driver).length, icon: AlertCircle, color: "text-rose-600 bg-rose-50" },
             { label: "In Progress", value: bookings.filter(b => b.driver && !b.podSignature).length, icon: Clock, color: "text-amber-600 bg-amber-50" },
-            { label: "Completed", value: bookings.filter(b => b.podSignature && b.podDataVerify).length, icon: CheckCircle, color: "text-emerald-600 bg-emerald-50" },
+            { label: "Completed", value: bookings.filter(b => b.podSignature && b.podDataVerify).length, icon: CheckCircle, color: "text-blue-600 bg-blue-50" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
               <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", color.split(" ")[1])}>
@@ -300,8 +302,8 @@ export default function BookingsPage() {
         <div className="flex items-center gap-4 text-xs text-slate-500">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500 inline-block"></span> No driver</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400 inline-block"></span> Driver allocated</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-500 inline-block"></span> POD received</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Completed</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500 inline-block"></span> POD received</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-500 inline-block"></span> Completed</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -314,8 +316,8 @@ export default function BookingsPage() {
             rowClassName={(b: Booking) => {
               const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
               if (isQuote) return "bg-slate-50";
-              if (b.podSignature && b.podDataVerify) return "bg-emerald-50 border-l-4 border-l-emerald-400";
-              if (b.podSignature) return "bg-blue-50 border-l-4 border-l-blue-400";
+              if (b.podSignature && b.podDataVerify) return "bg-blue-50 border-l-4 border-l-blue-400";
+              if (b.podSignature) return "bg-emerald-50 border-l-4 border-l-emerald-400";
               if (b.driver) return "bg-amber-50 border-l-4 border-l-amber-400";
               return "bg-rose-50 border-l-4 border-l-rose-400";
             }}

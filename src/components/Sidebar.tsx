@@ -53,7 +53,14 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [tooltip, setTooltip] = useState<{ label: string; y: number } | null>(null);
   useEffect(() => setMounted(true), []);
+  useEffect(() => { if (!collapsed) setTooltip(null); }, [collapsed]);
+
+  const showTip = (e: React.MouseEvent, label: string) => {
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setTooltip({ label, y: r.top + r.height / 2 });
+  };
 
   async function handleSignOut() {
     await fetch("/api/logout", { method: "POST" });
@@ -62,6 +69,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   }
 
   return (
+    <>
     <aside className={clsx(
       "fixed top-0 left-0 h-screen bg-slate-900 text-white flex flex-col z-40 transition-[width] duration-200",
       collapsed ? "w-16" : "w-64 overflow-hidden"
@@ -104,8 +112,10 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onMouseEnter={collapsed ? (e) => showTip(e, item.label) : undefined}
+                  onMouseLeave={collapsed ? () => setTooltip(null) : undefined}
                   className={clsx(
-                    "relative flex items-center rounded-lg text-sm font-medium transition-colors group mb-0.5",
+                    "flex items-center rounded-lg text-sm font-medium transition-colors mb-0.5",
                     collapsed ? "justify-center p-3" : "gap-3 px-3 py-2",
                     active ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   )}
@@ -113,11 +123,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   <Icon className="w-4 h-4 shrink-0" />
                   {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
                   {!collapsed && active && <span className="w-1.5 h-1.5 rounded-full bg-white/60 shrink-0" />}
-                  {collapsed && (
-                    <span className="pointer-events-none absolute left-full ml-3 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1.5 text-xs text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">
-                      {item.label}
-                    </span>
-                  )}
                 </Link>
               );
             })}
@@ -129,21 +134,27 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       <div className="px-2 py-3 border-t border-slate-700/60 shrink-0">
         <button
           onClick={handleSignOut}
+          onMouseEnter={collapsed ? (e) => showTip(e as any, "Sign Out") : undefined}
+          onMouseLeave={collapsed ? () => setTooltip(null) : undefined}
           className={clsx(
-            "relative flex items-center rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition-colors group",
+            "flex items-center rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition-colors",
             collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
           )}
         >
           <LogOut className="w-4 h-4 shrink-0" />
           {!collapsed && "Sign Out"}
-          {collapsed && (
-            <span className="pointer-events-none absolute left-full ml-3 z-50 whitespace-nowrap rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1.5 text-xs text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity">
-              Sign Out
-            </span>
-          )}
         </button>
       </div>
     </aside>
+    {collapsed && tooltip && (
+      <div
+        style={{ position: "fixed", top: tooltip.y, left: 68, transform: "translateY(-50%)", zIndex: 9999 }}
+        className="pointer-events-none whitespace-nowrap rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1.5 text-xs text-white shadow-xl"
+      >
+        {tooltip.label}
+      </div>
+    )}
+    </>
   );
 }
 

@@ -42,27 +42,40 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 // Cross-browser time picker — replaces <input type="time"> (Firefox renders it as plain text)
 function TimePicker({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
   const parts = (value || "00:00").split(":");
   const hh = parseInt(parts[0]) || 0;
   const mm = parseInt(parts[1]) || 0;
   useEffect(() => {
     function outside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (
+        btnRef.current && !btnRef.current.contains(e.target as Node) &&
+        dropRef.current && !dropRef.current.contains(e.target as Node)
+      ) setOpen(false);
     }
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
   }, []);
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, left: r.left });
+    }
+    setOpen(p => !p);
+  };
   const set = (h: number, m: number) => onChange(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
   return (
-    <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen(p => !p)}
+    <div className="relative">
+      <button ref={btnRef} type="button" onClick={toggle}
         className={(className ?? "") + " flex items-center gap-2 text-left"}>
         <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         <span>{value || "00:00"}</span>
       </button>
       {open && (
-        <div className="absolute z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 mt-1" style={{ width: 236 }}>
+        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 236 }}
+          className="bg-white border border-slate-200 rounded-xl shadow-xl p-3">
           <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Hour</p>
           <div className="grid grid-cols-6 gap-1 mb-3">
             {Array.from({ length: 24 }, (_, i) => (
@@ -822,9 +835,10 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     onChangePostcode={v => s("collectionPostcode", v)}
                     onChangeCountry={v => s("collectionCountry", v)}
                     onApply={r => {
-                      s("collectionName", "");
-                      s("collectionAddress1", r.line1 || "");
-                      s("collectionAddress2", r.line2 || "");
+                      const isBiz = r.line1 && !/^\d/.test(r.line1) && r.line2;
+                      s("collectionName", isBiz ? r.line1 : "");
+                      s("collectionAddress1", isBiz ? (r.line2 || "") : (r.line1 || ""));
+                      s("collectionAddress2", "");
                       s("collectionArea", r.city);
                       s("collectionPostcode", r.postcode);
                       s("collectionCountry", "UK");
@@ -1138,9 +1152,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     onChangePostcode={v => s("deliveryPostcode", v)}
                     onChangeCountry={v => s("deliveryCountry", v)}
                     onApply={r => {
-                      s("deliveryName", "");
-                      s("deliveryAddress1", r.line1 || "");
-                      s("deliveryAddress2", r.line2 || "");
+                      s("deliveryName", isBiz2 ? r.line1 : "");
+                      s("deliveryAddress1", isBiz2 ? (r.line2 || "") : (r.line1 || ""));
+                      s("deliveryAddress2", "");
                       s("deliveryArea", r.city);
                       s("deliveryPostcode", r.postcode);
                       s("deliveryCountry", "UK");
@@ -1352,7 +1366,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <PostcodeSearch postcode={via.postcode} country="UK"
                         onChangePostcode={v => updateVia(i, "postcode", v.toUpperCase())}
                         onChangeCountry={() => {}}
-                        onApply={r => { updateVia(i, "name", ""); updateVia(i, "address1", r.line1 || ""); updateVia(i, "address2", r.line2 || ""); updateVia(i, "area", r.city); updateVia(i, "postcode", r.postcode); }}
+                        onApply={r => { const isBiz = r.line1 && !/^\d/.test(r.line1) && r.line2; updateVia(i, "name", isBiz ? r.line1 : ""); updateVia(i, "address1", isBiz ? (r.line2 || "") : (r.line1 || "")); updateVia(i, "address2", ""); updateVia(i, "area", r.city); updateVia(i, "postcode", r.postcode); }}
                         placeholder="Postcode lookup..." />
                       <NameSearch value={via.name || ""} onChange={v => updateVia(i, "name", v)}
                         onApply={a => {

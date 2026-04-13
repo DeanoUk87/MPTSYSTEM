@@ -34,27 +34,40 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 // Cross-browser time picker — replaces <input type="time"> (Firefox renders it as plain text)
 function TimePicker({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
   const parts = (value || "00:00").split(":");
   const hh = parseInt(parts[0]) || 0;
   const mm = parseInt(parts[1]) || 0;
   useEffect(() => {
     function outside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (
+        btnRef.current && !btnRef.current.contains(e.target as Node) &&
+        dropRef.current && !dropRef.current.contains(e.target as Node)
+      ) setOpen(false);
     }
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
   }, []);
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, left: r.left });
+    }
+    setOpen(p => !p);
+  };
   const set = (h: number, m: number) => onChange(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
   return (
-    <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen(p => !p)}
+    <div className="relative">
+      <button ref={btnRef} type="button" onClick={toggle}
         className={(className ?? "") + " flex items-center gap-2 text-left"}>
         <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         <span>{value || "00:00"}</span>
       </button>
       {open && (
-        <div className="absolute z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 mt-1" style={{ width: 236 }}>
+        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 236 }}
+          className="bg-white border border-slate-200 rounded-xl shadow-xl p-3">
           <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Hour</p>
           <div className="grid grid-cols-6 gap-1 mb-3">
             {Array.from({ length: 24 }, (_, i) => (
@@ -647,7 +660,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="p-4 space-y-2">
                   <PostcodeSearch postcode={f.collectionPostcode || ""} country={f.collectionCountry || "UK"}
                     onChangePostcode={v => s("collectionPostcode", v)} onChangeCountry={v => s("collectionCountry", v)}
-                    onApply={r => { s("collectionName", ""); s("collectionAddress1", r.line1 || ""); s("collectionAddress2", r.line2 || ""); s("collectionArea", r.city); s("collectionPostcode", r.postcode); }} />
+                    onApply={r => { const isBiz = r.line1 && !/^\d/.test(r.line1) && r.line2; s("collectionName", isBiz ? r.line1 : ""); s("collectionAddress1", isBiz ? (r.line2 || "") : (r.line1 || "")); s("collectionAddress2", ""); s("collectionArea", r.city); s("collectionPostcode", r.postcode); }} />
                   <NameSearch value={f.collectionName || ""} onChange={v => s("collectionName", v)}
                     onApply={a => {
                       s("collectionAddress1", a.address1 || "");
@@ -848,7 +861,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="p-4 space-y-2">
                   <PostcodeSearch postcode={f.deliveryPostcode || ""} country={f.deliveryCountry || "UK"}
                     onChangePostcode={v => s("deliveryPostcode", v)} onChangeCountry={v => s("deliveryCountry", v)}
-                    onApply={r => { s("deliveryName", ""); s("deliveryAddress1", r.line1 || ""); s("deliveryAddress2", r.line2 || ""); s("deliveryArea", r.city); s("deliveryPostcode", r.postcode); }} />
+                    onApply={r => { const isBiz = r.line1 && !/^\d/.test(r.line1) && r.line2; s("deliveryName", isBiz ? r.line1 : ""); s("deliveryAddress1", isBiz ? (r.line2 || "") : (r.line1 || "")); s("deliveryAddress2", ""); s("deliveryArea", r.city); s("deliveryPostcode", r.postcode); }} />
                   <NameSearch value={f.deliveryName || ""} onChange={v => s("deliveryName", v)}
                     onApply={a => {
                       s("deliveryAddress1", a.address1 || "");
@@ -1059,7 +1072,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
             <SHead color="bg-indigo-600" icon="📍" label="Via Stops" />
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [] }])} disabled={vias.length >= 6}
+                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [], signedBy: "", podRelationship: "", podDate: "", podTime: "", deliveredTemp: "" }])} disabled={vias.length >= 6}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                   <Plus className="w-3 h-3" /> Add Via Stop
                 </button>
@@ -1087,7 +1100,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <PostcodeSearch postcode={via.postcode || ""} country="UK"
                         onChangePostcode={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, postcode: v.toUpperCase() } : x))}
                         onChangeCountry={() => {}}
-                        onApply={r => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: "", address1: r.line1 || "", address2: r.line2 || "", area: r.city, postcode: r.postcode } : x))}
+                        onApply={r => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: (r.line1 && !/^\d/.test(r.line1) && r.line2) ? r.line1 : "", address1: (r.line1 && !/^\d/.test(r.line1) && r.line2) ? (r.line2 || "") : (r.line1 || ""), address2: "", area: r.city, postcode: r.postcode } : x))}
                         placeholder="Postcode lookup..." />
                       <NameSearch value={via.name || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, name: v } : x))}
                         onApply={a => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, address1: a.address1 || "", address2: a.address2 || "", area: a.area || "", ...(a.postcode ? { postcode: a.postcode } : {}), ...(a.contact ? { contact: a.contact } : {}), ...(a.phone ? { phone: a.phone } : {}) } : x))} />
@@ -1104,9 +1117,22 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         <input type="text" value={via.phone || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, phone: e.target.value } : x))} placeholder="Phone" className={inp} />
                       </div>
                       {via.signedBy && (
-                        <div className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">✓ POD: {via.signedBy}{via.podDate ? ` · ${via.podDate}` : ""}</div>
+                        <div className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">✓ POD received: {via.signedBy}</div>
                       )}
                       <textarea value={via.notes || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, notes: e.target.value } : x))} placeholder="Notes" rows={1} className={inp + " resize-none"} />
+                      {/* Via POD */}
+                      <div className="border-t border-slate-200 pt-2 space-y-1.5">
+                        <span className="text-xs font-semibold text-teal-600 uppercase tracking-wide">✅ Via POD</span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <input type="text" value={via.signedBy || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, signedBy: e.target.value } : x))} placeholder="Signed By" className={inp} />
+                          <input type="text" value={via.podRelationship || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podRelationship: e.target.value } : x))} placeholder="Relationship" className={inp} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <input type="date" value={via.podDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podDate: e.target.value } : x))} className={inp} />
+                          <TimePicker value={via.podTime || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podTime: v } : x))} className="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                        </div>
+                        <input type="text" value={via.deliveredTemp || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, deliveredTemp: e.target.value } : x))} placeholder="Delivered Temp (e.g. 4°C)" className={inp} />
+                      </div>
                       {/* Collected Orders */}
                       <div className="border-t border-slate-200 pt-2 space-y-1.5">
                         <div className="flex items-center justify-between">
