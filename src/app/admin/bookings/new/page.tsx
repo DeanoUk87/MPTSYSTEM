@@ -1152,8 +1152,9 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     onChangePostcode={v => s("deliveryPostcode", v)}
                     onChangeCountry={v => s("deliveryCountry", v)}
                     onApply={r => {
-                      s("deliveryName", isBiz2 ? r.line1 : "");
-                      s("deliveryAddress1", isBiz2 ? (r.line2 || "") : (r.line1 || ""));
+                      const isBiz = r.line1 && !/^\d/.test(r.line1) && r.line2;
+                      s("deliveryName", isBiz ? r.line1 : "");
+                      s("deliveryAddress1", isBiz ? (r.line2 || "") : (r.line1 || ""));
                       s("deliveryAddress2", "");
                       s("deliveryArea", r.city);
                       s("deliveryPostcode", r.postcode);
