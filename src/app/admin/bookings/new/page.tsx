@@ -61,7 +61,11 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
   const toggle = () => {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 4, left: r.left });
+      const dropH = 264; // approx picker height
+      const below = r.bottom + 4 + dropH < window.innerHeight;
+      const topBelow = Math.min(r.bottom + 4, window.innerHeight - dropH - 8);
+      const topAbove = Math.max(8, r.top - dropH - 4);
+      setPos(below ? { top: topBelow, left: r.left } : { top: topAbove, left: r.left });
     }
     setOpen(p => !p);
   };

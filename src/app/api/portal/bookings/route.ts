@@ -22,6 +22,8 @@ export async function GET(req: NextRequest) {
     include: {
       vehicle: { select: { name: true } },
       driver: { select: { name: true } },
+      chillUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
+      ambientUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
       viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
     },
     orderBy: [{ collectionDate: "asc" }, { collectionTime: "asc" }],

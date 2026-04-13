@@ -58,7 +58,7 @@ export default function DashboardPage() {
                     const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
                     const bookingVias: any[] = Array.isArray(b.viaAddresses) ? b.viaAddresses : [];
                     const allViasPodded = !bookingVias.length || bookingVias.every((v: any) => v.signedBy);
-                    const rowCls = isQuote ? "bg-slate-50" : b.podSignature && b.podDataVerify && allViasPodded ? "bg-emerald-50 border-l-4 border-l-emerald-500" : b.podSignature && allViasPodded ? "bg-blue-50 border-l-4 border-l-blue-500" : b.driver ? "bg-amber-50 border-l-4 border-l-amber-400" : "bg-rose-50 border-l-4 border-l-rose-500";
+                    const rowCls = isQuote ? "bg-slate-50" : b.podSignature && b.podDataVerify && allViasPodded ? "bg-blue-50 border-l-4 border-l-blue-500" : b.podSignature && allViasPodded ? "bg-emerald-50 border-l-4 border-l-emerald-500" : b.driver ? "bg-amber-50 border-l-4 border-l-amber-400" : "bg-rose-50 border-l-4 border-l-rose-500";
                     return (
                       <tr key={b.id} className={`border-b border-slate-100 hover:brightness-95 transition-all ${rowCls}`}>
                         <td className="px-2 py-2 font-mono text-xs font-semibold text-blue-600 whitespace-nowrap">
@@ -79,8 +79,8 @@ export default function DashboardPage() {
                         <td className="px-2 py-2 whitespace-nowrap">
                           {isQuote ? <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>
                             : !b.driver ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>
-                            : b.podSignature && b.podDataVerify && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">Completed</span>
-                            : b.podSignature && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">POD Received</span>
+                            : b.podSignature && b.podDataVerify && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">Completed</span>
+                            : b.podSignature && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>
                             : <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>}
                         </td>
                       </tr>
