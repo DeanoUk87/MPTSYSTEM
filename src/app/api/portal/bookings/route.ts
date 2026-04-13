@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
   const bookings = await prisma.booking.findMany({
     where: {
       customerId: user.customerId,
+      deletedAt: null,
       collectionDate: { gte: dateFrom, lte: dateTo },
     },
     include: {

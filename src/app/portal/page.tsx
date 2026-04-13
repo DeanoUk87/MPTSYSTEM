@@ -399,12 +399,10 @@ export default function CustomerPortalPage() {
   const [selected, setSelected] = useState<Booking | null>(null);
 
   function selectBooking(b: Booking) {
-    sessionStorage.setItem("portal_selected_job", JSON.stringify(b));
     setSelected(b);
   }
 
   function handleBack() {
-    sessionStorage.removeItem("portal_selected_job");
     setSelected(null);
   }
 
@@ -422,16 +420,6 @@ export default function CustomerPortalPage() {
 
   useEffect(() => { loadBookings(); }, []);
 
-  // Restore selected booking from sessionStorage on refresh
-  useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem("portal_selected_job");
-      if (stored) {
-        const b = JSON.parse(stored) as Booking;
-        setSelected(b);
-      }
-    } catch {}
-  }, []);
 
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });
