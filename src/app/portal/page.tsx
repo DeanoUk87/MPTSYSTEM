@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Package, Loader2, LogOut, CheckCircle2, MapPin, EyeOff } from "lucide-react";
 import clsx from "clsx";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -164,7 +164,7 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
 }
 
 // --- Detail View ---
-function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack: () => void; onLogout: () => void }) {
+function DetailView({ booking: b, onLogout }: { booking: Booking; onLogout: () => void }) {
   const st   = statusInfo(b);
   const vias = b.viaAddresses ?? [];
 
@@ -179,10 +179,6 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
     <div className="min-h-screen bg-slate-50">
       <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
-          <button onClick={onBack}
-            className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back
-          </button>
           <div>
             <h1 className="text-xl font-bold">{b.jobRef || b.id.slice(-6).toUpperCase()}</h1>
             <p className="text-blue-200 text-xs">{fmt(b.collectionDate)} · {b.collectionTime || "—"}</p>
@@ -402,9 +398,8 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
   );
 }
 
-function CustomerPortalInner() {
+export default function CustomerPortalPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const today = new Date().toISOString().split("T")[0];
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -416,13 +411,11 @@ function CustomerPortalInner() {
   function selectBooking(b: Booking) {
     sessionStorage.setItem("portal_selected_job", JSON.stringify(b));
     setSelected(b);
-    router.push(`/portal?job=${b.id}`);
   }
 
   function handleBack() {
     sessionStorage.removeItem("portal_selected_job");
     setSelected(null);
-    router.push("/portal");
   }
 
   function loadBookings() {
@@ -439,19 +432,15 @@ function CustomerPortalInner() {
 
   useEffect(() => { loadBookings(); }, []);
 
-  // Restore selected booking from sessionStorage if URL has ?job= param
+  // Restore selected booking from sessionStorage on refresh
   useEffect(() => {
-    const jobId = searchParams.get("job");
-    if (!jobId) return;
     try {
       const stored = sessionStorage.getItem("portal_selected_job");
       if (stored) {
         const b = JSON.parse(stored) as Booking;
-        if (b.id === jobId) { setSelected(b); return; }
+        setSelected(b);
       }
     } catch {}
-    // ID in URL but nothing in storage — clear the param
-    router.replace("/portal");
   }, []);
 
   async function handleLogout() {
@@ -467,7 +456,7 @@ function CustomerPortalInner() {
     </div>
   );
 
-  if (selected) return <DetailView booking={selected} onBack={handleBack} onLogout={handleLogout} />;
+  if (selected) return <DetailView booking={selected} onLogout={handleLogout} />;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -596,14 +585,4 @@ function CustomerPortalInner() {
   );
 }
 
-export default function CustomerPortalPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-      </div>
-    }>
-      <CustomerPortalInner />
-    </Suspense>
-  );
-}
+
