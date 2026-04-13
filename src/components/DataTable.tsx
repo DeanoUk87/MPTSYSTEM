@@ -19,7 +19,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   rowClassName?: (row: T) => string;
-  defaultSortKey?: string;
+  defaultSortKey?: string | null;
   defaultSortDir?: "asc" | "desc";
 }
 
