@@ -36,7 +36,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { chillUnitId, ambientUnitId, driverId, viaAddresses: viaData,
           secondManContactId: _smc, cxDriverContactId: _cxc,
-          deadMilesEnabled: _dme, deadMiles: _dm, ...rest } = body;
+          deadMilesEnabled: _dme, deadMiles: _dm,
+          // Strip nested relation objects returned by GET — Prisma rejects these in .update()
+          customer: _cust, driver: _drv, secondMan: _sm, cxDriver: _cx,
+          bookingType: _bt, vehicle: _veh, chillUnit: _chu, ambientUnit: _abu,
+          geoTracking: _gt, podUpload: _pu,
+          id: _id, createdAt: _ca, updatedAt: _ua, deletedAt: _da,
+          ...rest } = body;
 
   // Load current booking so we can detect which units are being removed
   const existing = await prisma.booking.findUnique({

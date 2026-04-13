@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
 import clsx from "clsx";
 
@@ -171,9 +171,9 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
   const chillTrack = useTracking(b.chillUnit?.imei);
   const ambTrack   = useTracking(b.ambientUnit?.imei);
 
-  const hasUnits = !!(b.chillUnit?.imei || b.ambientUnit?.imei) && !!MAPS_API_KEY;
-  const showMap  = !st.green && !b.hideTrackingMap  && !!(b.chillUnit?.imei || b.ambientUnit?.imei) && !!MAPS_API_KEY;
-  const showTemp = !st.green && !b.hideTrackingTemperature && !!(b.chillUnit?.imei || b.ambientUnit?.imei);
+  const hasUnits = !!(b.chillUnit?.imei || b.ambientUnit?.imei);
+  const showMap  = !st.green && !b.hideTrackingMap  && hasUnits && !!MAPS_API_KEY;
+  const showTemp = !st.green && !b.hideTrackingTemperature && hasUnits;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -315,24 +315,40 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                   {showTemp && (
                     <div>
                       <div className="flex gap-3">
-                        {b.chillUnit?.imei && (
-                          <div className={clsx("flex-1 rounded-xl p-3 text-center",
-                            chillTrack?.temperature !== undefined ? tempColorCls(chillTrack.temperature) : "bg-slate-100 text-slate-400")}>
-                            <p className="text-xs font-medium opacity-80">{b.chillUnit.unitNumber}</p>
-                            {chillTrack?.temperature !== undefined
-                              ? <p className="text-2xl font-bold mt-0.5">{chillTrack.temperature.toFixed(1)}°C</p>
-                              : <p className="mt-0.5 flex items-center justify-center"><Loader2 className="w-4 h-4 animate-spin" /></p>}
-                          </div>
-                        )}
-                        {b.ambientUnit?.imei && (
-                          <div className={clsx("flex-1 rounded-xl p-3 text-center",
-                            ambTrack?.temperature !== undefined ? tempColorCls(ambTrack.temperature) : "bg-slate-100 text-slate-400")}>
-                            <p className="text-xs font-medium opacity-80">{b.ambientUnit.unitNumber}</p>
-                            {ambTrack?.temperature !== undefined
-                              ? <p className="text-2xl font-bold mt-0.5">{ambTrack.temperature.toFixed(1)}°C</p>
-                              : <p className="mt-0.5 flex items-center justify-center"><Loader2 className="w-4 h-4 animate-spin" /></p>}
-                          </div>
-                        )}
+                        {b.chillUnit?.imei && (() => {
+                          const isAmb = b.chillUnit!.unitType?.toLowerCase().startsWith("amb");
+                          return (
+                            <div className="flex-1 rounded-xl p-3 text-center"
+                              style={isAmb
+                                ? { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" }
+                                : { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" }}>
+                              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
+                                {isAmb ? "🌡" : "❄️"} {b.chillUnit!.unitType || b.chillUnit!.unitNumber}
+                              </p>
+                              {chillTrack?.temperature !== undefined
+                                ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{chillTrack.temperature.toFixed(1)}°C</p>
+                                : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
+                              <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{b.chillUnit!.unitNumber}</p>
+                            </div>
+                          );
+                        })()}
+                        {b.ambientUnit?.imei && (() => {
+                          const isAmb = b.ambientUnit!.unitType?.toLowerCase().startsWith("amb") ?? true;
+                          return (
+                            <div className="flex-1 rounded-xl p-3 text-center"
+                              style={isAmb
+                                ? { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" }
+                                : { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" }}>
+                              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
+                                {isAmb ? "🌡" : "❄️"} {b.ambientUnit!.unitType || b.ambientUnit!.unitNumber}
+                              </p>
+                              {ambTrack?.temperature !== undefined
+                                ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{ambTrack.temperature.toFixed(1)}°C</p>
+                                : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
+                              <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{b.ambientUnit!.unitNumber}</p>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
@@ -352,13 +368,27 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                   {b.chillUnit && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">{b.chillUnit.unitNumber}</span>
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700 border border-blue-200">Chill</span>
+                      <span className={clsx("px-2 py-0.5 rounded-full text-xs border",
+                        b.chillUnit.unitType?.toLowerCase().startsWith("amb")
+                          ? "bg-amber-100 text-amber-700 border-amber-200"
+                          : b.chillUnit.unitType?.toLowerCase().startsWith("chill")
+                            ? "bg-blue-100 text-blue-700 border-blue-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200")}>
+                        {b.chillUnit.unitType || "Unit"}
+                      </span>
                     </div>
                   )}
                   {b.ambientUnit && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">{b.ambientUnit.unitNumber}</span>
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 border border-green-200">Ambient</span>
+                      <span className={clsx("px-2 py-0.5 rounded-full text-xs border",
+                        b.ambientUnit.unitType?.toLowerCase().startsWith("amb")
+                          ? "bg-amber-100 text-amber-700 border-amber-200"
+                          : b.ambientUnit.unitType?.toLowerCase().startsWith("chill")
+                            ? "bg-blue-100 text-blue-700 border-blue-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200")}>
+                        {b.ambientUnit.unitType || "Unit"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -372,8 +402,9 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
   );
 }
 
-export default function CustomerPortalPage() {
+function CustomerPortalInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const today = new Date().toISOString().split("T")[0];
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -381,6 +412,18 @@ export default function CustomerPortalPage() {
   const [dateTo, setDateTo] = useState(today);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Booking | null>(null);
+
+  function selectBooking(b: Booking) {
+    sessionStorage.setItem("portal_selected_job", JSON.stringify(b));
+    setSelected(b);
+    router.push(`/portal?job=${b.id}`);
+  }
+
+  function handleBack() {
+    sessionStorage.removeItem("portal_selected_job");
+    setSelected(null);
+    router.push("/portal");
+  }
 
   function loadBookings() {
     setLoading(true);
@@ -396,6 +439,21 @@ export default function CustomerPortalPage() {
 
   useEffect(() => { loadBookings(); }, []);
 
+  // Restore selected booking from sessionStorage if URL has ?job= param
+  useEffect(() => {
+    const jobId = searchParams.get("job");
+    if (!jobId) return;
+    try {
+      const stored = sessionStorage.getItem("portal_selected_job");
+      if (stored) {
+        const b = JSON.parse(stored) as Booking;
+        if (b.id === jobId) { setSelected(b); return; }
+      }
+    } catch {}
+    // ID in URL but nothing in storage — clear the param
+    router.replace("/portal");
+  }, []);
+
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });
     router.push("/login");
@@ -409,7 +467,7 @@ export default function CustomerPortalPage() {
     </div>
   );
 
-  if (selected) return <DetailView booking={selected} onBack={() => setSelected(null)} onLogout={handleLogout} />;
+  if (selected) return <DetailView booking={selected} onBack={handleBack} onLogout={handleLogout} />;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -481,7 +539,7 @@ export default function CustomerPortalPage() {
                     return (
                       <tr key={b.id}
                         className={clsx("border-b border-slate-100 cursor-pointer transition-colors hover:brightness-95", st.rowCls)}
-                        onClick={() => setSelected(b)}>
+                        onClick={() => selectBooking(b)}>
                         <td className="px-3 py-3 font-semibold text-blue-700 whitespace-nowrap">
                           {b.jobRef || b.id.slice(-6).toUpperCase()}
                         </td>
@@ -512,7 +570,7 @@ export default function CustomerPortalPage() {
                 const st = statusInfo(b);
                 const via = b.viaAddresses ?? [];
                 return (
-                  <div key={b.id} className={clsx("p-4 cursor-pointer", st.rowCls)} onClick={() => setSelected(b)}>
+                  <div key={b.id} className={clsx("p-4 cursor-pointer", st.rowCls)} onClick={() => selectBooking(b)}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -538,3 +596,14 @@ export default function CustomerPortalPage() {
   );
 }
 
+export default function CustomerPortalPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+      </div>
+    }>
+      <CustomerPortalInner />
+    </Suspense>
+  );
+}
