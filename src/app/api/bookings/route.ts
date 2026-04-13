@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
       secondMan: { select: { id: true, name: true } },
       cxDriver: { select: { id: true, name: true } },
       bookingType: { select: { id: true, name: true } },
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, address1: true, city: true, signedBy: true } },
+      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, address1: true, area: true, signedBy: true } },
     },
     orderBy: { collectionDate: "asc" },
     take: 1000,

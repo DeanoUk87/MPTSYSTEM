@@ -21,7 +21,7 @@ interface Booking {
   customer?: { name: string };
   vehicle?: { name: string };
   driver?: { name: string };
-  viaAddresses?: { id: string; postcode?: string; viaType?: string; name?: string; address1?: string; city?: string }[];
+  viaAddresses?: { id: string; postcode?: string; viaType?: string; name?: string; address1?: string; area?: string }[];
 }
 
 function addrLine(name?: string, addr1?: string, postcode?: string) {
@@ -115,7 +115,7 @@ function FinancialReport() {
                     {vias.map((v, vi) => (
                       <div key={v.id} className="text-slate-400 mt-0.5">
                         <span className="font-medium text-slate-500">VIA {vi + 1} {v.viaType === "collection" ? "Collection" : "Delivery"}:</span>{" "}
-                        {[v.name, v.address1, v.city, v.postcode].filter(Boolean).join(", ") || v.postcode || "—"}
+                        {[v.name, v.address1, v.area, v.postcode].filter(Boolean).join(", ") || v.postcode || "—"}
                       </div>
                     ))}
                   </td>
