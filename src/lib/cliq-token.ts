@@ -31,6 +31,7 @@ export async function getCliqToken(): Promise<string | null> {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
     const d = await res.json();

@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
   const res = await fetch(`${cliqBaseUrl()}/chats`, {
     headers: { Authorization: `Zoho-oauthtoken ${token}` },
     cache: "no-store",
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!res.ok) {
