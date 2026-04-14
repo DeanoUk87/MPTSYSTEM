@@ -26,11 +26,14 @@ interface CliqMessage {
 
 const POLL_INTERVAL = 30_000;
 const HIDDEN_KEY = "cliq_hidden_chats";
+const INIT_KEY = "cliq_bar_initialized";
 
 function loadHidden(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) ?? "[]")); } catch { return new Set(); }
 }
 function saveHidden(s: Set<string>) { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...s])); }
+function isFirstLoad(): boolean { return !localStorage.getItem(INIT_KEY); }
+function markInitialized() { localStorage.setItem(INIT_KEY, "1"); }
 
 function ChatIcon({ chat }: { chat: CliqChat }) {
   if (chat.is_channel) return <Hash className="w-3 h-3 shrink-0" />;
@@ -58,6 +61,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   const [activeChat, setActiveChat] = useState<CliqChat | null>(null);
   const [messages, setMessages] = useState<CliqMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState("");
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -70,16 +74,33 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   const visibleChats = chats.filter(c => !hiddenIds.has(c.chat_id));
   const totalUnread = chats.reduce((n, c) => n + (c.unread_message_count ?? 0), 0);
 
-  const fetchChats = useCallback(async () => {
+  const fetchChats = useCallback(async (retry = 0) => {
     try {
       const res = await fetch("/api/cliq/chats");
-      if (!res.ok) { setFetchError(`HTTP ${res.status}`); setConfigured(true); return; }
+      if (!res.ok) {
+        // 502 on cold start — retry once after 5 s
+        if (res.status === 502 && retry === 0) {
+          setTimeout(() => fetchChats(1), 5000);
+          return;
+        }
+        setFetchError(`HTTP ${res.status}`); setConfigured(true); return;
+      }
       const d = await res.json();
       if (d.configured === false) { setConfigured(false); return; }
       if (d.error) { setFetchError(d.error); setConfigured(true); return; }
       setFetchError("");
       setConfigured(true);
-      setChats(d.chats ?? []);
+      const incoming: CliqChat[] = d.chats ?? [];
+      setChats(incoming);
+      // First-ever load: auto-hide all chats with no unread messages
+      setHiddenIds(prev => {
+        if (!isFirstLoad()) return prev;
+        markInitialized();
+        const next = new Set(prev);
+        incoming.forEach(c => { if (!c.unread_message_count) next.add(c.chat_id); });
+        saveHidden(next);
+        return next;
+      });
     } catch (e: any) { setFetchError(e?.message ?? "Network error"); setConfigured(true); }
   }, []);
 
@@ -93,13 +114,23 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   useEffect(() => {
     if (!activeChat) return;
     setMessages([]);
+    setMessagesError("");
     setMessagesLoading(true);
     const url = `/api/cliq/chats/${encodeURIComponent(activeChat.chat_id)}/messages${activeChat.is_channel ? "?isChannel=1" : ""}`;
     fetch(url)
-      .then(r => r.json())
-      .then(d => setMessages(d.messages ?? []))
-      .catch(() => {})
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(d => {
+        if (d.error) throw new Error(d.error);
+        setMessages(d.messages ?? []);
+      })
+      .catch((e: any) => setMessagesError(e?.message ?? "Failed to load"))
       .finally(() => setMessagesLoading(false));
+  }, [activeChat]);
+
+  // When active chat changes, mark it as read locally
+  useEffect(() => {
+    if (!activeChat) return;
+    setChats(prev => prev.map(c => c.chat_id === activeChat.chat_id ? { ...c, unread_message_count: 0 } : c));
   }, [activeChat]);
 
   useEffect(() => {
@@ -191,7 +222,13 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
                   <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading…
                 </div>
               )}
-              {!messagesLoading && messages.length === 0 && (
+              {!messagesLoading && messagesError && (
+                <div className="text-center text-rose-400 py-6 text-xs">
+                  <p>⚠ {messagesError}</p>
+                  <button className="underline mt-1 hover:text-rose-600" onClick={() => setActiveChat({ ...activeChat! })}>Retry</button>
+                </div>
+              )}
+              {!messagesLoading && !messagesError && messages.length === 0 && (
                 <p className="text-center text-slate-400 py-6">No messages</p>
               )}
               {messages.map((msg) => (
