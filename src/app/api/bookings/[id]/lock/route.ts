@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   try { const body = await req.json(); force = !!body.force; } catch { /* no body */ }
 
   if (force) {
-    forceLock(id, session.id, session.name || session.id);
+    forceLock(id, session.id, session.id);
     return NextResponse.json(lockResponse(getLock(id), session.id));
   }
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (renewed) return NextResponse.json(lockResponse(renewed, session.id));
 
   // Try fresh acquire
-  const acquired = acquireLock(id, session.id, session.name || session.id);
+  const acquired = acquireLock(id, session.id, session.id);
   if (acquired) return NextResponse.json(lockResponse(getLock(id), session.id));
 
   // Locked by someone else
