@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import nodemailer from "nodemailer";
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, renderToBuffer, Image as PdfImage } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, renderToBuffer, Image as PdfImage, type DocumentProps } from "@react-pdf/renderer";
+import type { ReactElement, JSXElementConstructor } from "react";
 
 function fmt(s?: string | null) {
   if (!s) return "";
@@ -269,7 +270,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const subject = `Job Sheet — ${jobRef} — ${booking.customer?.name || ""}`;
 
   try {
-    const pdfBuffer = await renderToBuffer(React.createElement(JobSheetDoc, { booking, settings }));
+    const pdfBuffer = await renderToBuffer(
+      React.createElement(JobSheetDoc, { booking, settings }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>
+    );
 
     const smtpPort = parseInt(process.env.SMTP_PORT || "587");
     const transporter = nodemailer.createTransport({
