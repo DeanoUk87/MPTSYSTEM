@@ -26,6 +26,7 @@ const POLL_INTERVAL = 30_000; // 30 s — stays under 30 req/min rate limit
 
 export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   const [configured, setConfigured] = useState<boolean | null>(null);
+  const [fetchError, setFetchError] = useState("");
   const [chats, setChats] = useState<CliqChat[]>([]);
   const [open, setOpen] = useState(false);
   const [activeChat, setActiveChat] = useState<CliqChat | null>(null);
@@ -43,12 +44,14 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   const fetchChats = useCallback(async () => {
     try {
       const res = await fetch("/api/cliq/chats");
-      if (!res.ok) return;
+      if (!res.ok) { setFetchError(`HTTP ${res.status}`); setConfigured(true); return; }
       const d = await res.json();
       if (d.configured === false) { setConfigured(false); return; }
+      if (d.error) { setFetchError(d.error); setConfigured(true); return; }
+      setFetchError("");
       setConfigured(true);
       setChats(d.chats ?? []);
-    } catch { /* network error — keep current state */ }
+    } catch (e: any) { setFetchError(e?.message ?? "Network error"); setConfigured(true); }
   }, []);
 
   // Initial fetch + poll
@@ -125,8 +128,6 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
 
   // Don't render anything if not configured
   if (configured === false) return null;
-  // Skeleton bar while checking
-  if (configured === null) return null;
 
   const sidebarOffset = collapsed ? "left-16" : "left-64";
 
@@ -231,7 +232,13 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
 
         {/* Chat chips */}
         <div className="flex items-center gap-1 overflow-x-auto px-2 h-full scrollbar-none">
-          {chats.map(chat => (
+          {configured === null && (
+            <span className="text-slate-500 text-xs px-2">Connecting…</span>
+          )}
+          {fetchError && (
+            <span className="text-rose-400 text-xs px-2" title={fetchError}>⚠ {fetchError}</span>
+          )}
+          {!fetchError && configured === true && chats.map(chat => (
             <button
               key={chat.chat_id}
               onClick={() => selectChat(chat)}
@@ -249,7 +256,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
               )}
             </button>
           ))}
-          {chats.length === 0 && (
+          {!fetchError && configured === true && chats.length === 0 && (
             <span className="text-slate-500 text-xs px-2">No chats</span>
           )}
         </div>
