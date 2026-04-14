@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
   const [chatsRes, channelsRes] = await Promise.allSettled([
     probe && probe.ok ? Promise.resolve(probe) : fetch(`${cliqBaseUrl()}/chats`, makeOpts()),
-    fetch(`${cliqBaseUrl()}/channels`, makeOpts()),
+    fetch(`${cliqBaseUrl()}/channels/joined`, makeOpts()),
   ]);
 
   const chats: any[] = [];
