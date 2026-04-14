@@ -344,7 +344,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
           {fetchError && (
             <span className="text-rose-400 text-xs px-2 flex items-center gap-1">
               ⚠ {fetchError}
-              <button onClick={fetchChats} className="underline hover:text-rose-300">Retry</button>
+              <button onClick={() => fetchChats()} className="underline hover:text-rose-300">Retry</button>
             </span>
           )}
           {!fetchError && visibleChats.map(chat => (
