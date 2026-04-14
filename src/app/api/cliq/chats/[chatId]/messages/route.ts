@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { cliqBaseUrl, getCliqToken } from "@/lib/cliq-token";
+import { cliqBaseUrl, getCliqToken, invalidateCliqToken } from "@/lib/cliq-token";
+
+async function fetchMessages(endpoint: string, token: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch(endpoint, {
+      headers: { Authorization: `Zoho-oauthtoken ${token}` },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ chatId: string }> }) {
   const auth = await requireAuth(req);
@@ -8,28 +23,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
 
   const { chatId } = await params;
   const isChannel = req.nextUrl.searchParams.get("isChannel") === "1";
-  const token = await getCliqToken();
-  if (!token) return NextResponse.json({ error: "Token error" }, { status: 502 });
 
   const endpoint = isChannel
     ? `${cliqBaseUrl()}/channels/${encodeURIComponent(chatId)}/messages?limit=40`
     : `${cliqBaseUrl()}/chats/${encodeURIComponent(chatId)}/messages?limit=40`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  let token = await getCliqToken();
+  if (!token) return NextResponse.json({ error: "Token error", messages: [] }, { status: 502 });
 
   let res: Response;
   try {
-    res = await fetch(endpoint, {
-      headers: { Authorization: `Zoho-oauthtoken ${token}` },
-      cache: "no-store",
-      signal: controller.signal,
-    });
+    res = await fetchMessages(endpoint, token);
   } catch (e: any) {
-    clearTimeout(timeout);
     return NextResponse.json({ error: e?.message ?? "Fetch failed", messages: [] }, { status: 502 });
-  } finally {
-    clearTimeout(timeout);
+  }
+
+  // If token rejected, invalidate and retry once with a fresh token
+  if (res.status === 401) {
+    invalidateCliqToken();
+    const fresh = await getCliqToken();
+    if (!fresh) return NextResponse.json({ error: "Token refresh failed", messages: [] }, { status: 502 });
+    try {
+      res = await fetchMessages(endpoint, fresh);
+    } catch (e: any) {
+      return NextResponse.json({ error: e?.message ?? "Fetch failed", messages: [] }, { status: 502 });
+    }
   }
 
   if (!res.ok) {
@@ -38,8 +56,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
   }
 
   const data = await res.json();
-  // Pass raw count through so client can distinguish empty vs error
-  const raw: any[] = data.data ?? data.messages ?? data.chats ?? [];
+  const raw: any[] = data.data ?? data.messages ?? [];
   const messages = raw
     .map((m: any) => ({
       id: m.id ?? m.message_id ?? String(Math.random()),

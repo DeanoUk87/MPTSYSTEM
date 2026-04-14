@@ -1,6 +1,11 @@
 let cachedToken: string | null = null;
 let tokenExpiry = 0;
 
+export function invalidateCliqToken() {
+  cachedToken = null;
+  tokenExpiry = 0;
+}
+
 export function cliqConfigured(): boolean {
   return !!(
     process.env.ZOHO_CLIQ_CLIENT_ID &&

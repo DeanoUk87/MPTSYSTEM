@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
-import { cliqConfigured, cliqBaseUrl, getCliqToken } from "@/lib/cliq-token";
+import { cliqConfigured, cliqBaseUrl, getCliqToken, invalidateCliqToken } from "@/lib/cliq-token";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -10,20 +10,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ configured: false, chats: [] });
   }
 
-  const token = await getCliqToken();
+  let token = await getCliqToken();
   if (!token) {
     return NextResponse.json({ configured: true, error: "Token error", chats: [] }, { status: 502 });
   }
 
-  const headers = { Authorization: `Zoho-oauthtoken ${token}` };
+  let headers: Record<string, string> = { Authorization: `Zoho-oauthtoken ${token}` };
+
   const makeOpts = () => {
     const ctrl = new AbortController();
     setTimeout(() => ctrl.abort(), 8000);
     return { headers, cache: "no-store" as const, signal: ctrl.signal };
   };
 
+  // If token is stale, invalidate and refresh before fetching both endpoints
+  const probe = await fetch(`${cliqBaseUrl()}/chats`, makeOpts()).catch(() => null);
+  if (probe?.status === 401) {
+    invalidateCliqToken();
+    const fresh = await getCliqToken();
+    if (!fresh) return NextResponse.json({ configured: true, error: "Token refresh failed", chats: [] }, { status: 502 });
+    headers = { Authorization: `Zoho-oauthtoken ${fresh}` };
+  }
+
   const [chatsRes, channelsRes] = await Promise.allSettled([
-    fetch(`${cliqBaseUrl()}/chats`, makeOpts()),
+    probe && probe.ok ? Promise.resolve(probe) : fetch(`${cliqBaseUrl()}/chats`, makeOpts()),
     fetch(`${cliqBaseUrl()}/channels`, makeOpts()),
   ]);
 
