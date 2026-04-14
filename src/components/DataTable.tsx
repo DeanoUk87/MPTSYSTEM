@@ -21,6 +21,7 @@ interface DataTableProps<T> {
   rowClassName?: (row: T) => string;
   defaultSortKey?: string | null;
   defaultSortDir?: "asc" | "desc";
+  compact?: boolean;
 }
 
 export default function DataTable<T extends Record<string, any>>({
@@ -34,6 +35,7 @@ export default function DataTable<T extends Record<string, any>>({
   rowClassName,
   defaultSortKey = null,
   defaultSortDir = "asc",
+  compact = false,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -102,7 +104,7 @@ export default function DataTable<T extends Record<string, any>>({
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-max text-sm">
+        <table className={compact ? "w-full text-xs" : "w-full min-w-max text-sm"}>
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
               {columns.map((col) => (
@@ -110,7 +112,9 @@ export default function DataTable<T extends Record<string, any>>({
                   key={col.key}
                   onClick={() => handleSort(col.key)}
                   className={clsx(
-                    "px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap hover:bg-slate-100 transition-colors",
+                    compact
+                      ? "px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap hover:bg-slate-100 transition-colors"
+                      : "px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap hover:bg-slate-100 transition-colors",
                     col.className
                   )}
                 >
@@ -147,7 +151,7 @@ export default function DataTable<T extends Record<string, any>>({
                   className={clsx("border-b border-slate-100 hover:brightness-95 transition-colors", rowClassName ? rowClassName(row) : "hover:bg-slate-50")}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className={clsx("px-4 py-3 text-slate-700", col.className)}>
+                    <td key={col.key} className={clsx(compact ? "px-2 py-1.5 text-slate-700" : "px-4 py-3 text-slate-700", col.className)}>
                       {col.render ? col.render(row) : String(row[col.key] ?? "-")}
                     </td>
                   ))}

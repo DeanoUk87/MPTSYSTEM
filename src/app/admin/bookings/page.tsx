@@ -246,7 +246,7 @@ export default function BookingsPage() {
     { key: "collectionDate", label: "Date", render: (r) => r.collectionDate ? r.collectionDate.split("-").reverse().join("-") : "—" },
     { key: "collectionTime", label: "Time", render: (r) => r.collectionTime || "—" },
     { key: "customer", label: "Customer", render: (r) => (
-      <p className="font-medium whitespace-nowrap">{r.customer?.name || "—"}</p>
+      <p className="font-medium whitespace-nowrap max-w-[120px] truncate">{r.customer?.name || "—"}</p>
     )},
     { key: "collectionPostcode", label: "From", render: (r) => r.collectionPostcode || "—" },
     { key: "via1", label: "Via 1", render: (r) => r.viaAddresses?.[0]?.postcode || "—" },
@@ -365,6 +365,7 @@ export default function BookingsPage() {
           <DataTable
             data={bookings}
             columns={columns}
+            compact
             searchKeys={["collectionPostcode", "deliveryPostcode"]}
             loading={loading}
             emptyMessage="No bookings found. Create your first booking."          defaultSortKey="createdAt"
