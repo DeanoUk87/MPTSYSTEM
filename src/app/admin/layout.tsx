@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
+import CliqBar from "@/components/CliqBar";
 import { Thermometer, X } from "lucide-react";
 
 function playAlertSound() {
@@ -58,7 +59,7 @@ function GlobalTempAlert() {
   if (!visible.length) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full">
+    <div className="fixed bottom-14 right-4 z-50 flex flex-col gap-2 max-w-sm w-full">
       {visible.map((a: any) => {
         const t = parseFloat(a.temperature).toFixed(1);
         const type = (a.unitType || "chill").toLowerCase();
@@ -99,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar collapsed={collapsed} onToggle={handleToggle} />
-      <main className={`flex-1 min-w-0 min-h-screen flex flex-col transition-[margin] duration-200 ${collapsed ? "ml-16" : "ml-64"}`}>
+      <main className={`flex-1 min-w-0 min-h-screen flex flex-col transition-[margin] duration-200 ${collapsed ? "ml-16" : "ml-64"} pb-10`}>
         {/* Sidebar expand handle — only visible when collapsed, sits on the edge so it's never under the page content */}
         {collapsed && (
           <button
@@ -115,6 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
       <GlobalTempAlert />
+      <CliqBar collapsed={collapsed} />
     </div>
   );
 }
