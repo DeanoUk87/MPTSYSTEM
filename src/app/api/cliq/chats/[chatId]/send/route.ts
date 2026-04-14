@@ -39,6 +39,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cha
     return NextResponse.json({ error: `Send failed (${res.status})`, detail }, { status: res.status });
   }
 
-  const data = await res.json();
+  // Zoho returns 204 No Content on success — don't try to parse as JSON
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return NextResponse.json({ ok: true });
+  }
+
+  const data = await res.json().catch(() => ({}));
   return NextResponse.json({ ok: true, message: data });
 }
