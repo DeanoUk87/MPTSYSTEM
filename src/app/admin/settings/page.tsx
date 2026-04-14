@@ -82,7 +82,8 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-      if (!res.ok) throw new Error("Save failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Save failed");
       toast.success("Settings saved");
     } catch (e: any) {
       toast.error(e.message);

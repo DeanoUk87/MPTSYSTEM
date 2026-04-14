@@ -16,13 +16,20 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
-  const settings = await prisma.settings.findFirst();
-  if (settings) {
-    const updated = await prisma.settings.update({ where: { id: settings.id }, data: body });
-    return NextResponse.json(updated);
-  } else {
-    const created = await prisma.settings.create({ data: { id: "default-settings", ...body } });
-    return NextResponse.json(created);
+  try {
+    const body = await req.json();
+    // Strip undefined values so Prisma doesn't reject unknown fields
+    const data = Object.fromEntries(Object.entries(body).filter(([, v]) => v !== undefined));
+    const settings = await prisma.settings.findFirst();
+    if (settings) {
+      const updated = await prisma.settings.update({ where: { id: settings.id }, data });
+      return NextResponse.json(updated);
+    } else {
+      const created = await prisma.settings.create({ data: { id: "default-settings", ...data } });
+      return NextResponse.json(created);
+    }
+  } catch (e: any) {
+    console.error("Settings PUT error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
