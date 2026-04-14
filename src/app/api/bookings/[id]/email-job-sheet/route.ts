@@ -297,18 +297,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-
-function fmt(s?: string | null) {
-  if (!s) return "";
-  const p = s.split("-");
-  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
-}
-
-function addr(...parts: (string | null | undefined)[]) {
-  return parts.filter(Boolean).join(", ") || "—";
-}
-
-function buildHtml(booking: any, settings: any): string {
   const company = settings?.companyName || "MP Transport";
   const vias: any[] = booking.viaAddresses || [];
 
