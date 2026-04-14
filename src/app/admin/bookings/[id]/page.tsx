@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import Topbar from "@/components/Topbar";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Clock, User, Truck, Package, CheckCircle, XCircle, Pencil, ArrowLeft, Loader2 } from "lucide-react";
+import { MapPin, Clock, User, Truck, Package, CheckCircle, XCircle, Pencil, ArrowLeft, Loader2, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 
@@ -92,11 +92,82 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [lockState, setLockState] = useState<any>(null);
+  const [lockChecked, setLockChecked] = useState(false);
+  const isMineRef = useRef(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetch(`/api/bookings/${id}`)
       .then(r => r.json())
       .then(d => { setBooking(d); setLoading(false); });
+  }, [id]);
+
+  useEffect(() => {
+    if (booking?.driver?.email) setEmailTo(booking.driver.email);
+  }, [booking?.driver?.email]);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function tryAcquire() {
+      const res = await fetch(`/api/bookings/${id}/lock`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+      });
+      const d = await res.json();
+      if (!alive) return;
+      isMineRef.current = !!d.isMe;
+      setLockState(d);
+      setLockChecked(true);
+    }
+
+    tryAcquire();
+
+    pollRef.current = setInterval(async () => {
+      if (!alive) return;
+      if (isMineRef.current) {
+        const res = await fetch(`/api/bookings/${id}/lock`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+        });
+        const d = await res.json();
+        if (!alive) return;
+        if (!d.isMe) {
+          isMineRef.current = false;
+          toast.error("Another user has taken over this job");
+          router.push("/admin/bookings");
+          return;
+        }
+        setLockState(d);
+      } else {
+        const res = await fetch(`/api/bookings/${id}/lock`);
+        const d = await res.json();
+        if (!alive) return;
+        setLockState(d);
+        if (d.response === "allowed") {
+          const fr = await fetch(`/api/bookings/${id}/lock`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ force: true }),
+          });
+          const fd = await fr.json();
+          if (!alive) return;
+          isMineRef.current = !!fd.isMe;
+          setLockState(fd);
+        } else if (!d.locked) {
+          await tryAcquire();
+        }
+      }
+    }, 30_000);
+
+    return () => {
+      alive = false;
+      clearInterval(pollRef.current!);
+      if (isMineRef.current) {
+        fetch(`/api/bookings/${id}/lock`, { method: "DELETE" }).catch(() => {});
+      }
+    };
   }, [id]);
 
   async function handleVerifyPod() {
@@ -110,6 +181,19 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       setBooking(b => b ? { ...b, podDataVerify: !b.podDataVerify } : b);
       toast.success(booking.podDataVerify ? "POD verification removed" : "POD verified");
     } catch { toast.error("Failed to update"); } finally { setVerifying(false); }
+  }
+
+  async function sendJobSheet() {
+    setEmailSending(true);
+    try {
+      const res = await fetch(`/api/bookings/${id}/email-job-sheet`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailTo }),
+      });
+      const d = await res.json();
+      if (d.sent) { toast.success("Job sheet sent!"); setShowEmailModal(false); }
+      else toast.error(d.error || "Failed to send");
+    } catch { toast.error("Failed to send"); } finally { setEmailSending(false); }
   }
 
   async function toggleField(field: "hideTrackingTemperature" | "hideTrackingMap") {
@@ -145,14 +229,20 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       <Topbar title={`Booking #${booking.jobRef || id.slice(-8).toUpperCase()}`} subtitle={booking.customer?.name} />
       <div className="p-6 space-y-4 max-w-5xl">
         {/* Header actions */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <Link href="/admin/bookings" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
             <ArrowLeft className="w-4 h-4" /> Back to bookings
           </Link>
-          <Link href={`/admin/bookings/${id}/edit`}
-            className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
-            <Pencil className="w-3 h-3" /> Edit
-          </Link>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowEmailModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+              <Mail className="w-3 h-3" /> Email Job Sheet
+            </button>
+            <Link href={`/admin/bookings/${id}/edit`}
+              className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+              <Pencil className="w-3 h-3" /> Edit
+            </Link>
+          </div>
         </div>
 
         {/* Status bar */}
@@ -334,6 +424,123 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
       </div>
+
+      {/* Email Job Sheet modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 space-y-4">
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <Mail className="w-5 h-5 text-blue-600" /> Email Job Sheet
+            </h2>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Driver</p>
+              <p className="text-sm text-slate-700">{booking?.driver?.name || "No driver assigned"}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Send To</label>
+              <input
+                type="email"
+                value={emailTo}
+                onChange={e => setEmailTo(e.target.value)}
+                placeholder="driver@example.com"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex gap-3 justify-end pt-2">
+              <button onClick={() => setShowEmailModal(false)}
+                className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+              <button onClick={sendJobSheet} disabled={emailSending || !emailTo.trim()}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50">
+                {emailSending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
+                Send Job Sheet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lock overlay — someone else is editing */}
+      {lockChecked && lockState?.locked && !lockState?.isMe && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center space-y-4">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+              <Lock className="w-8 h-8 text-amber-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">Job Currently In Use</h2>
+            <p className="text-slate-600">Being edited by <strong>{lockState.lockedBy?.name}</strong></p>
+            {lockState.response === "pending" && (
+              <p className="text-sm text-blue-600 bg-blue-50 rounded-lg p-3">Access request sent — waiting for response...</p>
+            )}
+            {lockState.response === "denied" && (
+              <p className="text-sm text-rose-600 bg-rose-50 rounded-lg p-3">Your access request was denied.</p>
+            )}
+            <div className="flex flex-wrap gap-3 justify-center pt-2">
+              <Link href="/admin/bookings" className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+                ← Back to Bookings
+              </Link>
+              {(!lockState.response || lockState.response === "denied") && (
+                <button
+                  onClick={async () => {
+                    await fetch(`/api/bookings/${id}/lock/request`, { method: "POST" });
+                    setLockState((s: any) => ({ ...s, response: "pending" }));
+                    toast.success("Access request sent");
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                  Request Access
+                </button>
+              )}
+              <button
+                onClick={async () => {
+                  const res = await fetch(`/api/bookings/${id}/lock`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ force: true }),
+                  });
+                  const d = await res.json();
+                  isMineRef.current = !!d.isMe;
+                  setLockState(d);
+                  if (d.isMe) toast.success("You now have control of this job");
+                }}
+                className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm hover:bg-rose-700">
+                Force Access
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Access request notification — shown to lock owner */}
+      {lockState?.isMe && lockState?.requester && (
+        <div className="fixed top-4 right-4 z-50 bg-white shadow-xl rounded-xl border border-amber-300 p-4 max-w-sm w-full">
+          <p className="font-semibold text-slate-800 text-sm">🔔 Access Request</p>
+          <p className="text-sm text-slate-600 mt-1"><strong>{lockState.requester.name}</strong> is requesting access to this job.</p>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={async () => {
+                await fetch(`/api/bookings/${id}/lock/respond`, {
+                  method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ decision: "allowed" }),
+                });
+                isMineRef.current = false;
+                router.push("/admin/bookings");
+              }}
+              className="flex-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">
+              Allow
+            </button>
+            <button
+              onClick={async () => {
+                await fetch(`/api/bookings/${id}/lock/respond`, {
+                  method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ decision: "denied" }),
+                });
+                setLockState((s: any) => ({ ...s, requester: null, response: null }));
+                toast.success("Access request denied");
+              }}
+              className="flex-1 px-3 py-1.5 bg-rose-600 text-white rounded-lg text-sm hover:bg-rose-700">
+              Deny
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
