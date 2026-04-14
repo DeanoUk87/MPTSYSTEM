@@ -297,8 +297,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 }
 
-  const company = settings?.companyName || "MP Transport";
-  const vias: any[] = booking.viaAddresses || [];
 
   const viasHtml = vias.map((v: any, i: number) => {
     let orders: any[] = [];
