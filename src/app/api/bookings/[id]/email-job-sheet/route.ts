@@ -168,9 +168,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const subject = `Job Sheet — ${booking.jobRef || booking.id.slice(-8).toUpperCase()} — ${booking.customer?.name || ""}`;
 
   try {
+    const smtpPort = parseInt(process.env.SMTP_PORT || "587");
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.mailtrap.io",
-      port: parseInt(process.env.SMTP_PORT || "587"),
+      port: smtpPort,
+      secure: smtpPort === 465,
       auth: { user: process.env.SMTP_USER || "", pass: process.env.SMTP_PASS || "" },
     });
     await transporter.sendMail({ from, to: email.trim(), subject, html });
