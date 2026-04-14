@@ -27,19 +27,24 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const driver = await prisma.driver.create({
-    data: {
-      name: body.name,
-      driverType: body.driverType || "Driver",
-      email: body.email || null,
-      phone: body.phone || null,
-      address: body.address || null,
-      notes: body.notes || null,
-      costPerMile: parseFloat(body.costPerMile) || 0,
-      costPerMileWeekends: parseFloat(body.costPerMileWeekends) || 0,
-      costPerMileOutOfHours: parseFloat(body.costPerMileOutOfHours) || 0,
-      userId: (session as any).id,
-    },
-  });
-  return NextResponse.json(driver, { status: 201 });
+  try {
+    const driver = await prisma.driver.create({
+      data: {
+        name: body.name,
+        driverType: body.driverType || "Driver",
+        email: body.email || null,
+        phone: body.phone || null,
+        address: body.address || null,
+        notes: body.notes || null,
+        costPerMile: parseFloat(body.costPerMile) || 0,
+        costPerMileWeekends: parseFloat(body.costPerMileWeekends) || 0,
+        costPerMileOutOfHours: parseFloat(body.costPerMileOutOfHours) || 0,
+        userId: (session as any).id,
+      },
+    });
+    return NextResponse.json(driver, { status: 201 });
+  } catch (e: any) {
+    console.error("Driver create error:", e);
+    return NextResponse.json({ error: e.message || "Failed to create driver" }, { status: 500 });
+  }
 }
