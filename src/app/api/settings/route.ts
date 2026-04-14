@@ -7,7 +7,10 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const settings = await prisma.settings.findFirst();
-    return NextResponse.json(settings ?? {});
+    if (!settings) return NextResponse.json({});
+    // Exclude large base64 logo fields — loaded separately via /api/branding
+    const { logo: _l, menuLogo: _m, ...rest } = settings as any;
+    return NextResponse.json(rest);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -19,7 +22,10 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
     // Strip undefined values so Prisma doesn't reject unknown fields
-    const data = Object.fromEntries(Object.entries(body).filter(([, v]) => v !== undefined));
+    // Strip logo fields — handled separately via /api/branding
+    const { logo: _l, menuLogo: _m, ...data } = Object.fromEntries(
+      Object.entries(body).filter(([, v]) => v !== undefined)
+    ) as any;
     const settings = await prisma.settings.findFirst();
     if (settings) {
       const updated = await prisma.settings.update({ where: { id: settings.id }, data });

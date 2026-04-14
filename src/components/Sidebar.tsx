@@ -85,7 +85,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         collapsed ? "px-3 py-4 justify-between" : "px-4 py-4 gap-3"
       )}>
         {/* Icon / square logo */}
-        <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+        <div className={clsx("w-9 h-9 rounded-lg flex items-center justify-center shrink-0 overflow-hidden", !branding?.menuLogo && "bg-blue-600")}>
           {branding?.menuLogo
             ? <img src={branding.menuLogo} alt="logo" className="w-full h-full object-contain" />
             : <Building2 className="w-5 h-5 text-white" />

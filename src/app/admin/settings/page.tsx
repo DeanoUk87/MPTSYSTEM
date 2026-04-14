@@ -49,9 +49,20 @@ export default function SettingsPage() {
   const menuLogoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((d) => { if (d && !d.error) setSettings(d); })
+    Promise.all([
+      fetch("/api/settings").then(r => r.json()),
+      fetch("/api/branding").then(r => r.json()),
+    ])
+      .then(([s, b]) => {
+        if (s && !s.error) {
+          setSettings(prev => ({
+            ...prev,
+            ...s,
+            logo: b?.logo ?? undefined,
+            menuLogo: b?.menuLogo ?? undefined,
+          }));
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -77,13 +88,23 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
+      const { logo, menuLogo, ...textSettings } = settings;
+      const [res, brandRes] = await Promise.all([
+        fetch("/api/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(textSettings),
+        }),
+        fetch("/api/branding", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ logo: logo ?? null, menuLogo: menuLogo ?? null }),
+        }),
+      ]);
       const data = await res.json();
+      const brandData = await brandRes.json();
       if (!res.ok) throw new Error(data?.error || "Save failed");
+      if (!brandRes.ok) throw new Error(brandData?.error || "Logo save failed");
       toast.success("Settings saved");
     } catch (e: any) {
       toast.error(e.message);
