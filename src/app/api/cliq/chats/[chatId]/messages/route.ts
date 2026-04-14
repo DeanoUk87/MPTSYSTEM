@@ -20,5 +20,5 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
   }
 
   const data = await res.json();
-  return NextResponse.json({ messages: data.data ?? [] });
+  return NextResponse.json({ messages: data.messages ?? data.data ?? [] });
 }

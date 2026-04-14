@@ -26,5 +26,5 @@ export async function GET(req: NextRequest) {
   }
 
   const data = await res.json();
-  return NextResponse.json({ configured: true, chats: data.data ?? [] });
+  return NextResponse.json({ configured: true, chats: data.chats ?? [] });
 }
