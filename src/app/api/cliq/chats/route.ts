@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
   if (chatsRes.status === "fulfilled" && chatsRes.value.ok) {
     const d = await chatsRes.value.json();
     for (const c of d.chats ?? []) {
+      if (c.removed) continue;
       chats.push({ ...c, is_channel: false });
     }
   }
