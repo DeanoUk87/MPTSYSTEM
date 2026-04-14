@@ -5,8 +5,12 @@ import { requireAuth } from "@/lib/api-auth";
 export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const settings = await prisma.settings.findFirst();
-  return NextResponse.json(settings);
+  try {
+    const settings = await prisma.settings.findFirst();
+    return NextResponse.json(settings ?? {});
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest) {

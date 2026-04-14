@@ -49,10 +49,11 @@ export default function SettingsPage() {
   const menuLogoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/settings").then((r) => r.json()).then((d) => {
-      if (d) setSettings(d);
-      setLoading(false);
-    });
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => { if (d && !d.error) setSettings(d); })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   function readFileAsBase64(file: File): Promise<string> {
