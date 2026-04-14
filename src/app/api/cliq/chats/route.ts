@@ -43,6 +43,11 @@ export async function GET(req: NextRequest) {
     const d = await chatsRes.value.json();
     for (const c of d.chats ?? []) {
       if (c.removed) continue;
+      if (c.chat_type === "bot") continue;
+      if (!c.last_message_info) continue; // skip chats with no messages
+      // skip chats where a participant has been removed from the org
+      const hasRemovedUser = (c.recipients_summary ?? []).some((r: any) => r.removed === true);
+      if (hasRemovedUser) continue;
       chats.push({ ...c, is_channel: false });
     }
   }
