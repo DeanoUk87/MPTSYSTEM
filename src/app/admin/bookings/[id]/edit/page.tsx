@@ -523,6 +523,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       const updated = await fetch("/api/storage").then(r => r.json());
       setAllStorageUnits(updated);
 
+      const driverUnits: any[] = updated.filter((u: any) => u.currentDriverId === activeDriverId);
       const newChillId = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill"))?.id ?? "";
       const newAmbId   = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb"))?.id ?? "";
       setF((prev: any) => ({
