@@ -27,12 +27,15 @@ export async function getCliqToken(): Promise<string | null> {
   });
 
   try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
     const res = await fetch(`https://accounts.${domain}/oauth/v2/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
-      signal: AbortSignal.timeout(8000),
+      signal: ctrl.signal,
     });
+    clearTimeout(t);
     if (!res.ok) return null;
     const d = await res.json();
     if (!d.access_token) return null;

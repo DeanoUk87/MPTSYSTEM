@@ -16,11 +16,15 @@ export async function GET(req: NextRequest) {
   }
 
   const headers = { Authorization: `Zoho-oauthtoken ${token}` };
-  const opts = { headers, cache: "no-store" as const, signal: AbortSignal.timeout(8000) };
+  const makeOpts = () => {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 8000);
+    return { headers, cache: "no-store" as const, signal: ctrl.signal };
+  };
 
   const [chatsRes, channelsRes] = await Promise.allSettled([
-    fetch(`${cliqBaseUrl()}/chats`, opts),
-    fetch(`${cliqBaseUrl()}/channels`, opts),
+    fetch(`${cliqBaseUrl()}/chats`, makeOpts()),
+    fetch(`${cliqBaseUrl()}/channels`, makeOpts()),
   ]);
 
   const chats: any[] = [];

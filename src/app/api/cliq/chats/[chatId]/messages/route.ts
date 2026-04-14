@@ -15,27 +15,39 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
     ? `${cliqBaseUrl()}/channels/${encodeURIComponent(chatId)}/messages?limit=40`
     : `${cliqBaseUrl()}/chats/${encodeURIComponent(chatId)}/messages?limit=40`;
 
-  const res = await fetch(endpoint, {
-    headers: { Authorization: `Zoho-oauthtoken ${token}` },
-    cache: "no-store",
-    signal: AbortSignal.timeout(8000),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      headers: { Authorization: `Zoho-oauthtoken ${token}` },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } catch (e: any) {
+    clearTimeout(timeout);
+    return NextResponse.json({ error: e?.message ?? "Fetch failed", messages: [] }, { status: 502 });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
-    return NextResponse.json({ error: "Upstream error" }, { status: res.status });
+    const body = await res.text().catch(() => "");
+    return NextResponse.json({ error: `Upstream ${res.status}`, detail: body, messages: [] }, { status: res.status });
   }
 
   const data = await res.json();
-  // Zoho returns { data: [{id, sender: {name}, text, time, message_type}] }
-  const raw: any[] = data.data ?? data.messages ?? [];
+  // Pass raw count through so client can distinguish empty vs error
+  const raw: any[] = data.data ?? data.messages ?? data.chats ?? [];
   const messages = raw
-    .filter((m: any) => m.message_type === "text" || m.text)
     .map((m: any) => ({
       id: m.id ?? m.message_id ?? String(Math.random()),
-      sender_name: m.sender?.name ?? m.sender_name ?? "Unknown",
-      text: m.text ?? "",
+      sender_name: m.sender?.name ?? m.sender_name ?? m.sender_id ?? "Unknown",
+      text: typeof m.text === "string" ? m.text : "",
       time: m.time ?? "",
-    }));
+    }))
+    .filter(m => m.text.trim() !== "");
 
-  return NextResponse.json({ messages });
+  return NextResponse.json({ messages, _raw_count: raw.length });
 }
