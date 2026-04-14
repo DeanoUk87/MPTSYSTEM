@@ -575,6 +575,7 @@ model Settings {
   defaultMessage      String?
   defaultMessage2     String?
   sendLimit           Int     @default(50)
+  bookingRefreshInterval Int  @default(80)
 
   @@map("settings")
 }

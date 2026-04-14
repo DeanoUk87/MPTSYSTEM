@@ -11,6 +11,7 @@ interface Settings {
   primaryContact?: string; baseCurrency: string; vatNumber?: string;
   invoiceDueDate: number; invoiceDuePaymentBy?: string;
   messageTitle?: string; defaultMessage?: string; defaultMessage2?: string; sendLimit: number;
+  bookingRefreshInterval: number;
 }
 
 const fields: { key: keyof Settings; label: string; type?: string; rows?: number }[] = [
@@ -31,6 +32,7 @@ const fields: { key: keyof Settings; label: string; type?: string; rows?: number
   { key: "invoiceDueDate", label: "Invoice Due Days", type: "number" },
   { key: "invoiceDuePaymentBy", label: "Payment Method" },
   { key: "sendLimit", label: "Email Send Limit (per batch)", type: "number" },
+  { key: "bookingRefreshInterval", label: "Booking Dashboard Auto-Refresh (seconds, 0 to disable)", type: "number" },
   { key: "messageTitle", label: "Invoice Email Subject" },
   { key: "defaultMessage", label: "Default Email Body 1", rows: 4 },
   { key: "defaultMessage2", label: "Default Email Body 2 (supports {invoice_number})", rows: 4 },
@@ -38,7 +40,7 @@ const fields: { key: keyof Settings; label: string; type?: string; rows?: number
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>({
-    companyName: "", baseCurrency: "GBP", invoiceDueDate: 30, sendLimit: 50,
+    companyName: "", baseCurrency: "GBP", invoiceDueDate: 30, sendLimit: 50, bookingRefreshInterval: 80,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

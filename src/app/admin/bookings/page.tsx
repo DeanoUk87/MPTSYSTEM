@@ -128,6 +128,9 @@ export default function BookingsPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [pickedCustomer, setPickedCustomer] = useState<{ id: string; label: string } | null>(null);
   const [pickedDriver, setPickedDriver] = useState<{ id: string; label: string } | null>(null);
+  const [refreshInterval, setRefreshInterval] = useState(80);
+  const [countdown, setCountdown] = useState(0);
+  const countdownRef = useRef(0);
   // pending = what user is building; applied = what's fetched
   const [appliedFilters, setAppliedFilters] = useState<{
     dateFrom: string; dateTo: string; status: string; customerId: string; driverId: string;
@@ -147,6 +150,54 @@ export default function BookingsPage() {
   }, [appliedFilters]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
+
+  // Load refresh interval from settings
+  useEffect(() => {
+    fetch("/api/settings").then(r => r.json()).then(s => {
+      const secs = s?.bookingRefreshInterval ?? 80;
+      setRefreshInterval(secs);
+      if (secs > 0) { countdownRef.current = secs; setCountdown(secs); }
+    });
+  }, []);
+
+  // Auto-refresh interval + 1-second countdown ticker
+  useEffect(() => {
+    if (refreshInterval <= 0) return;
+    const tick = setInterval(() => {
+      countdownRef.current -= 1;
+      setCountdown(countdownRef.current);
+      if (countdownRef.current <= 0) {
+        countdownRef.current = refreshInterval;
+        setCountdown(refreshInterval);
+        fetchBookings();
+      }
+    }, 1_000);
+    return () => clearInterval(tick);
+  }, [refreshInterval, fetchBookings]);
+
+  // Load refresh interval from settings
+  useEffect(() => {
+    fetch("/api/settings").then(r => r.json()).then(s => {
+      const secs = s?.bookingRefreshInterval ?? 80;
+      setRefreshInterval(secs);
+      if (secs > 0) { countdownRef.current = secs; setCountdown(secs); }
+    });
+  }, []);
+
+  // Auto-refresh interval + countdown
+  useEffect(() => {
+    if (refreshInterval <= 0) return;
+    const tick = setInterval(() => {
+      countdownRef.current -= 1;
+      setCountdown(countdownRef.current);
+      if (countdownRef.current <= 0) {
+        countdownRef.current = refreshInterval;
+        setCountdown(refreshInterval);
+        fetchBookings();
+      }
+    }, 1_000);
+    return () => clearInterval(tick);
+  }, [refreshInterval, fetchBookings]);
 
   function applyFilters() {
     setAppliedFilters({
@@ -263,7 +314,13 @@ export default function BookingsPage() {
             {hasFilters && (
               <button onClick={clearFilters} className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg">Clear</button>
             )}
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
+              {refreshInterval > 0 && (
+                <span className="text-xs text-slate-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                  Refreshes in {countdown}s
+                </span>
+              )}
               <Link href="/admin/bookings/new"
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
                 <Plus className="w-4 h-4" /> New Booking
