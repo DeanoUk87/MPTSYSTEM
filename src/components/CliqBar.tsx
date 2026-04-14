@@ -66,7 +66,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => { setHiddenIds(loadHidden()); }, []);
@@ -91,13 +91,15 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
       setFetchError("");
       setConfigured(true);
       const incoming: CliqChat[] = d.chats ?? [];
-      setChats(incoming);
+      // Filter out chats with no recent activity (inactive/removed users)
+      const active = incoming.filter(c => c.last_message_info || c.is_channel);
+      setChats(active);
       // First-ever load: auto-hide all chats with no unread messages
       setHiddenIds(prev => {
         if (!isFirstLoad()) return prev;
         markInitialized();
         const next = new Set(prev);
-        incoming.forEach(c => { if (!c.unread_message_count) next.add(c.chat_id); });
+        active.forEach(c => { if (!c.unread_message_count) next.add(c.chat_id); });
         saveHidden(next);
         return next;
       });
@@ -177,7 +179,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
       const res = await fetch(`/api/cliq/chats/${encodeURIComponent(activeChat.chat_id)}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: reply.trim() }),
+        body: JSON.stringify({ text: reply.trim(), isChannel: activeChat.is_channel ?? false }),
       });
       if (!res.ok) throw new Error("Send failed");
       setMessages(prev => [...prev, {
@@ -194,7 +196,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   }
 
@@ -247,14 +249,14 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="shrink-0 px-3 py-2 border-t border-slate-100 bg-white">
+              <div className="shrink-0 px-3 py-2 border-t border-slate-100 bg-white">
               {sendError && <p className="text-xs text-rose-500 mb-1">{sendError}</p>}
-              <div className="flex items-center gap-2">
-                <input
+              <div className="flex items-end gap-2">
+                <textarea
                   ref={inputRef}
-                  type="text"
-                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Reply…"
+                  rows={2}
+                  className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  placeholder="Reply… (Enter to send, Shift+Enter for newline)"
                   value={reply}
                   onChange={e => setReply(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -263,7 +265,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
                 <button
                   onClick={handleSend}
                   disabled={sending || !reply.trim()}
-                  className="flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-lg transition-colors shrink-0"
+                  className="flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-lg transition-colors shrink-0 mb-0.5"
                 >
                   {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                 </button>
