@@ -374,6 +374,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         hideTrackingTemperature: booking.hideTrackingTemperature ?? false,
         hideTrackingMap: booking.hideTrackingMap ?? false,
         jobStatus: booking.jobStatus ?? 0,
+        jobRef: booking.jobRef || "",
       });
       setLoadingBooking(false);
     });
@@ -522,18 +523,32 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       const updated = await fetch("/api/storage").then(r => r.json());
       setAllStorageUnits(updated);
 
-      // Sync form chillUnitId / ambientUnitId to match units now assigned to this driver
-      const driverUnits: any[] = updated.filter((u: any) => u.currentDriverId === activeDriverId);
-      const chillUnit = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? driverUnits[0] ?? null;
-      const ambUnit   = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb"))   ?? driverUnits[1] ?? null;
+      const newChillId = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill"))?.id ?? "";
+      const newAmbId   = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb"))?.id ?? "";
       setF((prev: any) => ({
         ...prev,
-        chillUnitId:   chillUnit?.id ?? "",
-        ambientUnitId: ambUnit?.id   ?? "",
+        chillUnitId:   newChillId,
+        ambientUnitId: newAmbId,
       }));
 
       toast.success(driverId ? "Unit assigned" : "Unit unassigned");
     } catch { toast.error("Failed to assign unit"); } finally { setAssigningUnit(null); }
+  }
+
+  async function autoSaveTracking(field: "hideTrackingTemperature" | "hideTrackingMap", newVal: boolean) {
+    s(field, newVal);
+    try {
+      await fetch(`/api/bookings/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          [field]: newVal,
+          driverId: f.driverId || null,
+          chillUnitId: f.chillUnitId || null,
+          ambientUnitId: f.ambientUnitId || null,
+        }),
+      });
+      toast.success(newVal ? "Hidden on customer view" : "Visible on customer view");
+    } catch { toast.error("Failed to update"); }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -837,7 +852,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100 mt-1">
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider w-full">Customer View Controls</span>
-                    <button type="button" onClick={() => s("hideTrackingTemperature", !f.hideTrackingTemperature)}
+                    <button type="button" onClick={() => autoSaveTracking("hideTrackingTemperature", !f.hideTrackingTemperature)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                         !f.hideTrackingTemperature
                           ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
@@ -845,7 +860,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       }`}>
                       🌡️ {!f.hideTrackingTemperature ? "Temp Tracking ON" : "Temp Tracking OFF"}
                     </button>
-                    <button type="button" onClick={() => s("hideTrackingMap", !f.hideTrackingMap)}
+                    <button type="button" onClick={() => autoSaveTracking("hideTrackingMap", !f.hideTrackingMap)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                         !f.hideTrackingMap
                           ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
@@ -1149,19 +1164,6 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         <div className="text-xs text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">✓ POD received: {via.signedBy}</div>
                       )}
                       <textarea value={via.notes || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, notes: e.target.value } : x))} placeholder="Notes" rows={1} className={inp + " resize-none"} />
-                      {/* Via POD */}
-                      <div className="border-t border-slate-200 pt-2 space-y-1.5">
-                        <span className="text-xs font-semibold text-teal-600 uppercase tracking-wide">✅ Via POD</span>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <input type="text" value={via.signedBy || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, signedBy: e.target.value } : x))} placeholder="Signed By" className={inp} />
-                          <input type="text" value={via.podRelationship || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podRelationship: e.target.value } : x))} placeholder="Relationship" className={inp} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <input type="date" value={via.podDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podDate: e.target.value } : x))} className={inp} />
-                          <TimePicker value={via.podTime || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podTime: v } : x))} className="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                        </div>
-                        <input type="text" value={via.deliveredTemp || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, deliveredTemp: e.target.value } : x))} placeholder="Delivered Temp (e.g. 4°C)" className={inp} />
-                      </div>
                       {/* Collected Orders */}
                       <div className="border-t border-slate-200 pt-2 space-y-1.5">
                         <div className="flex items-center justify-between">
@@ -1187,6 +1189,19 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                               className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
                           </div>
                         ))}
+                      </div>
+                      {/* Via POD */}
+                      <div className="border-t border-slate-200 pt-2 space-y-1.5">
+                        <span className="text-xs font-semibold text-teal-600 uppercase tracking-wide">✅ Via POD</span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <input type="text" value={via.signedBy || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, signedBy: e.target.value } : x))} placeholder="Signed By" className={inp} />
+                          <input type="text" value={via.podRelationship || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podRelationship: e.target.value } : x))} placeholder="Relationship" className={inp} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <input type="date" value={via.podDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podDate: e.target.value } : x))} className={inp} />
+                          <TimePicker value={via.podTime || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podTime: v } : x))} className="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                        </div>
+                        <input type="text" value={via.deliveredTemp || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, deliveredTemp: e.target.value } : x))} placeholder="Delivered Temp (e.g. 4°C)" className={inp} />
                       </div>
                     </div>
                   ))}

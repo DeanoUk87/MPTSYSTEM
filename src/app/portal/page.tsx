@@ -20,6 +20,7 @@ interface Booking {
   collectionDate?: string; collectionTime?: string;
   collectionName?: string; collectionPostcode?: string;
   deliveryTime?: string; deliveryName?: string; deliveryPostcode?: string;
+  deliveryNotes?: string;
   purchaseOrder?: string; jobNotes?: string;
   jobStatus: number; podSignature?: string; podDataVerify: boolean;
   podDate?: string; podTime?: string; podRelationship?: string; deliveredTemperature?: string;
@@ -96,20 +97,56 @@ function useTracking(imei?: string | null) {
 }
 
 // --- Map component ---
-function LiveMap({ chillImei, ambImei, chillData, ambData }: {
+function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend }: {
   chillImei?: string | null; ambImei?: string | null;
   chillData: TrackData | null; ambData: TrackData | null;
+  showTempLegend: boolean;
 }) {
   const divRef = useRef<HTMLDivElement>(null);
   const map    = useRef<any>(null);
   const cM     = useRef<any>(null);
   const aM     = useRef<any>(null);
+  // Store latest data in refs so init() can read current values without stale closures
+  const lChill = useRef(chillData);
+  const lAmb   = useRef(ambData);
+  useEffect(() => { lChill.current = chillData; }, [chillData]);
+  useEffect(() => { lAmb.current   = ambData;   }, [ambData]);
+
+  function placeMarkers() {
+    if (!map.current) return;
+    const cd = lChill.current;
+    const ad = lAmb.current;
+    if (cd) {
+      const pos = { lat: cd.lat, lng: cd.lng };
+      if (cM.current) { cM.current.setPosition(pos); map.current.panTo(pos); }
+      else {
+        cM.current = new window.google.maps.Marker({
+          position: pos, map: map.current, title: "Chill Unit",
+          icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        });
+        map.current.panTo(pos);
+        map.current.setZoom(13);
+      }
+    }
+    if (ad) {
+      const pos = { lat: ad.lat, lng: ad.lng };
+      if (aM.current) { aM.current.setPosition(pos); }
+      else {
+        aM.current = new window.google.maps.Marker({
+          position: pos, map: map.current, title: "Ambient Unit",
+          icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+        });
+        if (!lChill.current) { map.current.panTo(pos); map.current.setZoom(13); }
+      }
+    }
+  }
 
   function init() {
     if (!divRef.current || !window.google?.maps || map.current) return;
     map.current = new window.google.maps.Map(divRef.current, {
       center: { lat: 52.5, lng: -1.5 }, zoom: 7,
     });
+    placeMarkers();
   }
 
   useEffect(() => {
@@ -130,14 +167,15 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
   useEffect(() => {
     if (!map.current || !chillData) return;
     const pos = { lat: chillData.lat, lng: chillData.lng };
-    if (cM.current) cM.current.setPosition(pos);
+    if (cM.current) { cM.current.setPosition(pos); map.current.panTo(pos); }
     else {
       cM.current = new window.google.maps.Marker({
         position: pos, map: map.current, title: "Chill Unit",
         icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
       });
+      map.current.panTo(pos);
+      map.current.setZoom(13);
     }
-    map.current.panTo(pos);
   }, [chillData]);
 
   useEffect(() => {
@@ -155,10 +193,12 @@ function LiveMap({ chillImei, ambImei, chillData, ambData }: {
   return (
     <>
       <div ref={divRef} className="w-full h-52 rounded-xl border border-slate-200 bg-slate-100" />
-      <div className="flex gap-4 mt-2 text-xs text-slate-500">
-        {chillImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Chill</span>}
-        {ambImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Ambient</span>}
-      </div>
+      {showTempLegend && (
+        <div className="flex gap-4 mt-2 text-xs text-slate-500">
+          {chillImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Chill</span>}
+          {ambImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Ambient</span>}
+        </div>
+      )}
     </>
   );
 }
@@ -283,6 +323,12 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                 {b.deliveryPostcode && <span className="font-mono text-sm text-slate-600">{b.deliveryPostcode}</span>}
                 {b.podSignature && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
               </div>
+              {(() => { const orders = parseOrders(b.deliveryNotes); return orders.length > 0 ? (
+                <div className="mb-3"><p className="text-xs text-slate-400 mb-1">Collected Orders</p>
+                  <div className="flex flex-wrap gap-1.5">{orders.map((o, oi) => (
+                    <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(o.type))}>{o.ref} · {o.type}</span>
+                  ))}</div></div>
+              ) : null; })()}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                 {b.deliveryTime && <div><p className="text-xs text-slate-400">Rough ETA</p><p className="font-medium text-slate-700">{b.deliveryTime}</p></div>}
                 {b.podSignature && <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{b.podSignature}</p></div>}
@@ -327,6 +373,7 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                         ambImei={b.ambientUnit?.imei}
                         chillData={chillTrack}
                         ambData={ambTrack}
+                        showTempLegend={showTemp}
                       />
                     </div>
                   )}
