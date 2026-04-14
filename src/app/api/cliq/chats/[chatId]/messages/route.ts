@@ -58,11 +58,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
   const data = await res.json();
   const raw: any[] = data.data ?? data.messages ?? [];
   const messages = raw
+    .filter((m: any) => m.type === "text" || m.message_type === "text")
     .map((m: any) => ({
       id: m.id ?? m.message_id ?? String(Math.random()),
-      sender_name: m.sender?.name ?? m.sender_name ?? m.sender_id ?? "Unknown",
-      text: typeof m.text === "string" ? m.text : "",
-      time: m.time ?? "",
+      sender_name: m.sender?.name ?? m.sender_name ?? "Unknown",
+      text: m.content?.text ?? m.text ?? "",
+      // time is unix ms from Zoho; convert to ISO so formatTime() works
+      time: m.time ? new Date(m.time).toISOString() : "",
     }))
     .filter(m => m.text.trim() !== "");
 
