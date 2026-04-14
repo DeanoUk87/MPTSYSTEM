@@ -47,32 +47,47 @@ function formatDate(s?: string) {
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
-function AddressBlock({ title, prefix, data }: { title: string; prefix: string; data: Booking }) {
-  const addr = [
-    (data as any)[`${prefix}Name`],
-    (data as any)[`${prefix}Address1`],
-    (data as any)[`${prefix}Address2`],
-    (data as any)[`${prefix}Area`],
-    (data as any)[`${prefix}Postcode`],
-    (data as any)[`${prefix}Country`],
-  ].filter(Boolean).join(", ");
+function AddressBlock({ title, prefix, data, accent = "blue" }: { title: string; prefix: string; data: Booking; accent?: "blue" | "indigo" }) {
+  const d = data as any;
+  const date = formatDate(d[`${prefix}Date`]);
+  const time = d[`${prefix}Time`] || "";
+  const name = d[`${prefix}Name`] || "";
+  const addr = [d[`${prefix}Address1`], d[`${prefix}Address2`], d[`${prefix}Area`], d[`${prefix}Postcode`]].filter(Boolean).join(", ");
+  const contact = d[`${prefix}Contact`] || "";
+  const phone = d[`${prefix}Phone`] || "";
+  const rawNotes = d[`${prefix}Notes`] || "";
+  const noteText = rawNotes.split("---ORDERS---")[0].trim();
+  const ordersJson = rawNotes.includes("---ORDERS---") ? rawNotes.split("---ORDERS---")[1] || "[]" : null;
+  const iconColor = accent === "indigo" ? "text-indigo-600" : "text-blue-600";
+  const borderColor = accent === "indigo" ? "border-l-indigo-500" : "border-l-blue-500";
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-2">
+    <div className={`bg-white rounded-xl border border-slate-200 border-l-4 ${borderColor} p-5 space-y-1.5`}>
       <div className="flex items-center gap-2 mb-3">
-        <MapPin className="w-4 h-4 text-blue-600" />
-        <h3 className="font-semibold text-slate-800">{title}</h3>
+        <MapPin className={`w-4 h-4 shrink-0 ${iconColor}`} />
+        <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide">{title}</h3>
       </div>
-      <div className="text-sm text-slate-600 space-y-1">
-        <p>{formatDate((data as any)[`${prefix}Date`])} {(data as any)[`${prefix}Time`]}</p>
-        <p>{addr || "No address"}</p>
-        {(data as any)[`${prefix}Contact`] && <p>Contact: {(data as any)[`${prefix}Contact`]} {(data as any)[`${prefix}Phone`] ? `· ${(data as any)[`${prefix}Phone`]}` : ""}</p>}
-        {(data as any)[`${prefix}Notes`]?.split("---ORDERS---")[0] && <p className="text-amber-600">Note: {(data as any)[`${prefix}Notes`].split("---ORDERS---")[0]}</p>}
-        {(data as any)[`${prefix}Notes`]?.includes("---ORDERS---") && (() => {
+      <div className="text-sm space-y-1">
+        {(date || time) && (
+          <div className="flex gap-6">
+            {date && <span><span className="text-slate-400 font-medium">Date:</span> <span className="text-slate-700">{date}</span></span>}
+            {time && <span><span className="text-slate-400 font-medium">Time:</span> <span className="text-slate-700">{time}</span></span>}
+          </div>
+        )}
+        {name && <div><span className="text-slate-400 font-medium">Name:</span> <span className="text-slate-700 font-semibold">{name}</span></div>}
+        {addr && <div><span className="text-slate-400 font-medium">Address:</span> <span className="text-slate-600">{addr}</span></div>}
+        {contact && <div><span className="text-slate-400 font-medium">Contact:</span> <span className="text-slate-700">{contact}</span></div>}
+        {phone && <div><span className="text-slate-400 font-medium">Phone:</span> <span className="text-slate-700">{phone}</span></div>}
+        {noteText && (
+          <div className="pt-1">
+            <span className="text-amber-600 font-medium">Notes:</span> <span className="text-amber-700">{noteText}</span>
+          </div>
+        )}
+        {ordersJson && (() => {
           try {
-            const orders = JSON.parse((data as any)[`${prefix}Notes`].split("---ORDERS---")[1] || "[]");
+            const orders = JSON.parse(ordersJson);
             return orders.length > 0 ? (
-              <div className="flex flex-wrap gap-1 mt-1">
+              <div className="flex flex-wrap gap-1 pt-1">
                 {orders.map((o: any, i: number) => (
                   <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
                 ))}
@@ -301,34 +316,49 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           <div className="grid grid-cols-3 gap-4 items-start">
             <AddressBlock title="Collection" prefix="collection" data={booking} />
             <div className="space-y-3">
-              {booking.viaAddresses?.map((v: any, idx: number) => (
-                <div key={v.id} className="bg-white rounded-xl border border-slate-200 p-4 space-y-1 text-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="w-4 h-4 text-indigo-600" />
-                    <h3 className="font-semibold text-slate-800">Via {booking.viaAddresses!.length > 1 ? idx + 1 : ""}</h3>
-                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">{v.viaType}</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-snug">
-                    {[v.name, v.address1, v.address2, v.area, v.postcode].filter(Boolean).join(", ") || "No address"}
-                  </p>
-                  {v.contact && <p className="text-xs text-slate-400">Contact: {v.contact}{v.phone ? ` · ${v.phone}` : ""}</p>}
-                  {v.viaDate && <p className="text-xs text-slate-400">{formatDate(v.viaDate)} {v.viaTime}</p>}
-                  {v.signedBy && <p className="text-xs text-emerald-600">✓ POD: {v.signedBy}</p>}
-                  {v.notes?.split("---ORDERS---")[0] && <p className="text-xs text-amber-600">{v.notes.split("---ORDERS---")[0]}</p>}
-                  {v.notes?.includes("---ORDERS---") && (() => {
-                    try {
-                      const orders = JSON.parse(v.notes.split("---ORDERS---")[1] || "[]");
-                      return orders.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {orders.map((o: any, i: number) => (
-                            <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
-                          ))}
+              {booking.viaAddresses?.map((v: any, idx: number) => {
+                const noteText = (v.notes || "").split("---ORDERS---")[0].trim();
+                const ordersJson = v.notes?.includes("---ORDERS---") ? v.notes.split("---ORDERS---")[1] || "[]" : null;
+                return (
+                  <div key={v.id} className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-indigo-500 p-4 space-y-1.5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wide">
+                        Via {booking.viaAddresses!.length > 1 ? idx + 1 : ""}
+                      </h3>
+                      <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">{v.viaType}</span>
+                    </div>
+                    <div className="text-sm space-y-1">
+                      {(v.viaDate || v.viaTime) && (
+                        <div className="flex gap-6">
+                          {v.viaDate && <span><span className="text-slate-400 font-medium">Date:</span> <span className="text-slate-700">{formatDate(v.viaDate)}</span></span>}
+                          {v.viaTime && <span><span className="text-slate-400 font-medium">Time:</span> <span className="text-slate-700">{v.viaTime}</span></span>}
                         </div>
-                      ) : null;
-                    } catch { return null; }
-                  })()}
-                </div>
-              ))}
+                      )}
+                      {v.name && <div><span className="text-slate-400 font-medium">Name:</span> <span className="text-slate-700 font-semibold">{v.name}</span></div>}
+                      {[v.address1, v.address2, v.area, v.postcode].filter(Boolean).join(", ") && (
+                        <div><span className="text-slate-400 font-medium">Address:</span> <span className="text-slate-600">{[v.address1, v.address2, v.area, v.postcode].filter(Boolean).join(", ")}</span></div>
+                      )}
+                      {v.contact && <div><span className="text-slate-400 font-medium">Contact:</span> <span className="text-slate-700">{v.contact}</span></div>}
+                      {v.phone && <div><span className="text-slate-400 font-medium">Phone:</span> <span className="text-slate-700">{v.phone}</span></div>}
+                      {noteText && <div className="pt-1"><span className="text-amber-600 font-medium">Notes:</span> <span className="text-amber-700">{noteText}</span></div>}
+                      {v.signedBy && <p className="text-emerald-600 font-medium text-xs pt-1">✓ POD: {v.signedBy}</p>}
+                      {ordersJson && (() => {
+                        try {
+                          const orders = JSON.parse(ordersJson);
+                          return orders.length > 0 ? (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {orders.map((o: any, i: number) => (
+                                <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
+                              ))}
+                            </div>
+                          ) : null;
+                        } catch { return null; }
+                      })()}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <AddressBlock title="Delivery" prefix="delivery" data={booking} />
           </div>

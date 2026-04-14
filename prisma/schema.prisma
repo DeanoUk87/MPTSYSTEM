@@ -555,6 +555,7 @@ model Settings {
   id                  String  @id @default(cuid())
   companyName         String  @default("")
   logo                String?
+  menuLogo            String?
   companyAddress1     String?
   companyAddress2     String?
   state               String?

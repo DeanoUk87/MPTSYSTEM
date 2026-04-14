@@ -54,8 +54,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [tooltip, setTooltip] = useState<{ label: string; y: number } | null>(null);
+  const [branding, setBranding] = useState<{ logo: string | null; menuLogo: string | null; companyName: string } | null>(null);
   useEffect(() => setMounted(true), []);
   useEffect(() => { if (!collapsed) setTooltip(null); }, [collapsed]);
+
+  useEffect(() => {
+    fetch("/api/branding").then(r => r.json()).then(d => setBranding(d)).catch(() => {});
+  }, []);
 
   const showTip = (e: React.MouseEvent, label: string) => {
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -79,13 +84,22 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         "flex items-center border-b border-slate-700/60 shrink-0",
         collapsed ? "px-3 py-4 justify-between" : "px-4 py-4 gap-3"
       )}>
-        <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-          <Building2 className="w-5 h-5 text-white" />
+        {/* Icon / square logo */}
+        <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+          {branding?.menuLogo
+            ? <img src={branding.menuLogo} alt="logo" className="w-full h-full object-contain" />
+            : <Building2 className="w-5 h-5 text-white" />
+          }
         </div>
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm leading-tight truncate">MP Booking</p>
-            <p className="text-xs text-slate-400">Transport System</p>
+            {branding?.logo
+              ? <img src={branding.logo} alt={branding.companyName} className="h-8 max-w-[140px] object-contain" />
+              : <>
+                  <p className="font-bold text-sm leading-tight truncate">{branding?.companyName || "MP Booking"}</p>
+                  <p className="text-xs text-slate-400">Transport System</p>
+                </>
+            }
           </div>
         )}
         <button

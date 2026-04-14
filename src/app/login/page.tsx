@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, Eye, EyeOff, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -13,6 +13,11 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [branding, setBranding] = useState<{ logo: string | null; companyName: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/branding").then(r => r.json()).then(d => setBranding(d)).catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,10 +47,16 @@ function LoginForm() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-center">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white">MP Booking System</h1>
+            {branding?.logo ? (
+              <div className="flex justify-center mb-4">
+                <img src={branding.logo} alt={branding.companyName} className="h-16 max-w-[200px] object-contain" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Building2 className="w-8 h-8 text-white" />
+              </div>
+            )}
+            <h1 className="text-2xl font-bold text-white">{branding?.companyName || "MP Booking System"}</h1>
             <p className="text-blue-200 text-sm mt-1">Sameday Transport Management</p>
           </div>
 
@@ -100,7 +111,7 @@ function LoginForm() {
         </div>
 
         <p className="text-center text-slate-400 text-xs mt-6">
-          MP Booking System &copy; {new Date().getFullYear()}
+          {branding?.companyName || "MP Transport Ltd"} &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

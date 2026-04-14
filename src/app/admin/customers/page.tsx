@@ -238,11 +238,6 @@ export default function CustomersPage() {
               <input type="email" value={form.poEmail} onChange={e => set("poEmail", e.target.value)} className={inp} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Dead Mileage</label>
-              <input type="number" min="0" value={form.deadMileage} onChange={e => set("deadMileage", e.target.value)} className={inp} />
-              <p className="text-xs text-slate-400 mt-0.5">Miles added to driver cost calculation</p>
-            </div>
-            <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Job Ref Start Number</label>
               <input type="number" min="1" value={form.jobRefStart} onChange={e => set("jobRefStart", e.target.value)} className={inp} />
               <p className="text-xs text-slate-400 mt-0.5">First job ref number for this customer (e.g. 1 = ACC-00001)</p>

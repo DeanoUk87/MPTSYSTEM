@@ -185,12 +185,19 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
         const d = await res.json().catch(() => ({}));
         throw new Error(d.error ?? d.detail ?? `HTTP ${res.status}`);
       }
+      const sentText = reply.trim();
       setMessages(prev => [...prev, {
         id: `tmp-${Date.now()}`,
         sender_name: "You",
-        text: reply.trim(),
+        text: sentText,
+        time: new Date().toISOString(),
         is_self: true,
       }]);
+      // Update last_message_info on the chat in the list
+      setChats(prev => prev.map(c => c.chat_id === activeChat!.chat_id
+        ? { ...c, last_message_info: { sender_name: "You", text: sentText, time: new Date().toISOString() } }
+        : c
+      ));
       setReply("");
     } catch (e: any) {
       setSendError(e?.message ?? "Failed to send");
@@ -211,7 +218,7 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
     <>
       {/* Chat message panel */}
       {activeChat && (
-        <div className="fixed z-50 flex flex-col" style={{ bottom: 40, right: 16, width: 380 }}>
+        <div className="fixed z-50 flex flex-col" style={{ bottom: 40, right: 16, width: 480 }}>
           <div className="bg-white rounded-t-xl shadow-2xl border border-slate-200 flex flex-col" style={{ height: 400 }}>
             <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 rounded-t-xl text-white shrink-0">
               <ChatIcon chat={activeChat} />
