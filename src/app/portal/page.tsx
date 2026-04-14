@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, EyeOff } from "lucide-react";
+import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin } from "lucide-react";
 import clsx from "clsx";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
@@ -89,9 +89,11 @@ function useTracking(imei?: string | null) {
         .then(r => r.ok ? r.json() : null)
         .then(d => { if (alive && d?.lat) setData(d); })
         .catch(() => {});
+    // Poll immediately, then again after 5 s (first-load fast retry), then every 30 s
     poll();
+    const quick = setTimeout(poll, 5_000);
     const id = setInterval(poll, 30_000);
-    return () => { alive = false; clearInterval(id); };
+    return () => { alive = false; clearTimeout(quick); clearInterval(id); };
   }, [imei]);
   return data;
 }
@@ -261,21 +263,6 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
           {/* LEFT: POD info */}
           <div className="lg:col-span-2 space-y-4">
 
-            {/* Collection header */}
-            <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Collection</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                {b.collectionName && <div><p className="text-xs text-slate-400">Location</p><p className="font-medium text-slate-800">{b.collectionName}</p></div>}
-                {b.collectionPostcode && <div><p className="text-xs text-slate-400">Postcode</p><p className="font-mono font-medium text-slate-700">{b.collectionPostcode}</p></div>}
-                {b.collectionTime && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-700">{b.collectionTime}</p></div>}
-              </div>
-              {b.jobNotes && (
-                <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-amber-800 text-xs">
-                  <span className="font-semibold">Notes:</span> {b.jobNotes}
-                </div>
-              )}
-            </div>
-
             {/* Via stops */}
             {vias.map((v, i) => {
               const orders = parseOrders(v.notes);
@@ -333,8 +320,8 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                 {b.deliveryTime && <div><p className="text-xs text-slate-400">Rough ETA</p><p className="font-medium text-slate-700">{b.deliveryTime}</p></div>}
                 {b.podSignature && <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{b.podSignature}</p></div>}
                 {b.podRelationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-700">{b.podRelationship}</p></div>}
-                {b.podDate && <div><p className="text-xs text-slate-400">POD Date</p><p className="font-medium text-slate-700">{b.podDate}</p></div>}
-                {b.podTime && <div><p className="text-xs text-slate-400">Delivered Time</p><p className="font-medium text-slate-700">{b.podTime}</p></div>}
+                {b.podSignature && b.podDate && <div><p className="text-xs text-slate-400">POD Date</p><p className="font-medium text-slate-700">{b.podDate}</p></div>}
+                {b.podSignature && b.podTime && <div><p className="text-xs text-slate-400">Delivered Time</p><p className="font-medium text-slate-700">{b.podTime}</p></div>}
                 {b.deliveredTemperature && <div><p className="text-xs text-slate-400">Delivered Temp</p><p className="font-medium text-slate-700">{b.deliveredTemperature}</p></div>}
                 {!b.podSignature && <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD sign-off…</div>}
               </div>
@@ -344,58 +331,41 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
 
           {/* RIGHT: Tracking */}
           <div className="space-y-4">
-            <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Live Tracking</h3>
-              </div>
-
-              {!hasUnits && (
-                <div className="text-center py-8 text-slate-400">
-                  <MapPin className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                  <p className="text-xs">No tracking units assigned</p>
+            {(hasUnits && !st.green && (showMap || showTemp)) && (
+              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Live Tracking</h3>
                 </div>
-              )}
-
-              {hasUnits && st.green && (
+                {showMap && (
+                  <div>
+                    <LiveMap
+                      chillImei={b.chillUnit?.imei}
+                      ambImei={b.ambientUnit?.imei}
+                      chillData={chillTrack}
+                      ambData={ambTrack}
+                      showTempLegend={showTemp}
+                    />
+                  </div>
+                )}
+                {showTemp && (
+                  <div>
+                    <div className="flex gap-3">
+                      {b.chillUnit?.imei && <TempBox unit={b.chillUnit} trackData={chillTrack} />}
+                      {b.ambientUnit?.imei && <TempBox unit={b.ambientUnit} trackData={ambTrack} />}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {hasUnits && st.green && (
+              <div className="bg-white rounded-xl border border-slate-200 p-4">
                 <div className="text-center py-8">
                   <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
                   <p className="text-sm font-semibold text-emerald-600">Job Complete</p>
                   <p className="text-xs text-slate-400 mt-1">Tracking no longer active</p>
                 </div>
-              )}
-
-              {hasUnits && !st.green && (
-                <>
-                  {showMap && (
-                    <div>
-                      <LiveMap
-                        chillImei={b.chillUnit?.imei}
-                        ambImei={b.ambientUnit?.imei}
-                        chillData={chillTrack}
-                        ambData={ambTrack}
-                        showTempLegend={showTemp}
-                      />
-                    </div>
-                  )}
-                  {showTemp && (
-                    <div>
-                      <div className="flex gap-3">
-                        {b.chillUnit?.imei && <TempBox unit={b.chillUnit} trackData={chillTrack} />}
-                        {b.ambientUnit?.imei && <TempBox unit={b.ambientUnit} trackData={ambTrack} />}
-                      </div>
-                    </div>
-                  )}
-                  {!showMap && !showTemp && (
-                    <div className="text-center py-6">
-                      <EyeOff className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                      <p className="text-xs text-slate-400">Tracking hidden for this job</p>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Units section removed */}
-            </div>
+              </div>
+            )}
           </div>
 
         </div>

@@ -251,7 +251,6 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
   const [customer, setCustomer] = useState<any>(null);
   const [showUnitsModal, setShowUnitsModal] = useState(false);
   const [assigningUnit, setAssigningUnit] = useState<string | null>(null);
-  const [transferDriverId, setTransferDriverId] = useState("");
 
   const [f, setF] = useState<Record<string, any>>({});
   const [jt, setJt] = useState(0);
@@ -1272,29 +1271,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   );
                 })}
               </div>
-              {activeDriverId && (
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <p className="text-xs font-semibold text-slate-600 mb-2">Transfer units to another driver:</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <select value={transferDriverId} onChange={e => setTransferDriverId(e.target.value)}
-                      className="flex-1 min-w-48 px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="">— Select driver to transfer to —</option>
-                      {[...drivers, ...subcons, ...cxDrivers].filter((d: any) => d.id !== activeDriverId).map((d: any) => (
-                        <option key={d.id} value={d.id}>{d.name} ({d.driverType})</option>
-                      ))}
-                    </select>
-                    <button type="button" disabled={!transferDriverId || assigningUnit !== null} onClick={async () => {
-                      const unitIds = allStorageUnits.filter((u: any) => u.currentDriverId === activeDriverId).map((u: any) => u.id);
-                      if (!unitIds.length) { toast.error("No units assigned to current driver"); return; }
-                      setAssigningUnit("transfer");
-                      try { for (const uid of unitIds) await assignUnit(uid, transferDriverId); toast.success("Units transferred"); setTransferDriverId(""); }
-                      finally { setAssigningUnit(null); }
-                    }} className="px-3 py-2 bg-amber-500 text-white rounded-lg text-xs font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors">
-                      {assigningUnit === "transfer" ? <Loader2 className="w-3 h-3 animate-spin inline" /> : "Transfer Units"}
-                    </button>
-                  </div>
-                </div>
-              )}
+
             </div>
           </div>
         </div>
