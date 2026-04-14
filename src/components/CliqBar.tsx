@@ -181,7 +181,10 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: reply.trim(), isChannel: activeChat.is_channel ?? false }),
       });
-      if (!res.ok) throw new Error("Send failed");
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error ?? d.detail ?? `HTTP ${res.status}`);
+      }
       setMessages(prev => [...prev, {
         id: `tmp-${Date.now()}`,
         sender_name: "You",
@@ -189,8 +192,8 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
         is_self: true,
       }]);
       setReply("");
-    } catch {
-      setSendError("Failed to send");
+    } catch (e: any) {
+      setSendError(e?.message ?? "Failed to send");
     } finally {
       setSending(false);
     }
