@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
   const [chatsRes, channelsRes] = await Promise.allSettled([
     probe && probe.ok ? Promise.resolve(probe) : fetch(`${cliqBaseUrl()}/chats`, makeOpts()),
-    fetch(`${cliqBaseUrl()}/channels/joined`, makeOpts()),
+    fetch(`${cliqBaseUrl()}/channels`, makeOpts()),
   ]);
 
   const chats: any[] = [];
@@ -50,9 +50,10 @@ export async function GET(req: NextRequest) {
   if (channelsRes.status === "fulfilled" && channelsRes.value.ok) {
     const d = await channelsRes.value.json();
     for (const c of d.channels ?? []) {
+      if (!c.joined) continue; // only include channels the user has joined
       chats.push({
-        chat_id: c.channel_id ?? c.id,
-        name: c.name,
+        chat_id: c.chat_id ?? c.channel_id ?? c.id,
+        name: c.name ?? c.unique_name,
         unread_message_count: c.unread_message_count ?? 0,
         last_message_info: c.last_message_info,
         chat_type: "channel",

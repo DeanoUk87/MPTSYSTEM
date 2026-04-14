@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
   const isChannel = req.nextUrl.searchParams.get("isChannel") === "1";
 
   const endpoint = isChannel
-    ? `${cliqBaseUrl()}/channels/${encodeURIComponent(chatId)}/messages?limit=40`
+    ? `${cliqBaseUrl()}/chats/${encodeURIComponent(chatId)}/messages?limit=40`
     : `${cliqBaseUrl()}/chats/${encodeURIComponent(chatId)}/messages?limit=40`;
 
   let token = await getCliqToken();
