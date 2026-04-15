@@ -8,12 +8,8 @@ export async function GET(req: NextRequest) {
   try {
     const settings = await prisma.settings.findFirst();
     if (!settings) return NextResponse.json({});
-    // Fetch fields not in generated client via raw SQL
-    const extra = await prisma.$queryRaw<{ bookingRefreshInterval: number }[]>`
-      SELECT "bookingRefreshInterval" FROM "settings" WHERE "id" = ${settings.id} LIMIT 1
-    `;
     const { logo: _l, menuLogo: _m, ...rest } = settings as any;
-    return NextResponse.json({ ...rest, bookingRefreshInterval: extra[0]?.bookingRefreshInterval ?? 80 });
+    return NextResponse.json(rest);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -55,9 +51,10 @@ export async function PUT(req: NextRequest) {
           defaultMessage2: f.defaultMessage2 || null,
         },
       });
-      // bookingRefreshInterval added by migration — not in generated client yet
-      const bri = parseInt(bookingRefreshInterval) || 80;
-      await prisma.$executeRaw`UPDATE "settings" SET "bookingRefreshInterval" = ${bri} WHERE "id" = ${existing.id}`;
+      await prisma.settings.update({
+        where: { id: existing.id },
+        data: { bookingRefreshInterval: parseInt(bookingRefreshInterval) || 80 } as any,
+      });
     } else {
       const created = await prisma.settings.create({
         data: {
@@ -84,8 +81,10 @@ export async function PUT(req: NextRequest) {
           defaultMessage2: f.defaultMessage2 || null,
         },
       });
-      const bri = parseInt(bookingRefreshInterval) || 80;
-      await prisma.$executeRaw`UPDATE "settings" SET "bookingRefreshInterval" = ${bri} WHERE "id" = ${created.id}`;
+      await prisma.settings.update({
+        where: { id: created.id },
+        data: { bookingRefreshInterval: parseInt(bookingRefreshInterval) || 80 } as any,
+      });
     }
     return NextResponse.json({ ok: true });
   } catch (e: any) {

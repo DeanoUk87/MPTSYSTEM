@@ -60,12 +60,10 @@ export async function POST(req: NextRequest) {
         customerAccount: body.customerAccount || null,
         termsOfPayment: body.termsOfPayment || null,
         userId: (session as any).id,
-      },
+        jobRefStart: parseInt(body.jobRefStart) || 1,
+      } as any,
     });
-    // jobRefStart not in generated DMMF yet — update via raw SQL
-    const jrs = parseInt(body.jobRefStart) || 1;
-    await prisma.$executeRaw`UPDATE "customers" SET "jobRefStart" = ${jrs} WHERE "id" = ${customer.id}`;
-    return NextResponse.json({ ...customer, jobRefStart: jrs }, { status: 201 });
+    return NextResponse.json(customer, { status: 201 });
   } catch (e: any) {
     console.error("Customer create error:", e);
     return NextResponse.json({ error: e.message || "Failed to create customer" }, { status: 500 });

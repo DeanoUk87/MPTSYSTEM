@@ -3,17 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 
 // Public endpoint — no auth required (used on login page and sidebar)
-// Uses raw SQL to bypass stale Prisma generated client (menuLogo added via migration)
 export async function GET() {
   try {
-    const rows = await prisma.$queryRaw<{ companyName: string | null; logo: string | null; menuLogo: string | null }[]>`
-      SELECT companyName, logo, menuLogo FROM "settings" LIMIT 1
-    `;
-    const s = rows[0];
+    const s = await prisma.settings.findFirst({
+      select: { companyName: true, logo: true, menuLogo: true },
+    });
     return NextResponse.json({
-      companyName: s?.companyName || "MP Transport",
-      logo: s?.logo || null,
-      menuLogo: s?.menuLogo || null,
+      companyName: (s as any)?.companyName || "MP Transport",
+      logo: (s as any)?.logo || null,
+      menuLogo: (s as any)?.menuLogo || null,
     });
   } catch {
     return NextResponse.json({ companyName: "MP Transport", logo: null, menuLogo: null });
@@ -27,18 +25,24 @@ export async function PUT(req: NextRequest) {
     const { logo, menuLogo } = await req.json();
     const logoVal = logo ?? null;
     const menuLogoVal = menuLogo ?? null;
-    // Raw SQL to bypass stale Prisma generated client
-    const rows = await prisma.$queryRaw<{ id: string }[]>`SELECT id FROM "settings" LIMIT 1`;
-    if (rows.length) {
-      await prisma.$executeRawUnsafe(
-        `UPDATE "settings" SET "logo" = ?, "menuLogo" = ? WHERE "id" = ?`,
-        logoVal, menuLogoVal, rows[0].id
-      );
+    const existing = await prisma.settings.findFirst();
+    if (existing) {
+      await prisma.settings.update({
+        where: { id: existing.id },
+        data: { logo: logoVal, menuLogo: menuLogoVal } as any,
+      });
     } else {
-      await prisma.$executeRawUnsafe(
-        `INSERT INTO "settings" ("id", "logo", "menuLogo", "companyName", "baseCurrency", "invoiceDueDate", "sendLimit", "bookingRefreshInterval") VALUES (?, ?, ?, '', 'GBP', 30, 50, 80)`,
-        "default-settings", logoVal, menuLogoVal
-      );
+      await prisma.settings.create({
+        data: {
+          id: "default-settings",
+          companyName: "",
+          logo: logoVal,
+          menuLogo: menuLogoVal,
+          baseCurrency: "GBP",
+          invoiceDueDate: 30,
+          sendLimit: 50,
+        } as any,
+      });
     }
     return NextResponse.json({ ok: true });
   } catch (e: any) {

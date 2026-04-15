@@ -94,18 +94,15 @@ export async function POST(req: NextRequest) {
     // Generate jobRef based on customer account number + per-customer increment
     if (rest.customerId) {
       try {
-        const [custRows, custRaw] = await Promise.all([
-          prisma.customer.findUnique({
-            where: { id: rest.customerId },
-            select: { accountNumber: true, _count: { select: { bookings: true } } },
-          }),
-          prisma.$queryRaw<{ jobRefStart: number }[]>`SELECT jobRefStart FROM "customers" WHERE id = ${rest.customerId} LIMIT 1`,
-        ]);
-        if (custRows) {
-          const jrs = custRaw[0]?.jobRefStart ?? 1;
-          const base = jrs + ((custRows._count?.bookings ?? 1) - 1);
-          const jobRef = `${custRows.accountNumber ?? "JOB"}-${String(base).padStart(5, "0")}`;
-          await prisma.$executeRaw`UPDATE "bookings" SET "jobRef" = ${jobRef} WHERE "id" = ${booking.id}`;
+        const cust = await prisma.customer.findUnique({
+          where: { id: rest.customerId },
+          select: { accountNumber: true, jobRefStart: true, _count: { select: { bookings: true } } } as any,
+        }) as any;
+        if (cust) {
+          const jrs = cust.jobRefStart ?? 1;
+          const base = jrs + ((cust._count?.bookings ?? 1) - 1);
+          const jobRef = `${cust.accountNumber ?? "JOB"}-${String(base).padStart(5, "0")}`;
+          await prisma.booking.update({ where: { id: booking.id }, data: { jobRef } as any });
           (booking as any).jobRef = jobRef;
         }
       } catch (_) { /* non-critical */ }

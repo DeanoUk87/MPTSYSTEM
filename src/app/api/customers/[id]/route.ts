@@ -15,9 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
     if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    // jobRefStart not in generated DMMF — fetch via raw SQL
-    const extra = await prisma.$queryRaw<{ jobRefStart: number }[]>`SELECT "jobRefStart" FROM "customers" WHERE "id" = ${id} LIMIT 1`;
-    return NextResponse.json({ ...customer, jobRefStart: extra[0]?.jobRefStart ?? 1 });
+    return NextResponse.json(customer);
   } catch (e: any) {
     console.error("Customer GET error:", e.message);
     return NextResponse.json({ error: e.message }, { status: 500 });
@@ -50,12 +48,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         deadMileage: parseInt(data.deadMileage) || 0,
         customerAccount: data.customerAccount || null,
         termsOfPayment: data.termsOfPayment || null,
-      },
+        jobRefStart: parseInt(data.jobRefStart) || 1,
+      } as any,
     });
-    // jobRefStart not in generated DMMF yet — update via raw SQL
-    const jrs = parseInt(data.jobRefStart) || 1;
-    await prisma.$executeRaw`UPDATE "customers" SET "jobRefStart" = ${jrs} WHERE "id" = ${id}`;
-    return NextResponse.json({ ...customer, jobRefStart: jrs });
+    return NextResponse.json(customer);
   } catch (e: any) {
     console.error("Customer update error:", e);
     return NextResponse.json({ error: e.message || "Failed to update customer" }, { status: 500 });

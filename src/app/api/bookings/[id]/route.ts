@@ -129,6 +129,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
 
   // Raw SQL for soft delete (deletedAt not in generated DMMF until next rebuild)
-  await prisma.$executeRaw`UPDATE "bookings" SET "deletedAt" = datetime('now') WHERE "id" = ${id}`;
+  await prisma.booking.update({ where: { id }, data: { deletedAt: new Date() } as any });
   return NextResponse.json({ success: true });
 }
