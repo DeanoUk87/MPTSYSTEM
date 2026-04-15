@@ -20,11 +20,18 @@ export async function GET() {
   let driverCount = 0;
   let customerCount = 0;
 
+  let walMode: string | null = null;
+  let bookingCount = 0;
   try {
     const { prisma } = await import("@/lib/prisma");
     userCount = await prisma.user.count();
     driverCount = await prisma.driver.count();
     customerCount = await prisma.customer.count();
+    bookingCount = await prisma.booking.count();
+
+    // Check WAL mode
+    const walRows = await prisma.$queryRaw<{ journal_mode: string }[]>`PRAGMA journal_mode`;
+    walMode = walRows[0]?.journal_mode ?? null;
 
     // Test write: update a timestamp on settings
     const rows = await prisma.$queryRaw<{ id: string; companyName: string | null; logo: string | null; menuLogo: string | null; bookingRefreshInterval: number | null }[]>`
@@ -66,10 +73,12 @@ export async function GET() {
     dbExists,
     dbSize,
     dbWritable,
+    walMode,
     writeTest,
     userCount,
     driverCount,
     customerCount,
+    bookingCount,
     settingsRow,
     userRecord,
     bcryptResult,
