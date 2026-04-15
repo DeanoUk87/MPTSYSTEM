@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest) {
           "bookingRefreshInterval" = ?,
           "messageTitle" = ?, "defaultMessage" = ?, "defaultMessage2" = ?
         WHERE "id" = ?`,
-        f.companyName || null, f.companyAddress1 || null, f.companyAddress2 || null,
+        f.companyName || "", f.companyAddress1 || null, f.companyAddress2 || null,
         f.state || null, f.city || null, f.postcode || null, f.country || null,
         f.phone || null, f.fax || null, f.cemail || null, f.website || null,
         f.primaryContact || null, f.baseCurrency || "GBP", f.vatNumber || null,
@@ -59,7 +59,7 @@ export async function PUT(req: NextRequest) {
           "messageTitle", "defaultMessage", "defaultMessage2"
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         "default-settings",
-        f.companyName || null, f.companyAddress1 || null, f.companyAddress2 || null,
+        f.companyName || "", f.companyAddress1 || null, f.companyAddress2 || null,
         f.state || null, f.city || null, f.postcode || null, f.country || null,
         f.phone || null, f.fax || null, f.cemail || null, f.website || null,
         f.primaryContact || null, f.baseCurrency || "GBP", f.vatNumber || null,

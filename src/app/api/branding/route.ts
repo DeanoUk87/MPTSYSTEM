@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest) {
       );
     } else {
       await prisma.$executeRawUnsafe(
-        `INSERT INTO "settings" ("id", "logo", "menuLogo", "companyName", "baseCurrency", "invoiceDueDate", "sendLimit") VALUES (?, ?, ?, '', 'GBP', 30, 50)`,
+        `INSERT INTO "settings" ("id", "logo", "menuLogo", "companyName", "baseCurrency", "invoiceDueDate", "sendLimit", "bookingRefreshInterval") VALUES (?, ?, ?, '', 'GBP', 30, 50, 80)`,
         "default-settings", logoVal, menuLogoVal
       );
     }
