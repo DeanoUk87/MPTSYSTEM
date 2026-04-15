@@ -11,7 +11,14 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const [user, setUser] = useState<{ name?: string; roles?: string[] } | null>(null);
 
   useEffect(() => {
-    fetch("/api/me").then((r) => r.json()).then(setUser).catch(() => {});
+    let attempts = 0;
+    function tryFetch() {
+      fetch("/api/me").then((r) => r.ok ? r.json() : null).then(data => {
+        if (data?.name) setUser(data);
+        else if (attempts++ < 4) setTimeout(tryFetch, 1500);
+      }).catch(() => { if (attempts++ < 4) setTimeout(tryFetch, 1500); });
+    }
+    tryFetch();
   }, []);
 
   return (
