@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "postbuild": "cp public/.htaccess .next/standalone/.htaccess 2>/dev/null || true",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"

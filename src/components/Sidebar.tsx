@@ -126,6 +126,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   onMouseEnter={collapsed ? (e) => showTip(e, item.label) : undefined}
                   onMouseLeave={collapsed ? () => setTooltip(null) : undefined}
                   className={clsx(
