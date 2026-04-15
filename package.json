@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "postbuild": "cp public/.htaccess .next/standalone/.htaccess 2>/dev/null || true && cp app.js .next/standalone/app.js 2>/dev/null || true",
+    "postbuild": "cp public/.htaccess .next/standalone/.htaccess 2>/dev/null || true && cp app.js .next/standalone/app.js 2>/dev/null || true && find .next/standalone -name '*.db' -delete && find .next/standalone -name '*.db-shm' -delete && find .next/standalone -name '*.db-wal' -delete",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
