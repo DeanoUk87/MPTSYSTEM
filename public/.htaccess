@@ -1,7 +1,2 @@
-PassengerEnabled on
-PassengerNodejs /opt/cpanel/ea-nodejs20/bin/node
-PassengerStartupFile server.js
-PassengerAppType node
-PassengerStartTimeout 60
-PassengerMaxPreloaderIdleTime 0
-PassengerMaxRequests 0
+# Passenger is configured in the Apache vhost conf (passenger.conf) by cPanel Application Manager.
+# Do not add PassengerEnabled or other Passenger directives here — they are not permitted in .htaccess.
