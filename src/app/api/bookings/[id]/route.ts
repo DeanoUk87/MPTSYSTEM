@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       chillUnit: true,
       ambientUnit: true,
       bookingType: true,
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+      viaAddresses: { orderBy: { createdAt: "asc" } },
       geoTracking: true,
     },
   });
@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           customer: _cust, driver: _drv, secondMan: _sm, cxDriver: _cx,
           bookingType: _bt, vehicle: _veh, chillUnit: _chu, ambientUnit: _abu,
           geoTracking: _gt, podUpload: _pu,
-          id: _id, createdAt: _ca, updatedAt: _ua, deletedAt: _da,
+          id: _id, createdAt: _ca, updatedAt: _ua, deletedAt: _da, jobRef: _jr,
           ...rest } = body;
 
   // Load current booking so we can detect which units are being removed
@@ -124,6 +124,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }).catch(() => {});
   }
 
-  await prisma.booking.update({ where: { id }, data: { deletedAt: new Date() } });
+  // Raw SQL for soft delete (deletedAt not in generated DMMF until next rebuild)
+  await prisma.$executeRaw`UPDATE "bookings" SET "deletedAt" = datetime('now') WHERE "id" = ${id}`;
   return NextResponse.json({ success: true });
 }

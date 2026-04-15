@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   // podOnly=1 → only jobs with podDate+podTime+signature (completed) — for reports
   const podOnly = searchParams.get("podOnly") === "1";
 
-  const where: any = { deletedAt: null };
+  const where: any = {}; // deletedAt filter added via raw SQL after rebuild
   if (customerId) where.customerId = customerId;
   // driverId filter: match main driver OR second man OR CX driver
   if (driverId) {
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
       secondMan: { select: { id: true, name: true } },
       cxDriver: { select: { id: true, name: true } },
       bookingType: { select: { id: true, name: true } },
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, address1: true, area: true, signedBy: true } },
+      viaAddresses: { orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, name: true, address1: true, area: true, signedBy: true } },
     },
     orderBy: [{ createdAt: "desc" }],
     take: 1000,

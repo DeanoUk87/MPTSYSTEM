@@ -41,12 +41,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         poNumber: data.poNumber || null,
         poEmail: data.poEmail || null,
         deadMileage: parseInt(data.deadMileage) || 0,
-        jobRefStart: parseInt(data.jobRefStart) || 1,
         customerAccount: data.customerAccount || null,
         termsOfPayment: data.termsOfPayment || null,
       },
     });
-    return NextResponse.json(customer);
+    // jobRefStart not in generated DMMF yet — update via raw SQL
+    const jrs = parseInt(data.jobRefStart) || 1;
+    await prisma.$executeRaw`UPDATE "customers" SET "jobRefStart" = ${jrs} WHERE "id" = ${id}`;
+    return NextResponse.json({ ...customer, jobRefStart: jrs });
   } catch (e: any) {
     console.error("Customer update error:", e);
     return NextResponse.json({ error: e.message || "Failed to update customer" }, { status: 500 });

@@ -49,11 +49,13 @@ export default function SettingsPage() {
   const menuLogoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       fetch("/api/settings").then(r => r.json()),
       fetch("/api/branding").then(r => r.json()),
     ])
-      .then(([s, b]) => {
+      .then(([sResult, bResult]) => {
+        const s = sResult.status === "fulfilled" ? sResult.value : null;
+        const b = bResult.status === "fulfilled" ? bResult.value : null;
         if (s && !s.error) {
           setSettings(prev => ({
             ...prev,
