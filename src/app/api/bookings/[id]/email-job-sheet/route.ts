@@ -3,8 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import nodemailer from "nodemailer";
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, renderToBuffer, Image as PdfImage, type DocumentProps } from "@react-pdf/renderer";
-import type { ReactElement, JSXElementConstructor } from "react";
+// @react-pdf/renderer loaded lazily inside POST to prevent V8 WASM/large-bundle OOM at startup
+let Document: any, Page: any, Text: any, View: any, renderToBuffer: any, PdfImage: any;
+let S: any = null;
+async function ensurePdfLoaded() {
+  if (renderToBuffer) return;
+  const pdf: any = await import("@react-pdf/renderer");
+  Document = pdf.Document; Page = pdf.Page; Text = pdf.Text; View = pdf.View;
+  renderToBuffer = pdf.renderToBuffer; PdfImage = pdf.Image;
+  S = pdf.StyleSheet.create(rawStyles);
+}
 
 function fmt(s?: string | null) {
   if (!s) return "";
@@ -18,7 +26,7 @@ function addrParts(...parts: (string | null | undefined)[]) {
 
 // ─── PDF Styles ───────────────────────────────────────────────────────────────
 
-const S = StyleSheet.create({
+const rawStyles = {
   page: { fontFamily: "Helvetica", fontSize: 9, color: "#374151", backgroundColor: "#f8fafc", paddingBottom: 30 },
   header: { backgroundColor: "#1a3a5c", padding: "16 20 14 20", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   headerLeft: { flex: 1 },
@@ -50,7 +58,7 @@ const S = StyleSheet.create({
   footer: { position: "absolute", bottom: 10, left: 20, right: 20, textAlign: "center", fontSize: 8, color: "#9ca3af" },
   gap: { marginTop: 4 },
   content: { margin: "0 14" },
-});
+};
 
 // ─── Section Row helper ───────────────────────────────────────────────────────
 
@@ -270,8 +278,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const subject = `Job Sheet — ${jobRef} — ${booking.customer?.name || ""}`;
 
   try {
+    await ensurePdfLoaded();
     const pdfBuffer = await renderToBuffer(
-      React.createElement(JobSheetDoc, { booking, settings }) as ReactElement<DocumentProps, string | JSXElementConstructor<any>>
+      React.createElement(JobSheetDoc, { booking, settings }) as any
     );
 
     const smtpPort = parseInt(process.env.SMTP_PORT || "587");
