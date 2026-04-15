@@ -54,9 +54,14 @@ export default function DriversPage() {
 
   const fetchDrivers = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/drivers");
-    if (res.ok) setDrivers(await res.json());
-    setLoading(false);
+    try {
+      const res = await fetch("/api/drivers");
+      if (res.ok) setDrivers(await res.json());
+    } catch {
+      // keep existing list on network error
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchDrivers(); }, [fetchDrivers]);
