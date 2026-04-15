@@ -15,9 +15,14 @@ export default function FuelSurchargesPage() {
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/fuel-surcharges");
-    if (res.ok) setItems(await res.json());
-    setLoading(false);
+    try {
+      const res = await fetch("/api/fuel-surcharges");
+      if (res.ok) setItems(await res.json());
+    } catch {
+      // keep empty list on error
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, []);
