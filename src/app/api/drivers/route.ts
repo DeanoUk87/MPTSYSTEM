@@ -10,16 +10,21 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get("type"); // Driver | SubContractor | CXDriver
   const q = searchParams.get("q");
 
-  const drivers = await prisma.driver.findMany({
-    where: {
-      ...(type ? { driverType: type } : {}),
-      ...(q ? { name: { contains: q } } : {}),
-    },
-    include: { contacts: { where: { deletedAt: null } } },
-    orderBy: { name: "asc" },
-    ...(q ? { take: 20 } : {}),
-  });
-  return NextResponse.json(drivers);
+  try {
+    const drivers = await prisma.driver.findMany({
+      where: {
+        ...(type ? { driverType: type } : {}),
+        ...(q ? { name: { contains: q } } : {}),
+      },
+      include: { contacts: { where: { deletedAt: null } } },
+      orderBy: { name: "asc" },
+      ...(q ? { take: 20 } : {}),
+    });
+    return NextResponse.json(drivers);
+  } catch (e: any) {
+    console.error("Drivers GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

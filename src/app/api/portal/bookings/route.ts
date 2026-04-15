@@ -14,20 +14,24 @@ export async function GET(req: NextRequest) {
   const dateFrom = searchParams.get("dateFrom") || today;
   const dateTo = searchParams.get("dateTo") || today;
 
-  const bookings = await prisma.booking.findMany({
-    where: {
-      customerId: user.customerId,
-      deletedAt: null,
-      collectionDate: { gte: dateFrom, lte: dateTo },
-    },
-    include: {
-      vehicle: { select: { name: true } },
-      driver: { select: { name: true } },
-      chillUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
-      ambientUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
-    },
-    orderBy: [{ createdAt: "desc" }],
-  });
-  return NextResponse.json(bookings);
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: {
+        customerId: user.customerId,
+        collectionDate: { gte: dateFrom, lte: dateTo },
+      },
+      include: {
+        vehicle: { select: { name: true } },
+        driver: { select: { name: true } },
+        chillUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
+        ambientUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
+        viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    });
+    return NextResponse.json(bookings);
+  } catch (e: any) {
+    console.error("Portal bookings GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

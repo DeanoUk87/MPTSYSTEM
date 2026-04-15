@@ -10,15 +10,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!user.customerId) return NextResponse.json({ error: "Not a customer account" }, { status: 403 });
 
   const { id } = await params;
-  const booking = await prisma.booking.findFirst({
-    where: { id, customerId: user.customerId },
-    include: {
-      vehicle: { select: { name: true } },
-      driver: { select: { name: true, phone: true } },
-      viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
-      geoTracking: true,
-    },
-  });
-  if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(booking);
+  try {
+    const booking = await prisma.booking.findFirst({
+      where: { id, customerId: user.customerId },
+      include: {
+        vehicle: { select: { name: true } },
+        driver: { select: { name: true, phone: true } },
+        viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+        geoTracking: true,
+      },
+    });
+    if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(booking);
+  } catch (e: any) {
+    console.error("Portal booking GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

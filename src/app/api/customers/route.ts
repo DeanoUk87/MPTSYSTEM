@@ -8,27 +8,29 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") || searchParams.get("q");
 
-  const customers = await prisma.customer.findMany({
-    where: search ? {
-      OR: [
-        { name: { contains: search } },
-        { accountNumber: { contains: search } },
-        { customerAccount: { contains: search } },
-      ],
-    } : undefined,
-    orderBy: { name: "asc" },
-    include: { _count: { select: { bookings: true } } },
-  });
-
-  // Efficiently determine which customers have portal login access
-  const usersWithCustomer = await prisma.user.findMany({
-    where: { customerId: { not: null } },
-    select: { customerId: true },
-  });
-  const accessSet = new Set(usersWithCustomer.map(u => u.customerId));
-  const result = customers.map(c => ({ ...c, hasLoginAccess: accessSet.has(c.id) }));
-
-  return NextResponse.json(result);
+  try {
+    const customers = await prisma.customer.findMany({
+      where: search ? {
+        OR: [
+          { name: { contains: search } },
+          { accountNumber: { contains: search } },
+          { customerAccount: { contains: search } },
+        ],
+      } : undefined,
+      orderBy: { name: "asc" },
+      include: { _count: { select: { bookings: true } } },
+    });
+    const usersWithCustomer = await prisma.user.findMany({
+      where: { customerId: { not: null } },
+      select: { customerId: true },
+    });
+    const accessSet = new Set(usersWithCustomer.map(u => u.customerId));
+    const result = customers.map(c => ({ ...c, hasLoginAccess: accessSet.has(c.id) }));
+    return NextResponse.json(result);
+  } catch (e: any) {
+    console.error("Customers GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

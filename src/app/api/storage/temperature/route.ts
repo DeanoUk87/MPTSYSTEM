@@ -22,10 +22,11 @@ export async function GET(req: NextRequest) {
   };
   const activeBookingFilter = {
     OR: [
-      { chillBookings: { some: { deletedAt: null, ...podIncomplete } } },
-      { ambientBookings: { some: { deletedAt: null, ...podIncomplete } } },
+      { chillBookings: { some: { ...podIncomplete } } },
+      { ambientBookings: { some: { ...podIncomplete } } },
     ],
   };
+  try {
   const units = await prisma.storageUnit.findMany({
     where: (useMock || !apiKey)
       ? { trackable: 1 }
@@ -119,4 +120,8 @@ export async function GET(req: NextRequest) {
   );
 
   return NextResponse.json(results);
+  } catch (e: any) {
+    console.error("Storage temperature GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

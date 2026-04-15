@@ -19,10 +19,14 @@ export async function GET(req: NextRequest) {
     ? { customerAccount: { contains: account } }
     : undefined;
 
-  const invoices = await prisma.invoice.findMany({
-    where,
-    orderBy: { dateCreated: "desc" },
-    take: limit,
-  });
-  return NextResponse.json(invoices);
+  try {
+    const invoices = await prisma.invoice.findMany({
+      where,
+      orderBy: { dateCreated: "desc" },
+      take: limit,
+    });
+    return NextResponse.json(invoices);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

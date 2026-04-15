@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
     where.customerId = user.customerId;
   }
 
+  try {
   const bookings = await prisma.booking.findMany({
     where,
     include: {
@@ -64,6 +65,10 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json(bookings);
+  } catch (e: any) {
+    console.error("Bookings GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

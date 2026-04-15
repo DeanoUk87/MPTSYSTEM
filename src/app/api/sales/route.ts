@@ -18,18 +18,26 @@ export async function GET(req: NextRequest) {
     ? { customerAccount: { contains: account } }
     : undefined;
 
-  const sales = await prisma.sale.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-  return NextResponse.json(sales);
+  try {
+    const sales = await prisma.sale.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+    return NextResponse.json(sales);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
-  const sale = await prisma.sale.create({ data: body });
-  return NextResponse.json(sale, { status: 201 });
+  try {
+    const body = await req.json();
+    const sale = await prisma.sale.create({ data: body });
+    return NextResponse.json(sale, { status: 201 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

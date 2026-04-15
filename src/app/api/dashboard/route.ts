@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     try { await jwtVerify(token, new TextEncoder().encode(SECRET)); } catch { /* allow */ }
   }
 
+  try {
   const [
     totalCustomers,
     totalSales,
@@ -56,4 +57,8 @@ export async function GET(req: NextRequest) {
     stats: { totalCustomers, totalSales, totalInvoices, pendingInvoices, sentInvoices, unsent, archivedSales },
     recentBookings,
   });
+  } catch (e: any) {
+    console.error("Dashboard GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }

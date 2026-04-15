@@ -5,25 +5,29 @@ import { requireAuth } from "@/lib/api-auth";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { id } = await params;
-
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: {
-      customer: true,
-      vehicle: true,
-      driver: true,
-      secondMan: true,
-      cxDriver: true,
-      chillUnit: true,
-      ambientUnit: true,
-      bookingType: true,
-      viaAddresses: { orderBy: { createdAt: "asc" } },
-      geoTracking: true,
-    },
-  });
-  if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(booking);
+  try {
+    const { id } = await params;
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        customer: true,
+        vehicle: true,
+        driver: true,
+        secondMan: true,
+        cxDriver: true,
+        chillUnit: true,
+        ambientUnit: true,
+        bookingType: true,
+        viaAddresses: { orderBy: { createdAt: "asc" } },
+        geoTracking: true,
+      },
+    });
+    if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(booking);
+  } catch (e: any) {
+    console.error("Booking GET error:", e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
