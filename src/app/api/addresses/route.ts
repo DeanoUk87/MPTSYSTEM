@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
       },
     }),
     prisma.viaAddress.findMany({
-      where: { deletedAt: null },
       select: {
         id: true, bookingId: true, name: true,
         address1: true, address2: true, area: true,

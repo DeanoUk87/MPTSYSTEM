@@ -257,7 +257,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         customer: true, vehicle: true, driver: true,
         secondMan: true, cxDriver: true,
         chillUnit: true, ambientUnit: true,
-        viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+        viaAddresses: { orderBy: { createdAt: "asc" } },
       },
     }),
     prisma.settings.findFirst(),

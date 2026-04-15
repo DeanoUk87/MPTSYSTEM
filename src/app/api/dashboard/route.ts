@@ -29,12 +29,11 @@ export async function GET(req: NextRequest) {
     prisma.invoice.count({ where: { emailStatus: 0 } }),
     prisma.saleArchive.count(),
     prisma.booking.findMany({
-      where: { deletedAt: null },
+      where: {},
       take: 15,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
-        jobRef: true,
         collectionDate: true,
         collectionTime: true,
         collectionPostcode: true,
