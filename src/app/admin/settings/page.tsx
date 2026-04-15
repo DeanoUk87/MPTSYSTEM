@@ -54,16 +54,15 @@ export default function SettingsPage() {
       fetch("/api/branding").then(r => r.json()),
     ])
       .then(([sResult, bResult]) => {
-        const s = sResult.status === "fulfilled" ? sResult.value : null;
+        const s = sResult.status === "fulfilled" && !sResult.value?.error ? sResult.value : null;
         const b = bResult.status === "fulfilled" ? bResult.value : null;
-        if (s && !s.error) {
-          setSettings(prev => ({
-            ...prev,
-            ...s,
-            logo: b?.logo ?? undefined,
-            menuLogo: b?.menuLogo ?? undefined,
-          }));
-        }
+        setSettings(prev => ({
+          ...prev,
+          ...(s ?? {}),
+          // Always apply logos from branding regardless of settings load
+          logo: b?.logo ?? (s?.logo ?? undefined),
+          menuLogo: b?.menuLogo ?? (s?.menuLogo ?? undefined),
+        }));
       })
       .catch(console.error)
       .finally(() => setLoading(false));

@@ -6,11 +6,14 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    // Raw SQL to get all columns including ones added after last prisma generate
-    const rows = await prisma.$queryRaw<any[]>`SELECT * FROM "settings" LIMIT 1`;
-    if (!rows.length) return NextResponse.json({});
-    const { logo: _l, menuLogo: _m, ...rest } = rows[0];
-    return NextResponse.json(rest);
+    const settings = await prisma.settings.findFirst();
+    if (!settings) return NextResponse.json({});
+    // Fetch fields not in generated client via raw SQL
+    const extra = await prisma.$queryRaw<{ bookingRefreshInterval: number }[]>`
+      SELECT "bookingRefreshInterval" FROM "settings" WHERE "id" = ${settings.id} LIMIT 1
+    `;
+    const { logo: _l, menuLogo: _m, ...rest } = settings as any;
+    return NextResponse.json({ ...rest, bookingRefreshInterval: extra[0]?.bookingRefreshInterval ?? 80 });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -21,55 +24,70 @@ export async function PUT(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();
-    // Strip undefined values so Prisma doesn't reject unknown fields
-    // Use raw SQL to bypass stale Prisma generated client (bookingRefreshInterval added via migration)
-    const { logo: _l, menuLogo: _m, ...fields } = body;
-    const f = fields as any;
-    const rows = await prisma.$queryRaw<{ id: string }[]>`SELECT id FROM "settings" LIMIT 1`;
-    if (rows.length) {
-      const sid = rows[0].id;
-      await prisma.$executeRawUnsafe(
-        `UPDATE "settings" SET
-          "companyName" = ?, "companyAddress1" = ?, "companyAddress2" = ?,
-          "state" = ?, "city" = ?, "postcode" = ?, "country" = ?,
-          "phone" = ?, "fax" = ?, "cemail" = ?, "website" = ?,
-          "primaryContact" = ?, "baseCurrency" = ?, "vatNumber" = ?,
-          "invoiceDueDate" = ?, "invoiceDuePaymentBy" = ?, "sendLimit" = ?,
-          "bookingRefreshInterval" = ?,
-          "messageTitle" = ?, "defaultMessage" = ?, "defaultMessage2" = ?
-        WHERE "id" = ?`,
-        f.companyName || "", f.companyAddress1 || null, f.companyAddress2 || null,
-        f.state || null, f.city || null, f.postcode || null, f.country || null,
-        f.phone || null, f.fax || null, f.cemail || null, f.website || null,
-        f.primaryContact || null, f.baseCurrency || "GBP", f.vatNumber || null,
-        parseInt(f.invoiceDueDate) || 30, f.invoiceDuePaymentBy || null, parseInt(f.sendLimit) || 50,
-        parseInt(f.bookingRefreshInterval) || 0,
-        f.messageTitle || null, f.defaultMessage || null, f.defaultMessage2 || null,
-        sid
-      );
+    // Strip fields not in generated Prisma client
+    const { logo: _l, menuLogo: _m, bookingRefreshInterval, id: _id, vatPercent: _vp, ...data } = body;
+    const f = data as any;
+
+    const existing = await prisma.settings.findFirst();
+    if (existing) {
+      await prisma.settings.update({
+        where: { id: existing.id },
+        data: {
+          companyName: f.companyName || "",
+          companyAddress1: f.companyAddress1 || null,
+          companyAddress2: f.companyAddress2 || null,
+          state: f.state || null,
+          city: f.city || null,
+          postcode: f.postcode || null,
+          country: f.country || null,
+          phone: f.phone || null,
+          fax: f.fax || null,
+          cemail: f.cemail || null,
+          website: f.website || null,
+          primaryContact: f.primaryContact || null,
+          baseCurrency: f.baseCurrency || "GBP",
+          vatNumber: f.vatNumber || null,
+          invoiceDueDate: parseInt(f.invoiceDueDate) || 30,
+          invoiceDuePaymentBy: f.invoiceDuePaymentBy || null,
+          sendLimit: parseInt(f.sendLimit) || 50,
+          messageTitle: f.messageTitle || null,
+          defaultMessage: f.defaultMessage || null,
+          defaultMessage2: f.defaultMessage2 || null,
+        },
+      });
+      // bookingRefreshInterval added by migration — not in generated client yet
+      const bri = parseInt(bookingRefreshInterval) || 80;
+      await prisma.$executeRaw`UPDATE "settings" SET "bookingRefreshInterval" = ${bri} WHERE "id" = ${existing.id}`;
     } else {
-      await prisma.$executeRawUnsafe(
-        `INSERT INTO "settings" (
-          "id", "companyName", "companyAddress1", "companyAddress2",
-          "state", "city", "postcode", "country",
-          "phone", "fax", "cemail", "website",
-          "primaryContact", "baseCurrency", "vatNumber",
-          "invoiceDueDate", "invoiceDuePaymentBy", "sendLimit",
-          "bookingRefreshInterval",
-          "messageTitle", "defaultMessage", "defaultMessage2"
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        "default-settings",
-        f.companyName || "", f.companyAddress1 || null, f.companyAddress2 || null,
-        f.state || null, f.city || null, f.postcode || null, f.country || null,
-        f.phone || null, f.fax || null, f.cemail || null, f.website || null,
-        f.primaryContact || null, f.baseCurrency || "GBP", f.vatNumber || null,
-        parseInt(f.invoiceDueDate) || 30, f.invoiceDuePaymentBy || null, parseInt(f.sendLimit) || 50,
-        parseInt(f.bookingRefreshInterval) || 0,
-        f.messageTitle || null, f.defaultMessage || null, f.defaultMessage2 || null
-      );
+      const created = await prisma.settings.create({
+        data: {
+          id: "default-settings",
+          companyName: f.companyName || "",
+          companyAddress1: f.companyAddress1 || null,
+          companyAddress2: f.companyAddress2 || null,
+          state: f.state || null,
+          city: f.city || null,
+          postcode: f.postcode || null,
+          country: f.country || null,
+          phone: f.phone || null,
+          fax: f.fax || null,
+          cemail: f.cemail || null,
+          website: f.website || null,
+          primaryContact: f.primaryContact || null,
+          baseCurrency: f.baseCurrency || "GBP",
+          vatNumber: f.vatNumber || null,
+          invoiceDueDate: parseInt(f.invoiceDueDate) || 30,
+          invoiceDuePaymentBy: f.invoiceDuePaymentBy || null,
+          sendLimit: parseInt(f.sendLimit) || 50,
+          messageTitle: f.messageTitle || null,
+          defaultMessage: f.defaultMessage || null,
+          defaultMessage2: f.defaultMessage2 || null,
+        },
+      });
+      const bri = parseInt(bookingRefreshInterval) || 80;
+      await prisma.$executeRaw`UPDATE "settings" SET "bookingRefreshInterval" = ${bri} WHERE "id" = ${created.id}`;
     }
-    const updated = await prisma.$queryRaw<any[]>`SELECT * FROM "settings" LIMIT 1`;
-    return NextResponse.json(updated[0] ?? {});
+    return NextResponse.json({ ok: true });
   } catch (e: any) {
     console.error("Settings PUT error:", e.message);
     return NextResponse.json({ error: e.message }, { status: 500 });
