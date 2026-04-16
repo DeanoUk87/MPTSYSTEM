@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/Sidebar";
-import CliqBar from "@/components/CliqBar";
 import { Thermometer, X } from "lucide-react";
 
 function playAlertSound() {
@@ -116,7 +115,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
       <GlobalTempAlert />
-      <CliqBar collapsed={collapsed} />
     </div>
   );
 }

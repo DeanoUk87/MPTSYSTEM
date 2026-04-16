@@ -92,12 +92,12 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
               {String(hoveredMin !== null ? hoveredMin : mm).padStart(2, "0")}
             </button>
           </div>
-          {/* Clock face */}
-          <div className="relative" style={{ width: 220, height: 220, margin: "0 auto" }}>
-            <svg width={220} height={220}>
-              <circle cx={CX} cy={CY} r={R + 8} fill="#f8fafc" stroke="#e2e8f0" strokeWidth={1} />
-              {(() => {
-                if (mode === "hour") {
+          {/* Clock face / minute grid */}
+          {mode === "hour" ? (
+            <div className="relative" style={{ width: 220, height: 220, margin: "0 auto" }}>
+              <svg width={220} height={220}>
+                <circle cx={CX} cy={CY} r={R + 8} fill="#f8fafc" stroke="#e2e8f0" strokeWidth={1} />
+                {(() => {
                   const angle = ((selected % 12) / 12) * 360 - 90;
                   const rad = (angle * Math.PI) / 180;
                   const handR = selected < 12 ? R - 14 : R - 34;
@@ -106,79 +106,43 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
                       stroke="#2563eb" strokeWidth={2} strokeLinecap="round" />
                     <circle cx={CX} cy={CY} r={3} fill="#2563eb" />
                   </>;
-                } else {
-                  const angle = (selected / 60) * 360 - 90;
-                  const rad = (angle * Math.PI) / 180;
-                  return <>
-                    <line x1={CX} y1={CY} x2={CX + Math.cos(rad) * (R - 14)} y2={CY + Math.sin(rad) * (R - 14)}
-                      stroke="#2563eb" strokeWidth={2} strokeLinecap="round" />
-                    <circle cx={CX} cy={CY} r={3} fill="#2563eb" />
-                  </>;
-                }
-              })()}
-            </svg>
-            {mode === "hour" ? (
-              <>
-                {Array.from({ length: 12 }, (_, i) => {
-                  const angle = (i / 12) * 360 - 90;
-                  const rad = (angle * Math.PI) / 180;
-                  const x = CX + Math.cos(rad) * (R - 14);
-                  const y2 = CY + Math.sin(rad) * (R - 14);
-                  return <button key={i} type="button" onClick={() => { set(i, mm); setMode("minute"); }}
-                    className={`absolute w-7 h-7 -ml-3.5 -mt-3.5 flex items-center justify-center rounded-full text-xs font-medium transition-colors ${
-                      hh === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}
-                    style={{ left: x, top: y2 }}>{i === 0 ? "00" : i}</button>;
-                })}
-                {Array.from({ length: 12 }, (_, i) => {
-                  const h = i + 12;
-                  const angle = (i / 12) * 360 - 90;
-                  const rad = (angle * Math.PI) / 180;
-                  const x = CX + Math.cos(rad) * (R - 34);
-                  const y2 = CY + Math.sin(rad) * (R - 34);
-                  return <button key={h} type="button" onClick={() => { set(h, mm); setMode("minute"); }}
-                    className={`absolute w-6 h-6 -ml-3 -mt-3 flex items-center justify-center rounded-full text-[10px] font-medium transition-colors ${
-                      hh === h ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-400"}`}
-                    style={{ left: x, top: y2 }}>{h}</button>;
-                })}
-              </>
-            ) : (
-              <>
-                {/* Non-5 minute dots (rendered first = behind) */}
-                {Array.from({ length: 60 }, (_, i) => {
-                  if (i % 5 === 0) return null;
-                  const angle = (i / 60) * 360 - 90;
-                  const rad = (angle * Math.PI) / 180;
-                  const x = CX + Math.cos(rad) * (R - 14);
-                  const y2 = CY + Math.sin(rad) * (R - 14);
-                  const isHovered = hoveredMin === i;
-                  return <button key={i} type="button"
-                    onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
-                    onMouseEnter={() => setHoveredMin(i)}
-                    onMouseLeave={() => setHoveredMin(null)}
-                    title={String(i).padStart(2, "0")}
-                    className={`absolute flex items-center justify-center rounded-full transition-all ${
-                      isHovered || mm === i ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium z-20" : "w-5 h-5 -ml-2.5 -mt-2.5"} ${
-                      mm === i ? "bg-blue-600 text-white" : isHovered ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : "hover:bg-blue-100 bg-transparent"}`}
-                    style={{ left: x, top: y2 }}>{isHovered || mm === i ? String(i).padStart(2, "0") : "·"}</button>;
-                })}
-                {/* 5-minute labels (rendered second = on top) */}
-                {Array.from({ length: 12 }, (_, idx) => {
-                  const i = idx * 5;
-                  const angle = (i / 60) * 360 - 90;
-                  const rad = (angle * Math.PI) / 180;
-                  const x = CX + Math.cos(rad) * (R - 14);
-                  const y2 = CY + Math.sin(rad) * (R - 14);
-                  return <button key={i} type="button"
-                    onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
-                    onMouseEnter={() => setHoveredMin(i)}
-                    onMouseLeave={() => setHoveredMin(null)}
-                    className={`absolute w-7 h-7 -ml-3.5 -mt-3.5 flex items-center justify-center rounded-full text-xs font-medium z-10 transition-colors ${
-                      mm === i ? "bg-blue-600 text-white" : hoveredMin === i ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : "hover:bg-blue-50 text-slate-700"}`}
-                    style={{ left: x, top: y2 }}>{String(i).padStart(2, "0")}</button>;
-                })}
-              </>
-            )}
-          </div>
+                })()}
+              </svg>
+              {Array.from({ length: 12 }, (_, i) => {
+                const angle = (i / 12) * 360 - 90;
+                const rad = (angle * Math.PI) / 180;
+                const x = CX + Math.cos(rad) * (R - 14);
+                const y2 = CY + Math.sin(rad) * (R - 14);
+                return <button key={i} type="button" onClick={() => { set(i, mm); setMode("minute"); }}
+                  className={`absolute w-7 h-7 -ml-3.5 -mt-3.5 flex items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                    hh === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}
+                  style={{ left: x, top: y2 }}>{i === 0 ? "00" : i}</button>;
+              })}
+              {Array.from({ length: 12 }, (_, i) => {
+                const h = i + 12;
+                const angle = (i / 12) * 360 - 90;
+                const rad = (angle * Math.PI) / 180;
+                const x = CX + Math.cos(rad) * (R - 34);
+                const y2 = CY + Math.sin(rad) * (R - 34);
+                return <button key={h} type="button" onClick={() => { set(h, mm); setMode("minute"); }}
+                  className={`absolute w-6 h-6 -ml-3 -mt-3 flex items-center justify-center rounded-full text-[10px] font-medium transition-colors ${
+                    hh === h ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-400"}`}
+                  style={{ left: x, top: y2 }}>{h}</button>;
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-6 gap-1 py-1">
+              {Array.from({ length: 60 }, (_, i) => (
+                <button key={i} type="button"
+                  onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
+                  className={`py-1.5 rounded text-xs font-mono font-medium transition-colors ${
+                    mm === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-600"
+                  }`}>
+                  {String(i).padStart(2, "0")}
+                </button>
+              ))}
+            </div>
+          )}
           {/* Direct input */}
           <div className="mt-2">
             <input type="text" placeholder="HH:MM" defaultValue={value || "00:00"}
@@ -934,6 +898,11 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
               <option value={1} className="text-slate-800">Weekend / BH</option>
               <option value={2} className="text-slate-800">Out of Hours</option>
             </select>
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+              jt === 0 ? "bg-blue-100 text-blue-700" :
+              jt === 1 ? "bg-amber-100 text-amber-700" :
+              "bg-red-100 text-red-700"
+            }`}>{jtLabel}</span>
           </div>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setShowCopyModal(true)}
@@ -956,34 +925,19 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
           {/* Row 1: Customer info + PO — combined into one panel, matching create layout */}
           <div className={panel}>
             <SHead color="bg-blue-700" icon="👤" label="Customer &amp; Order Info" />
-            <div className="p-4 grid grid-cols-2 gap-6">
-              {/* Left: customer info */}
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 px-2.5 py-1.5 border border-slate-200 rounded-xl bg-slate-50">
-                  <span className="text-xs font-semibold text-slate-700 truncate flex-1">{customer?.name}</span>
-                  {customer?.notes && (
-                    <button type="button" onClick={() => setShowCustomerNotes(v => !v)}
-                      className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-amber-900 hover:bg-amber-500 transition-colors shrink-0 animate-pulse">
-                      ⚠ View Notes
-                    </button>
-                  )}
-                </div>
-                {showCustomerNotes && customer?.notes && (
-                  <div className="px-3 py-2 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl text-xs text-amber-900 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold uppercase tracking-wide text-[10px]">Internal Customer Notes</span>
-                      <button type="button" onClick={() => setShowCustomerNotes(false)} className="text-amber-600 hover:text-amber-800 font-bold">×</button>
-                    </div>
-                    <p className="whitespace-pre-wrap">{customer.notes}</p>
+            <div className="p-4 space-y-2">
+              <div className="grid grid-cols-3 gap-4 items-end">
+                <div>
+                  <div className="flex items-center gap-2 px-2.5 py-1.5 border border-slate-200 rounded-xl bg-slate-50 min-h-[38px]">
+                    <span className="text-xs font-semibold text-slate-700 truncate flex-1">{customer?.name}</span>
+                    {customer?.notes && (
+                      <button type="button" onClick={() => setShowCustomerNotes(v => !v)}
+                        className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-amber-900 hover:bg-amber-500 transition-colors shrink-0 animate-pulse">
+                        ⚠ View Notes
+                      </button>
+                    )}
                   </div>
-                )}
-                <div className="flex gap-2">
-                  <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-blue-100 text-blue-700">{jtLabel}</span>
-                  {customer?.accountNumber && <span className="text-xs text-slate-400 self-center">{customer.accountNumber}</span>}
                 </div>
-              </div>
-              {/* Right: PO + Booked By */}
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Purchase Order <span className="text-rose-500">*</span></label>
                   <input type="text" value={f.purchaseOrder || ""} onChange={e => s("purchaseOrder", e.target.value)}
@@ -994,6 +948,15 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   <input type="text" value={f.bookedBy || ""} onChange={e => s("bookedBy", e.target.value)} className={inp} placeholder="Name" />
                 </div>
               </div>
+              {showCustomerNotes && customer?.notes && (
+                <div className="px-3 py-2 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl text-xs text-amber-900 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold uppercase tracking-wide text-[10px]">Internal Customer Notes</span>
+                    <button type="button" onClick={() => setShowCustomerNotes(false)} className="text-amber-600 hover:text-amber-800 font-bold">×</button>
+                  </div>
+                  <p className="whitespace-pre-wrap">{customer.notes}</p>
+                </div>
+              )}
             </div>
           </div>
 
