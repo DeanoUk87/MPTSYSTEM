@@ -157,24 +157,41 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
                 })}
               </>
             ) : (
-              /* Minutes: show every 5th number, all 60 clickable */
-              Array.from({ length: 60 }, (_, i) => {
-                const angle = (i / 60) * 360 - 90;
-                const rad = (angle * Math.PI) / 180;
-                const x = CX + Math.cos(rad) * (R - 14);
-                const y2 = CY + Math.sin(rad) * (R - 14);
-                const show = i % 5 === 0;
-                const isHovered = hoveredMin === i;
-                return <button key={i} type="button"
-                  onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
-                  onMouseEnter={() => setHoveredMin(i)}
-                  onMouseLeave={() => setHoveredMin(null)}
-                  title={String(i).padStart(2, "0")}
-                  className={`absolute flex items-center justify-center rounded-full transition-all ${
-                    show || isHovered ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium" : "w-4 h-4 -ml-2 -mt-2"} ${
-                    mm === i ? "bg-blue-600 text-white" : isHovered ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : show ? "hover:bg-blue-50 text-slate-700" : "hover:bg-blue-100 bg-slate-200"}`}
-                  style={{ left: x, top: y2 }}>{show || isHovered ? String(i).padStart(2, "0") : ""}</button>;
-              })
+              <>
+                {/* Non-5 minute dots (rendered first = behind) */}
+                {Array.from({ length: 60 }, (_, i) => {
+                  if (i % 5 === 0) return null;
+                  const angle = (i / 60) * 360 - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  const x = CX + Math.cos(rad) * (R - 14);
+                  const y2 = CY + Math.sin(rad) * (R - 14);
+                  const isHovered = hoveredMin === i;
+                  return <button key={i} type="button"
+                    onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
+                    onMouseEnter={() => setHoveredMin(i)}
+                    onMouseLeave={() => setHoveredMin(null)}
+                    title={String(i).padStart(2, "0")}
+                    className={`absolute flex items-center justify-center rounded-full transition-all ${
+                      isHovered ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium z-20" : "w-3 h-3 -ml-1.5 -mt-1.5"} ${
+                      mm === i ? "bg-blue-600 text-white" : isHovered ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : "hover:bg-blue-100 bg-slate-300"}`}
+                    style={{ left: x, top: y2 }}>{isHovered ? String(i).padStart(2, "0") : ""}</button>;
+                })}
+                {/* 5-minute labels (rendered second = on top) */}
+                {Array.from({ length: 12 }, (_, idx) => {
+                  const i = idx * 5;
+                  const angle = (i / 60) * 360 - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  const x = CX + Math.cos(rad) * (R - 14);
+                  const y2 = CY + Math.sin(rad) * (R - 14);
+                  return <button key={i} type="button"
+                    onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
+                    onMouseEnter={() => setHoveredMin(i)}
+                    onMouseLeave={() => setHoveredMin(null)}
+                    className={`absolute w-7 h-7 -ml-3.5 -mt-3.5 flex items-center justify-center rounded-full text-xs font-medium z-10 transition-colors ${
+                      mm === i ? "bg-blue-600 text-white" : hoveredMin === i ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : "hover:bg-blue-50 text-slate-700"}`}
+                    style={{ left: x, top: y2 }}>{String(i).padStart(2, "0")}</button>;
+                })}
+              </>
             )}
           </div>
           {/* Direct input */}
