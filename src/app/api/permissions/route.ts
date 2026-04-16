@@ -16,6 +16,7 @@ const ALL_PERMISSIONS = [
   "settings_view", "settings_edit",
   "users_view", "users_create", "users_edit", "users_delete",
   "roles_view", "roles_create", "roles_edit", "roles_delete",
+  "driver_jobs_view",
 ];
 
 export async function GET(req: NextRequest) {

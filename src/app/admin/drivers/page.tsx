@@ -4,7 +4,7 @@ import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
-import { Plus, Pencil, Trash2, Users, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Eye, Smartphone } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface DriverContact {
@@ -51,6 +51,10 @@ export default function DriversPage() {
   const [savingContact, setSavingContact] = useState(false);
   const [viewContactModal, setViewContactModal] = useState(false);
   const [viewContact, setViewContact] = useState<DriverContact | null>(null);
+
+  // Mobile access
+  const [accessLoading, setAccessLoading] = useState<string | null>(null);
+  const [credsModal, setCredsModal] = useState<{ name: string; username: string; password: string } | null>(null);
 
   const fetchDrivers = useCallback(async () => {
     setLoading(true);
@@ -169,6 +173,21 @@ export default function DriversPage() {
     } catch (e: any) { toast.error(e.message); }
   }
 
+  async function handleGrantAccess(driverId: string, driverName: string, contactId?: string) {
+    const key = contactId || driverId;
+    setAccessLoading(key);
+    try {
+      const res = await fetch(`/api/drivers/${driverId}/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contactId: contactId || null }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed");
+      const data = await res.json();
+      setCredsModal({ name: driverName, username: data.username, password: data.password });
+    } catch (e: any) { toast.error(e.message); } finally { setAccessLoading(null); }
+  }
+
   const columns: Column<Driver>[] = [
     { key: "name", label: "Name" },
     { key: "driverType", label: "Type", render: r => <Badge variant={typeVariant[r.driverType] || "default"}>{r.driverType}</Badge> },
@@ -190,6 +209,15 @@ export default function DriversPage() {
       key: "actions", label: "Actions",
       render: r => (
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleGrantAccess(r.id, r.name)}
+            disabled={accessLoading === r.id}
+            title="Grant mobile login access"
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
+          >
+            <Smartphone className="w-3 h-3" />
+            {accessLoading === r.id ? "..." : "Mobile"}
+          </button>
           <button onClick={() => openEditDriver(r)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
           <button onClick={() => setDeleteDriver(r)} className="p-1.5 rounded hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
         </div>
@@ -297,6 +325,15 @@ export default function DriversPage() {
                     <td className="px-3 py-2 text-slate-600">{c.driverPhone || "—"}</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => contactsDriver && handleGrantAccess(contactsDriver.id, c.driverName, c.id)}
+                          disabled={accessLoading === c.id}
+                          title="Grant mobile login access"
+                          className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
+                        >
+                          <Smartphone className="w-3 h-3" />
+                          {accessLoading === c.id ? "..." : "Mobile Access"}
+                        </button>
                         <button onClick={() => { setViewContact(c); setViewContactModal(true); }}
                           className="p-1 rounded hover:bg-blue-50 text-blue-600"><Eye className="w-3.5 h-3.5" /></button>
                         <button onClick={() => openEditContact(c)}
@@ -359,6 +396,30 @@ export default function DriversPage() {
               <button onClick={() => setViewContactModal(false)}
                 className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Close</button>
             </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ── Mobile Access Credentials Modal ── */}
+      <Modal open={!!credsModal} onClose={() => setCredsModal(null)} title="Mobile Access Credentials" size="sm">
+        {credsModal && (
+          <div className="space-y-4">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <p className="text-sm text-purple-800 font-medium mb-3">Login credentials for <strong>{credsModal.name}</strong></p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-purple-500 w-20">Username:</span>
+                  <code className="bg-white px-2 py-1 rounded border text-sm font-mono flex-1">{credsModal.username}</code>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-purple-500 w-20">Password:</span>
+                  <code className="bg-white px-2 py-1 rounded border text-sm font-mono flex-1">{credsModal.password}</code>
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400">Share these credentials with the driver. They can log in at the main login page to view their assigned jobs.</p>
+            <button onClick={() => setCredsModal(null)}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">Done</button>
           </div>
         )}
       </Modal>

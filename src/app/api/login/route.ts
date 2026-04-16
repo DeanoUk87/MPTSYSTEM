@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
       email: user.email,
       username: user.username,
       customerId: user.customerId ?? null,
+      driverId: user.driverId ?? null,
+      dcontactId: user.dcontactId ?? null,
       roles,
       permissions,
     })
@@ -57,7 +59,8 @@ export async function POST(req: NextRequest) {
       .setExpirationTime("7d")
       .sign(new TextEncoder().encode(SECRET));
 
-    const res = NextResponse.json({ ok: true, redirectTo: user.customerId ? "/portal" : "/admin" });
+    const redirectTo = user.customerId ? "/portal" : user.driverId ? "/driver" : "/admin";
+    const res = NextResponse.json({ ok: true, redirectTo });
     res.cookies.set("mp-session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

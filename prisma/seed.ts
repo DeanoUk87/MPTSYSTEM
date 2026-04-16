@@ -31,6 +31,8 @@ async function main() {
     "users_view", "users_create", "users_edit", "users_delete",
     // Roles
     "roles_view", "roles_create", "roles_edit", "roles_delete",
+    // Driver Portal
+    "driver_jobs_view",
   ];
 
   const permissions: Record<string, { id: string }> = {};
@@ -57,6 +59,11 @@ async function main() {
     where: { name: "admin2" },
     update: {},
     create: { name: "admin2" },
+  });
+  const driverRole = await prisma.role.upsert({
+    where: { name: "driver" },
+    update: {},
+    create: { name: "driver" },
   });
 
   for (const pName of permissionNames) {
@@ -86,6 +93,13 @@ async function main() {
       create: { roleId: admin2Role.id, permissionId: permissions[pName].id },
     });
   }
+
+  // Driver role gets only driver_jobs_view
+  await prisma.rolePermission.upsert({
+    where: { roleId_permissionId: { roleId: driverRole.id, permissionId: permissions["driver_jobs_view"].id } },
+    update: {},
+    create: { roleId: driverRole.id, permissionId: permissions["driver_jobs_view"].id },
+  });
 
   const hashedPassword = await bcrypt.hash("admin123", 12);
   const adminUser = await prisma.user.upsert({

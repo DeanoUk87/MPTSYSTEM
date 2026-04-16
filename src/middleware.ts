@@ -35,6 +35,12 @@ export async function middleware(req: NextRequest) {
       url.pathname = "/portal";
       return NextResponse.redirect(url);
     }
+    // Drivers must only access /driver, not /admin
+    if (pathname.startsWith("/admin") && (payload as any).driverId) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/driver";
+      return NextResponse.redirect(url);
+    }
     return NextResponse.next();
   } catch {
     const url = req.nextUrl.clone();
