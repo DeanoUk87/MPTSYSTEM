@@ -172,9 +172,9 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
                     onMouseLeave={() => setHoveredMin(null)}
                     title={String(i).padStart(2, "0")}
                     className={`absolute flex items-center justify-center rounded-full transition-all ${
-                      isHovered ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium z-20" : "w-3 h-3 -ml-1.5 -mt-1.5"} ${
-                      mm === i ? "bg-blue-600 text-white" : isHovered ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : "hover:bg-blue-100 bg-slate-300"}`}
-                    style={{ left: x, top: y2 }}>{isHovered ? String(i).padStart(2, "0") : ""}</button>;
+                      isHovered || mm === i ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium z-20" : "w-5 h-5 -ml-2.5 -mt-2.5"} ${
+                      mm === i ? "bg-blue-600 text-white" : isHovered ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : "hover:bg-blue-100 bg-transparent"}`}
+                    style={{ left: x, top: y2 }}>{isHovered || mm === i ? String(i).padStart(2, "0") : "·"}</button>;
                 })}
                 {/* 5-minute labels (rendered second = on top) */}
                 {Array.from({ length: 12 }, (_, idx) => {
@@ -473,6 +473,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [routeInfo, setRouteInfo] = useState<{ miles: number; duration: string } | null>(null);
   const [assigningUnit, setAssigningUnit] = useState<string | null>(null);
   const [showUnitsModal, setShowUnitsModal] = useState(false);
+  const [showCustomerNotes, setShowCustomerNotes] = useState(false);
   const [transferDriverSearch, setTransferDriverSearch] = useState("");
   const [transferDriverId, setTransferDriverId] = useState("");
   const [vias, setVias] = useState<any[]>([]);
@@ -767,15 +768,27 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     };
     if (formState.driverId) {
       const dr = drivers.find((d: any) => d.id === formState.driverId);
-      if (dr) updates.driverCost = (billMiles * dr[driverRateKey]).toFixed(2);
+      if (dr) {
+        let dc = billMiles * dr[driverRateKey];
+        if (pencePerMile > 0) dc = dc + (billMiles * pencePerMile / 100);
+        updates.driverCost = dc.toFixed(2);
+      }
     }
     if (formState.secondManId) {
       const dr = subcons.find((d: any) => d.id === formState.secondManId);
-      if (dr) updates.extraCost = (billMiles * dr[driverRateKey]).toFixed(2);
+      if (dr) {
+        let ec = billMiles * dr[driverRateKey];
+        if (pencePerMile > 0) ec = ec + (billMiles * pencePerMile / 100);
+        updates.extraCost = ec.toFixed(2);
+      }
     }
     if (formState.cxDriverId) {
       const dr = cxDrivers.find((d: any) => d.id === formState.cxDriverId);
-      if (dr) updates.cxDriverCost = (billMiles * dr[driverRateKey]).toFixed(2);
+      if (dr) {
+        let cc = billMiles * dr[driverRateKey];
+        if (pencePerMile > 0) cc = cc + (billMiles * pencePerMile / 100);
+        updates.cxDriverCost = cc.toFixed(2);
+      }
     }
     return { updates, billMiles };
   }
@@ -906,8 +919,23 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 px-2.5 py-1.5 border border-slate-200 rounded-xl bg-slate-50">
                   <span className="text-xs font-semibold text-slate-700 truncate flex-1">{customer.name}</span>
+                  {customer.notes && (
+                    <button type="button" onClick={() => setShowCustomerNotes(v => !v)}
+                      className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-amber-900 hover:bg-amber-500 transition-colors shrink-0 animate-pulse">
+                      ⚠ View Notes
+                    </button>
+                  )}
                   <button type="button" onClick={onBack} className="text-xs text-blue-500 hover:text-blue-700 font-medium underline shrink-0">Change</button>
                 </div>
+                {showCustomerNotes && customer.notes && (
+                  <div className="px-3 py-2 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl text-xs text-amber-900 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold uppercase tracking-wide text-[10px]">Internal Customer Notes</span>
+                      <button type="button" onClick={() => setShowCustomerNotes(false)} className="text-amber-600 hover:text-amber-800 font-bold">×</button>
+                    </div>
+                    <p className="whitespace-pre-wrap">{customer.notes}</p>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-blue-100 text-blue-700">{jtLabel}</span>
                   {customer.accountNumber && <span className="text-xs text-slate-400 self-center">{customer.accountNumber}</span>}
@@ -1107,7 +1135,20 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         let cp = miles * vehicleRates[0][rateKey];
                         const pencePerMile = pct ? parseFloat(pct) || 0 : 0;
                         if (pencePerMile > 0) cp = cp + (miles * pencePerMile / 100);
-                        setF(p => ({ ...p, fuelSurchargePercent: pct, customerPrice: cp.toFixed(2) }));
+                        const upd: Record<string, any> = { fuelSurchargePercent: pct, customerPrice: cp.toFixed(2) };
+                        const applyToDriver = (driverId: string, field: string, driverList: any[]) => {
+                          if (!driverId) return;
+                          const dr = driverList.find((d: any) => d.id === driverId);
+                          if (dr) {
+                            let dc = miles * dr[driverRateKey];
+                            if (pencePerMile > 0) dc = dc + (miles * pencePerMile / 100);
+                            upd[field] = dc.toFixed(2);
+                          }
+                        };
+                        applyToDriver(f.driverId, "driverCost", drivers);
+                        applyToDriver(f.secondManId, "extraCost", subcons);
+                        applyToDriver(f.cxDriverId, "cxDriverCost", cxDrivers);
+                        setF(p => ({ ...p, ...upd }));
                       } else {
                         s("fuelSurchargePercent", pct);
                       }
@@ -1586,7 +1627,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
 
       {/* ── Floating Save Button ── */}
       <button type="button" onClick={(e) => handleSubmit(e as any)} disabled={saving}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-sm shadow-xl disabled:opacity-70 transition-all">
+        className="fixed bottom-14 right-6 z-40 flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-sm shadow-xl disabled:opacity-70 transition-all">
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         {saving ? "Saving..." : "Save"}
       </button>

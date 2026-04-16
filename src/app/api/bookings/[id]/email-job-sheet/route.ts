@@ -87,12 +87,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     if (settings?.phone) {
       doc.text(`Tel: ${settings.phone}`, M, 44, { width: 300 });
     }
-    // Job ref box (right side)
-    const refBoxW = 100;
-    const refBoxX = W - M - refBoxW;
-    doc.roundedRect(refBoxX, 10, refBoxW, 40, 4).lineWidth(1).strokeColor("#ffffff").fillAndStroke("#2a4d6e", "#ffffff");
-    doc.fillColor("#c0c8d4").font("Helvetica").fontSize(7).text("JOB REFERENCE", refBoxX, 16, { width: refBoxW, align: "center" });
-    doc.fillColor(C.white).font("Helvetica-Bold").fontSize(14).text(jobRef, refBoxX, 28, { width: refBoxW, align: "center" });
+    // Job ref box (right side) — REMOVED (already in banner below)
     y = headerH;
 
     // ─── Customer banner ──────────────────────────────────────────────────
@@ -119,40 +114,20 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     function sectionHeader(title: string, color: string, iconType?: "parcel" | "pin" | "factory") {
       if (y > 750) { doc.addPage(); y = M; }
       const isLight = color === "#f0f4ff";
-      doc.rect(0, y, W, 24).fill(color);
+      doc.rect(0, y, W, 26).fill(color);
       const textColor = isLight ? "#4338ca" : C.white;
       const iconX = M;
-      const iconY = y + 5;
-      const textX = iconType ? M + 18 : M;
+      const textX = iconType ? M + 16 : M;
 
-      // Draw vector icons
-      if (iconType === "parcel") {
-        // Small parcel/box icon
-        doc.save();
-        doc.rect(iconX, iconY, 12, 10).lineWidth(1).strokeColor(textColor).stroke();
-        doc.moveTo(iconX, iconY + 3).lineTo(iconX + 12, iconY + 3).strokeColor(textColor).stroke();
-        doc.moveTo(iconX + 6, iconY + 3).lineTo(iconX + 6, iconY + 10).strokeColor(textColor).stroke();
-        doc.restore();
-      } else if (iconType === "pin") {
-        // Map pin icon
-        doc.save();
-        doc.circle(iconX + 6, iconY + 4, 4).lineWidth(1).strokeColor(textColor).stroke();
-        doc.circle(iconX + 6, iconY + 4, 1.5).fill(textColor);
-        doc.moveTo(iconX + 3, iconY + 7).lineTo(iconX + 6, iconY + 13).lineTo(iconX + 9, iconY + 7).lineWidth(1).strokeColor(textColor).stroke();
-        doc.restore();
-      } else if (iconType === "factory") {
-        // Factory/building icon
-        doc.save();
-        doc.rect(iconX, iconY + 2, 12, 10).lineWidth(1).strokeColor(textColor).stroke();
-        doc.rect(iconX + 2, iconY + 5, 3, 3).fill(textColor);
-        doc.rect(iconX + 7, iconY + 5, 3, 3).fill(textColor);
-        doc.moveTo(iconX, iconY + 2).lineTo(iconX + 6, iconY - 1).lineTo(iconX + 12, iconY + 2).lineWidth(1).strokeColor(textColor).stroke();
-        doc.restore();
+      // Simple text-based icons (Helvetica-safe)
+      if (iconType) {
+        const iconChar = iconType === "parcel" ? ">" : iconType === "pin" ? ">" : ">";
+        doc.fillColor(textColor).font("Helvetica-Bold").fontSize(10).text(iconChar, iconX, y + 8, { width: 14 });
       }
 
-      doc.fillColor(textColor).font("Helvetica-Bold").fontSize(9).text(title.toUpperCase(), textX, y + 7, { width: bodyW - (textX - M) });
-      y += 24;
-      y += 4; // spacing between header and rows
+      doc.fillColor(textColor).font("Helvetica-Bold").fontSize(9).text(title.toUpperCase(), textX, y + 8, { width: bodyW - (textX - M) });
+      y += 26;
+      y += 6; // spacing between header and rows
     }
 
     function row(label: string, value: string | null | undefined, valueColor = C.text) {
@@ -167,7 +142,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
 
     function locationSection(title: string, color: string, icon: "parcel" | "pin" | "factory", data: {
       date?: string | null; time?: string | null; name?: string | null; address?: string | null;
-      contact?: string | null; phone?: string | null; notes?: string | null;
+      contact?: string | null; phone?: string | null; notes?: string | null; orders?: { ref: string; type: string }[];
     }) {
       sectionHeader(title, color, icon);
       row("Date:", fmt(data.date) || "—");
@@ -177,6 +152,10 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
       if (data.contact) row("Contact Name:", data.contact);
       if (data.phone) row("Telephone:", data.phone);
       if (data.notes?.trim()) row("Notes:", data.notes.trim(), C.amber);
+      if (data.orders && data.orders.length > 0) {
+        const orderText = data.orders.map(o => `${o.ref || "—"}${o.type ? ` (${o.type})` : ""}`).join("  |  ");
+        row("Collected Orders:", orderText, C.indigo);
+      }
     }
 
     // ─── Collection ───────────────────────────────────────────────────────
@@ -189,23 +168,39 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
 
     // ─── Via stops ────────────────────────────────────────────────────────
     vias.forEach((v: any, i: number) => {
-      const noteText = v.notes?.split("---ORDERS---")[0] || "";
+      let noteText = v.notes || "";
+      let orders: { ref: string; type: string }[] = [];
+      if (noteText.includes("---ORDERS---")) {
+        const [text, ordJson] = noteText.split("---ORDERS---");
+        noteText = text;
+        try { orders = JSON.parse(ordJson || "[]"); } catch { orders = []; }
+      }
       const label = `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` \u2014 ${v.viaType}` : ""}`;
       locationSection(label, "#f0f4ff", "pin", {
         date: v.viaDate, time: v.viaTime, name: v.name,
         address: addrParts(v.address1, v.address2, v.area, v.postcode) || null,
-        contact: v.contact, phone: v.phone, notes: noteText,
+        contact: v.contact, phone: v.phone, notes: noteText, orders,
       });
     });
 
     // ─── Delivery ─────────────────────────────────────────────────────────
-    locationSection("Delivery", C.blue, "factory", {
-      date: booking.deliveryDate || booking.collectionDate, time: booking.deliveryTime,
-      name: booking.deliveryName,
-      address: addrParts(booking.deliveryAddress1, booking.deliveryAddress2, booking.deliveryArea, booking.deliveryPostcode) || null,
-      contact: booking.deliveryContact, phone: booking.deliveryPhone,
-      notes: (booking.deliveryNotes || "").split("---ORDERS---")[0] || null,
-    });
+    {
+      const rawDelivNotes = booking.deliveryNotes || "";
+      let delivNoteText = rawDelivNotes;
+      let delivOrders: { ref: string; type: string }[] = [];
+      if (rawDelivNotes.includes("---ORDERS---")) {
+        const [text, ordJson] = rawDelivNotes.split("---ORDERS---");
+        delivNoteText = text;
+        try { delivOrders = JSON.parse(ordJson || "[]"); } catch { delivOrders = []; }
+      }
+      locationSection("Delivery", C.blue, "factory", {
+        date: booking.deliveryDate || booking.collectionDate, time: booking.deliveryTime,
+        name: booking.deliveryName,
+        address: addrParts(booking.deliveryAddress1, booking.deliveryAddress2, booking.deliveryArea, booking.deliveryPostcode) || null,
+        contact: booking.deliveryContact, phone: booking.deliveryPhone,
+        notes: delivNoteText || null, orders: delivOrders,
+      });
+    }
 
     // ─── Driver / Job Information ─────────────────────────────────────────
     sectionHeader("Driver / Job Information", C.grey);

@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const vehicleId = searchParams.get("vehicleId");
   const exclude = searchParams.get("exclude");
 
-  const where: any = {}; // deletedAt filter added via raw SQL after rebuild
+  const where: any = { deletedAt: null };
   if (customerId) where.customerId = customerId;
   if (collectionPostcode) where.collectionPostcode = collectionPostcode;
   if (deliveryPostcode) where.deliveryPostcode = deliveryPostcode;

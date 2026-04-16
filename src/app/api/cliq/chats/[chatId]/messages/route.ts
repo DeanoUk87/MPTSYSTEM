@@ -57,15 +57,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chat
 
   const data = await res.json();
   const raw: any[] = data.data ?? data.messages ?? [];
+  const userName = (auth as any).name || "";
   const messages = raw
     .filter((m: any) => m.type === "text" || m.message_type === "text")
-    .map((m: any) => ({
-      id: m.id ?? m.message_id ?? String(Math.random()),
-      sender_name: m.sender?.name ?? m.sender_name ?? "Unknown",
-      text: m.content?.text ?? m.text ?? "",
-      // time is unix ms from Zoho; convert to ISO so formatTime() works
-      time: m.time ? new Date(m.time).toISOString() : "",
-    }))
+    .map((m: any) => {
+      const senderName = m.sender?.name ?? m.sender_name ?? "Unknown";
+      return {
+        id: m.id ?? m.message_id ?? String(Math.random()),
+        sender_name: senderName,
+        text: m.content?.text ?? m.text ?? "",
+        // time is unix ms from Zoho; convert to ISO so formatTime() works
+        time: m.time ? new Date(m.time).toISOString() : "",
+        is_self: senderName.toLowerCase() === userName.toLowerCase(),
+      };
+    })
     .filter(m => m.text.trim() !== "");
 
   return NextResponse.json({ messages, _raw_count: raw.length });

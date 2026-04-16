@@ -56,7 +56,7 @@ function LoginForm() {
                 <Building2 className="w-8 h-8 text-white" />
               </div>
             )}
-            <h1 className="text-2xl font-bold text-white">{branding?.companyName || "MP Booking System"}</h1>
+            {!branding?.logo && <h1 className="text-2xl font-bold text-white">{branding?.companyName || "MP Booking System"}</h1>}
             <p className="text-blue-200 text-sm mt-1">Sameday Transport Management</p>
           </div>
 
