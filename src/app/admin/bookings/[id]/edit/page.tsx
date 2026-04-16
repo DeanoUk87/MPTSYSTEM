@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/lib/use-permissions";
-import { Loader2, ArrowLeft, Plus, ExternalLink, RefreshCw, Thermometer, MapPin, CheckCircle, Clock, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Plus, ExternalLink, RefreshCw, Thermometer, MapPin, CheckCircle, Clock, Save, Paperclip, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Script from "next/script";
 import Link from "next/link";
@@ -350,7 +350,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
   const directionsRendererRef = useRef<any>(null);
 
   const [saving, setSaving] = useState(false);
-  const [podUpload, setPodUpload] = useState("");
+  const [podFiles, setPodFiles] = useState<string[]>([]);
   const [podUploading, setPodUploading] = useState(false);
   const [calcMiles, setCalcMiles] = useState(false);
   const [loadingBooking, setLoadingBooking] = useState(true);
@@ -551,7 +551,9 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         jobStatus: booking.jobStatus ?? 0,
         jobRef: booking.jobRef || "",
       });
-      setPodUpload(booking.podUpload || "");
+      const raw = booking.podUpload;
+      const parsed = !raw ? [] : raw.startsWith("[") ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [raw];
+      setPodFiles(parsed);
       setLoadingBooking(false);
     });
   }, [id]);
@@ -943,6 +945,10 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1a3a5c] to-[#1e4976] px-5 py-3 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-4">
+            <Link href={`/admin/bookings/${id}`}
+              className="flex items-center gap-1 text-blue-300 hover:text-white text-xs font-medium transition-colors">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back
+            </Link>
             <div>
               <h1 className="text-white font-bold text-base tracking-tight">Edit Job — {f.jobRef || id.slice(-6).toUpperCase()}</h1>
               <p className="text-blue-300 text-xs mt-0.5">{customer?.name}</p>
@@ -1009,7 +1015,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                     <span className="font-bold uppercase tracking-wide text-[10px]">Internal Customer Notes</span>
                     <button type="button" onClick={() => setShowCustomerNotes(false)} className="text-amber-600 hover:text-amber-800 font-bold">×</button>
                   </div>
-                  <p className="whitespace-pre-wrap">{customer.notes}</p>
+                  <div className="prose prose-xs max-w-none" dangerouslySetInnerHTML={{ __html: customer.notes }} />
                 </div>
               )}
             </div>
@@ -1473,24 +1479,39 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   </div>
                   {/* POD File Upload */}
                   <div className="border-t border-slate-100 pt-3">
-                    <label className="text-xs font-medium text-slate-500 block mb-2">POD Document</label>
-                    {podUpload && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <a href={podUpload} target="_blank" rel="noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 underline truncate max-w-[200px]">
-                          {podUpload.split("/").pop()}
-                        </a>
-                        <button type="button" onClick={async () => {
-                          if (!confirm("Remove POD document?")) return;
-                          await fetch(`/api/bookings/${id}/pod`, { method: "DELETE" });
-                          setPodUpload("");
-                          toast.success("POD document removed");
-                        }} className="text-rose-500 hover:text-rose-700 text-xs font-bold">&times;</button>
+                    <label className="text-xs font-medium text-slate-500 block mb-2">POD Attachments</label>
+                    {podFiles.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {podFiles.map((file, i) => {
+                          const name = file.split("/").pop() || "file";
+                          const isPdf = name.endsWith(".pdf");
+                          return (
+                            <div key={i} className="flex items-center gap-0.5 group">
+                              <a href={file} target="_blank" rel="noreferrer" title={name}
+                                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                                  isPdf ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                                }`}>
+                                <Paperclip className="w-3 h-3 shrink-0" />
+                                <span className="max-w-[90px] truncate">{name}</span>
+                              </a>
+                              <button type="button" title="Remove" onClick={async () => {
+                                if (!confirm("Remove this attachment?")) return;
+                                const res = await fetch(`/api/bookings/${id}/pod?file=${encodeURIComponent(file)}`, { method: "DELETE" });
+                                const data = await res.json();
+                                setPodFiles(data.podUpload ?? []);
+                                toast.success("Attachment removed");
+                              }} className="p-0.5 text-slate-300 hover:text-rose-600 transition-colors ml-0.5">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <span className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white hover:bg-slate-50 font-medium transition-colors">
-                        {podUploading ? "Uploading…" : podUpload ? "Replace file" : "Choose file"}
+                      <span className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white hover:bg-slate-50 font-medium transition-colors flex items-center gap-1.5">
+                        <Paperclip className="w-3 h-3" />
+                        {podUploading ? "Uploading…" : "Add attachment"}
                       </span>
                       <input type="file" className="hidden" accept="image/*,.pdf" disabled={podUploading}
                         onChange={async e => {
@@ -1502,7 +1523,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                             fd.append("file", file);
                             const res = await fetch(`/api/bookings/${id}/pod`, { method: "POST", body: fd });
                             const data = await res.json();
-                            if (data.podUpload) { setPodUpload(data.podUpload); toast.success("POD document uploaded"); }
+                            if (data.podUpload) { setPodFiles(data.podUpload); toast.success("Attachment uploaded"); }
                             else toast.error(data.error || "Upload failed");
                           } catch { toast.error("Upload failed"); } finally { setPodUploading(false); e.target.value = ""; }
                         }} />
@@ -1618,11 +1639,13 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
               className="px-4 py-2 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 font-medium transition-colors">
               ← Cancel
             </Link>
+            {has("bookings_financials") && (
             <div className="flex items-center gap-6 text-xs text-slate-500">
               <span>Miles: <strong className="text-slate-800 text-sm">{milesNum || "—"}</strong></span>
               <span>Quote: <strong className="text-emerald-700 text-sm">£{parseFloat(f.customerPrice || "0").toFixed(2)}</strong></span>
               <span className={profit >= 0 ? "text-emerald-600" : "text-rose-600"}>Profit: <strong className="text-sm">£{profit.toFixed(2)}</strong></span>
             </div>
+            )}
             <button type="submit" disabled={saving}
               className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 disabled:opacity-70 shadow-md transition-all">
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}

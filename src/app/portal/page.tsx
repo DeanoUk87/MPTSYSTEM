@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin } from "lucide-react";
+import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, Paperclip } from "lucide-react";
 import clsx from "clsx";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
@@ -326,14 +326,29 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                 {b.deliveredTemperature && <div><p className="text-xs text-slate-400">Delivered Temp</p><p className="font-medium text-slate-700">{b.deliveredTemperature}</p></div>}
                 {!b.podSignature && <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD sign-off…</div>}
               </div>
-              {b.podUpload && (
-                <div className="mt-3 pt-3 border-t border-slate-100">
-                  <a href={b.podUpload} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
-                    📎 Download POD Document
-                  </a>
-                </div>
-              )}
+              {b.podUpload && (() => {
+                const files = b.podUpload!.startsWith("[") ? (() => { try { return JSON.parse(b.podUpload!); } catch { return [b.podUpload!]; } })() : [b.podUpload!];
+                return (
+                  <div className="mt-3 pt-3 border-t border-slate-100">
+                    <p className="text-xs text-slate-400 mb-2">Attachments</p>
+                    <div className="flex flex-wrap gap-2">
+                      {files.map((file: string, i: number) => {
+                        const name = file.split("/").pop() || "file";
+                        const isPdf = name.endsWith(".pdf");
+                        return (
+                          <a key={i} href={file} target="_blank" rel="noreferrer" title={name}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                              isPdf ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                            }`}>
+                            <Paperclip className="w-3.5 h-3.5" />
+                            <span className="max-w-[120px] truncate">{name}</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
           </div>

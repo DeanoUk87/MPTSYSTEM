@@ -4,9 +4,11 @@ import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import Link from "next/link";
 import { Users, Package, Truck, Car } from "lucide-react";
+import { usePermissions } from "@/lib/use-permissions";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
+  const { has } = usePermissions();
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -43,9 +45,15 @@ export default function DashboardPage() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    {["Job Ref", "Date", "Time", "Customer", "From", "Via 1", "Via 2", "Via 3", "Via 4", "Via 5", "Via 6", "To", "Driver", "Driver Cost", "Vehicle", "Total", "Status"].map((h) => (
+                    {["Job Ref", "Date", "Time", "Customer", "From", "Via 1", "Via 2", "Via 3", "Via 4", "Via 5", "Via 6", "To", "Driver"].map((h) => (
                       <th key={h} className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
+                    {has("bookings_financials") && <th className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Driver Cost</th>}
+                    {["Vehicle"].map((h) => (
+                      <th key={h} className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    ))}
+                    {has("bookings_financials") && <th className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Total</th>}
+                    <th className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -76,9 +84,9 @@ export default function DashboardPage() {
                             ? <span className="text-amber-600">{b.cxDriver.name} <span className="text-xs opacity-70">(cx)</span></span>
                             : <span className="text-rose-500 font-semibold">Unassigned</span>}
                         </td>
-                        <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{b.driverCost ? `£${Number(b.driverCost).toFixed(2)}` : "—"}</td>
+                        {has("bookings_financials") && <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{b.driverCost ? `£${Number(b.driverCost).toFixed(2)}` : "—"}</td>}
                         <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{b.vehicle?.name ?? "—"}</td>
-                        <td className="px-2 py-2 text-xs font-semibold text-slate-700 whitespace-nowrap">{b.customerPrice ? `£${Number(b.customerPrice).toFixed(2)}` : "—"}</td>
+                        {has("bookings_financials") && <td className="px-2 py-2 text-xs font-semibold text-slate-700 whitespace-nowrap">{b.customerPrice ? `£${Number(b.customerPrice).toFixed(2)}` : "—"}</td>}
                         <td className="px-2 py-2 whitespace-nowrap">
                           {isQuote ? <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>
                             : !(b.driver || b.cxDriver) ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>

@@ -214,6 +214,7 @@ export default function DriversPage() {
       key: "actions", label: "Actions",
       render: r => (
         <div className="flex items-center gap-1">
+          {has("drivers_access") && (
           <button
             onClick={() => handleGrantAccess(r.id, r.name)}
             disabled={accessLoading === r.id}
@@ -227,6 +228,7 @@ export default function DriversPage() {
             {r.hasAccess ? <CheckCircle2 className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
             {accessLoading === r.id ? "..." : r.hasAccess ? "Access Granted" : "Allow Access"}
           </button>
+          )}
           {has("drivers_edit") && (
             <button onClick={() => openEditDriver(r)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
           )}
@@ -282,7 +284,9 @@ export default function DriversPage() {
               <textarea value={driverForm.notes} onChange={e => setDriverForm(f => ({ ...f, notes: e.target.value }))} rows={2} className={inp + " resize-none"} />
             </div>
           </div>
+          {has("drivers_rates") && (
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider border-t pt-3">Rates (£ per mile)</p>
+          )}
           {has("drivers_rates") && (
           <div className="grid grid-cols-3 gap-3">
             {[

@@ -3,7 +3,7 @@ import { useState, useEffect, use, useRef } from "react";
 import Topbar from "@/components/Topbar";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Clock, User, Truck, Package, CheckCircle, XCircle, Pencil, ArrowLeft, Loader2, Mail, Lock } from "lucide-react";
+import { MapPin, Clock, User, Truck, Package, CheckCircle, XCircle, Pencil, ArrowLeft, Loader2, Mail, Lock, Paperclip } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { usePermissions } from "@/lib/use-permissions";
@@ -273,6 +273,28 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             {booking.podSignature ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-amber-500" />}
             <span className="text-sm">{booking.podSignature ? "POD Received" : "Awaiting POD"}</span>
           </div>
+          {(() => {
+            const files = booking.podUpload
+              ? (booking.podUpload.startsWith("[") ? (() => { try { return JSON.parse(booking.podUpload!); } catch { return []; } })() : [booking.podUpload])
+              : [];
+            return files.length > 0 ? (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                <Paperclip className="w-3.5 h-3.5 text-blue-500" />
+                <span className="text-xs font-medium text-blue-700">{files.length} attachment{files.length > 1 ? "s" : ""}</span>
+              </div>
+            ) : null;
+          })()}
+          {(() => {
+            const files = booking.podUpload
+              ? (booking.podUpload.startsWith("[") ? (() => { try { return JSON.parse(booking.podUpload!); } catch { return []; } })() : [booking.podUpload])
+              : [];
+            return files.length > 0 ? (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                <Paperclip className="w-3.5 h-3.5 text-blue-500" />
+                <span className="text-xs font-medium text-blue-700">{files.length} attachment{files.length > 1 ? "s" : ""}</span>
+              </div>
+            ) : null;
+          })()}
           {booking.podSignature && (
             <button onClick={handleVerifyPod} disabled={verifying}
               className={clsx("flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium transition-colors",
@@ -428,14 +450,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 {booking.driverNote && <InfoRow label="Driver Note" value={booking.driverNote} />}
               </div>
             )}
-            {booking.podUpload && (
-              <div className="border-t border-slate-100 pt-3 mt-3">
-                <a href={booking.podUpload} target="_blank" rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
-                  📎 Download POD Document
-                </a>
-              </div>
-            )}
+            {booking.podUpload && (\n              <div className="border-t border-slate-100 pt-3 mt-3">\n                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Attachments</p>\n                <div className="flex flex-wrap gap-2">\n                  {(booking.podUpload.startsWith("[") ? (() => { try { return JSON.parse(booking.podUpload!); } catch { return [booking.podUpload]; } })() : [booking.podUpload])\n                    .map((file: string, i: number) => {\n                      const name = file.split("/").pop() || "file";\n                      const isPdf = name.endsWith(".pdf");\n                      return (\n                        <a key={i} href={file} target="_blank" rel="noreferrer" title={name}\n                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${\n                            isPdf ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"\n                          }`}>\n                          <Paperclip className="w-3.5 h-3.5" />\n                          <span className="max-w-[120px] truncate">{name}</span>\n                        </a>\n                      );\n                    })}\n                </div>\n              </div>\n            )}
             {booking.viaAddresses?.map((v: any, idx: number) => v.signedBy ? (
               <div key={v.id} className="border-t border-slate-100 pt-3 mt-3">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Via {idx + 1} POD</p>

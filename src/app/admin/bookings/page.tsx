@@ -259,7 +259,7 @@ export default function BookingsPage() {
     { key: "via6", label: "Via 6", render: (r) => r.viaAddresses?.[5]?.postcode || "—" },
     { key: "deliveryPostcode", label: "To", render: (r) => r.deliveryPostcode || "—" },
     { key: "driver", label: "Driver", render: (r) => r.driver?.name || <span className="text-rose-500 text-xs">Unassigned</span> },
-    { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—" },
+    { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—", financial: true },
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (
       <div className="flex items-center gap-1">
@@ -316,7 +316,7 @@ export default function BookingsPage() {
               View / Filter Results
             </button>
             <button onClick={() => openReport("financial")} disabled={!canOpenReport}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className={`flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${!has("bookings_financials") ? "hidden" : ""}`}>
               <TrendingUp className="w-4 h-4" /> Financial Report
             </button>
             <button onClick={() => openReport("driver")} disabled={!canOpenReport || !appliedFilters.driverId}
@@ -372,7 +372,7 @@ export default function BookingsPage() {
         <div className="overflow-x-auto">
           <DataTable
             data={bookings}
-            columns={columns}
+            columns={columns.filter(c => c.key !== "customerPrice" || has("bookings_financials"))}
             compact
             searchKeys={["collectionPostcode", "deliveryPostcode"]}
             loading={loading}

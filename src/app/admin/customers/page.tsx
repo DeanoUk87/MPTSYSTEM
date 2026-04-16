@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
@@ -7,6 +7,47 @@ import { Plus, Pencil, Trash2, Download, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { usePermissions } from "@/lib/use-permissions";
+
+function RichTextEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ref.current && ref.current.innerHTML !== value) ref.current.innerHTML = value || "";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const exec = (cmd: string, val?: string) => {
+    ref.current?.focus();
+    document.execCommand(cmd, false, val);
+    if (ref.current) onChange(ref.current.innerHTML);
+  };
+  const COLORS = [
+    { c: "#ef4444", label: "Red" }, { c: "#f97316", label: "Orange" },
+    { c: "#eab308", label: "Yellow" }, { c: "#22c55e", label: "Green" },
+    { c: "#3b82f6", label: "Blue" }, { c: "#000000", label: "Black" },
+  ];
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <div className="flex items-center gap-1 px-2 py-1.5 bg-slate-50 border-b border-slate-200 flex-wrap">
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("bold"); }}
+          className="px-2 py-0.5 text-xs font-bold rounded hover:bg-slate-200 border border-slate-200">B</button>
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("italic"); }}
+          className="px-2 py-0.5 text-xs italic rounded hover:bg-slate-200 border border-slate-200">I</button>
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("underline"); }}
+          className="px-2 py-0.5 text-xs underline rounded hover:bg-slate-200 border border-slate-200">U</button>
+        <span className="w-px h-4 bg-slate-300 mx-0.5" />
+        {COLORS.map(({ c, label }) => (
+          <button key={c} type="button" title={label} onMouseDown={e => { e.preventDefault(); exec("foreColor", c); }}
+            className="w-4 h-4 rounded-full border border-slate-300 shadow-sm flex-shrink-0" style={{ background: c }} />
+        ))}
+        <span className="w-px h-4 bg-slate-300 mx-0.5" />
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("removeFormat"); }}
+          className="px-2 py-0.5 text-[10px] rounded hover:bg-slate-200 border border-slate-200 text-slate-500">Clear</button>
+      </div>
+      <div ref={ref} contentEditable suppressContentEditableWarning
+        onInput={() => { if (ref.current) onChange(ref.current.innerHTML); }}
+        className="px-3 py-2 min-h-[80px] text-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 bg-white" />
+    </div>
+  );
+}
 
 interface Customer {
   id: string;
@@ -185,9 +226,11 @@ export default function CustomersPage() {
             <button onClick={exportCSV} className="flex items-center gap-2 px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">
               <Download className="w-4 h-4" /> Export CSV
             </button>
+            {has("customers_create") && (
             <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
               <Plus className="w-4 h-4" /> Add Customer
             </button>
+            )}
           </div>
         </div>
 
@@ -256,7 +299,7 @@ export default function CustomersPage() {
             )}
             <div className="col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">Internal Notes</label>
-              <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} className={inp + " resize-none"} />
+              <RichTextEditor key={editTarget?.id || "new"} value={form.notes} onChange={v => set("notes", v)} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">
