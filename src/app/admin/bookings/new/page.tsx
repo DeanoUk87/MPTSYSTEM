@@ -47,6 +47,8 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
+  const svgMinRef = useRef<SVGSVGElement>(null);
+  const dragging = useRef(false);
   const parts = (value || "00:00").split(":");
   const hh = parseInt(parts[0]) || 0;
   const mm = parseInt(parts[1]) || 0;
@@ -79,6 +81,14 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
     ? Array.from({ length: 24 }, (_, i) => i)
     : Array.from({ length: 60 }, (_, i) => i);
   const selected = mode === "hour" ? hh : (hoveredMin !== null ? hoveredMin : mm);
+  function getMinFromSvg(e: React.MouseEvent): number {
+    if (!svgMinRef.current) return mm;
+    const rect = svgMinRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - CX;
+    const y = e.clientY - rect.top - CY;
+    const norm = ((Math.atan2(y, x) * 180 / Math.PI + 90) % 360 + 360) % 360;
+    return Math.round(norm / 360 * 60) % 60;
+  }
   return (
     <div className="relative">
       <button ref={btnRef} type="button" onClick={toggle}
@@ -87,7 +97,7 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
         <span>{value || "00:00"}</span>
       </button>
       {open && (
-        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 240 }}
+        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 252 }}
           className="bg-white border border-slate-200 rounded-xl shadow-xl p-3">
           {/* Digital display */}
           <div className="flex items-center justify-center gap-1 mb-3">
@@ -103,7 +113,7 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
               {String(hoveredMin !== null ? hoveredMin : mm).padStart(2, "0")}
             </button>
           </div>
-          {/* Clock face / minute grid */}
+          {/* Clock face / minute clock */}
           {mode === "hour" ? (
             <div className="relative" style={{ width: 220, height: 220, margin: "0 auto" }}>
               <svg width={220} height={220}>
@@ -142,16 +152,56 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-6 gap-1 py-1">
-              {Array.from({ length: 60 }, (_, i) => (
-                <button key={i} type="button"
-                  onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
-                  className={`py-1.5 rounded text-xs font-mono font-medium transition-colors ${
-                    mm === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-600"
-                  }`}>
-                  {String(i).padStart(2, "0")}
-                </button>
-              ))}
+            <div style={{ width: 220, height: 220, margin: "0 auto", position: "relative" }}>
+              <svg ref={svgMinRef} width={220} height={220} style={{ cursor: "crosshair", userSelect: "none", display: "block" }}
+                onMouseDown={e => { dragging.current = true; setHoveredMin(getMinFromSvg(e)); }}
+                onMouseMove={e => { if (dragging.current) setHoveredMin(getMinFromSvg(e)); }}
+                onMouseUp={e => { dragging.current = false; const m = getMinFromSvg(e); set(hh, m); setOpen(false); setMode("hour"); setHoveredMin(null); }}
+                onMouseLeave={() => { if (!dragging.current) setHoveredMin(null); }}
+                onClick={e => { const m = getMinFromSvg(e); set(hh, m); setOpen(false); setMode("hour"); setHoveredMin(null); }}
+              >
+                <circle cx={CX} cy={CY} r={R + 8} fill="#f8fafc" stroke="#e2e8f0" strokeWidth={1} />
+                {/* Tick marks */}
+                {Array.from({ length: 60 }, (_, i) => {
+                  const ang = (i / 60) * 360 - 90;
+                  const rad = ang * Math.PI / 180;
+                  const isFive = i % 5 === 0;
+                  return <line key={i}
+                    x1={CX + Math.cos(rad) * (R + 5)} y1={CY + Math.sin(rad) * (R + 5)}
+                    x2={CX + Math.cos(rad) * (isFive ? R - 1 : R + 2)} y2={CY + Math.sin(rad) * (isFive ? R - 1 : R + 2)}
+                    stroke={isFive ? "#94a3b8" : "#cbd5e1"} strokeWidth={isFive ? 1.5 : 1}
+                    style={{ pointerEvents: "none" }} />;
+                })}
+                {/* 5-minute labels */}
+                {Array.from({ length: 12 }, (_, idx) => {
+                  const i = idx * 5;
+                  const ang = (i / 60) * 360 - 90;
+                  const rad = ang * Math.PI / 180;
+                  const lx = CX + Math.cos(rad) * (R - 14);
+                  const ly = CY + Math.sin(rad) * (R - 14);
+                  return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="central"
+                    fill="#475569" fontSize="10" style={{ pointerEvents: "none", userSelect: "none" }}>
+                    {String(i).padStart(2, "0")}
+                  </text>;
+                })}
+                {/* Hand + tip circle with live minute label */}
+                {(() => {
+                  const displayMin = hoveredMin !== null ? hoveredMin : mm;
+                  const ang = (displayMin / 60) * 360 - 90;
+                  const rad = ang * Math.PI / 180;
+                  const hx = CX + Math.cos(rad) * (R - 14);
+                  const hy = CY + Math.sin(rad) * (R - 14);
+                  return <>
+                    <circle cx={CX} cy={CY} r={4} fill="#2563eb" style={{ pointerEvents: "none" }} />
+                    <line x1={CX} y1={CY} x2={hx} y2={hy} stroke="#2563eb" strokeWidth={2} strokeLinecap="round" style={{ pointerEvents: "none" }} />
+                    <circle cx={hx} cy={hy} r={12} fill="#2563eb" style={{ pointerEvents: "none" }} />
+                    <text x={hx} y={hy} textAnchor="middle" dominantBaseline="central" fill="white" fontSize="9" fontWeight="bold" style={{ pointerEvents: "none", userSelect: "none" }}>
+                      {String(displayMin).padStart(2, "0")}
+                    </text>
+                  </>;
+                })()}
+              </svg>
+              <p className="text-center text-[10px] text-slate-400 mt-1">Drag or click to set minute</p>
             </div>
           )}
           {/* Direct input */}
