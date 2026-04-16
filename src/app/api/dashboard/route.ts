@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     prisma.customer.count(),
     prisma.sale.count(),
     prisma.vehicle.count(),
-    prisma.driver.count({ where: { type: "Driver" } }),
+    prisma.driver.count({ where: { driverType: "Driver" } }),
     prisma.booking.findMany({
       where: {},
       take: 15,
