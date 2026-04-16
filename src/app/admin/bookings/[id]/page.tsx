@@ -450,7 +450,27 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 {booking.driverNote && <InfoRow label="Driver Note" value={booking.driverNote} />}
               </div>
             )}
-            {booking.podUpload && (\n              <div className="border-t border-slate-100 pt-3 mt-3">\n                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Attachments</p>\n                <div className="flex flex-wrap gap-2">\n                  {(booking.podUpload.startsWith("[") ? (() => { try { return JSON.parse(booking.podUpload!); } catch { return [booking.podUpload]; } })() : [booking.podUpload])\n                    .map((file: string, i: number) => {\n                      const name = file.split("/").pop() || "file";\n                      const isPdf = name.endsWith(".pdf");\n                      return (\n                        <a key={i} href={file} target="_blank" rel="noreferrer" title={name}\n                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${\n                            isPdf ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"\n                          }`}>\n                          <Paperclip className="w-3.5 h-3.5" />\n                          <span className="max-w-[120px] truncate">{name}</span>\n                        </a>\n                      );\n                    })}\n                </div>\n              </div>\n            )}
+            {booking.podUpload && (
+              <div className="border-t border-slate-100 pt-3 mt-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Attachments</p>
+                <div className="flex flex-wrap gap-2">
+                  {(booking.podUpload.startsWith("[") ? (() => { try { return JSON.parse(booking.podUpload!); } catch { return [booking.podUpload]; } })() : [booking.podUpload])
+                    .map((file: string, i: number) => {
+                      const name = file.split("/").pop() || "file";
+                      const isPdf = name.endsWith(".pdf");
+                      return (
+                        <a key={i} href={file} target="_blank" rel="noreferrer" title={name}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                            isPdf ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                          }`}>
+                          <Paperclip className="w-3.5 h-3.5" />
+                          <span className="max-w-[120px] truncate">{name}</span>
+                        </a>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
             {booking.viaAddresses?.map((v: any, idx: number) => v.signedBy ? (
               <div key={v.id} className="border-t border-slate-100 pt-3 mt-3">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Via {idx + 1} POD</p>
