@@ -116,13 +116,41 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
 
     // ─── Helpers ──────────────────────────────────────────────────────────
 
-    function sectionHeader(title: string, color: string, icon?: string) {
+    function sectionHeader(title: string, color: string, iconType?: "parcel" | "pin" | "factory") {
       if (y > 750) { doc.addPage(); y = M; }
       const isLight = color === "#f0f4ff";
       doc.rect(0, y, W, 24).fill(color);
       const textColor = isLight ? "#4338ca" : C.white;
-      const label = icon ? `${icon}  ${title.toUpperCase()}` : title.toUpperCase();
-      doc.fillColor(textColor).font("Helvetica-Bold").fontSize(9).text(label, M, y + 7, { width: bodyW });
+      const iconX = M;
+      const iconY = y + 5;
+      const textX = iconType ? M + 18 : M;
+
+      // Draw vector icons
+      if (iconType === "parcel") {
+        // Small parcel/box icon
+        doc.save();
+        doc.rect(iconX, iconY, 12, 10).lineWidth(1).strokeColor(textColor).stroke();
+        doc.moveTo(iconX, iconY + 3).lineTo(iconX + 12, iconY + 3).strokeColor(textColor).stroke();
+        doc.moveTo(iconX + 6, iconY + 3).lineTo(iconX + 6, iconY + 10).strokeColor(textColor).stroke();
+        doc.restore();
+      } else if (iconType === "pin") {
+        // Map pin icon
+        doc.save();
+        doc.circle(iconX + 6, iconY + 4, 4).lineWidth(1).strokeColor(textColor).stroke();
+        doc.circle(iconX + 6, iconY + 4, 1.5).fill(textColor);
+        doc.moveTo(iconX + 3, iconY + 7).lineTo(iconX + 6, iconY + 13).lineTo(iconX + 9, iconY + 7).lineWidth(1).strokeColor(textColor).stroke();
+        doc.restore();
+      } else if (iconType === "factory") {
+        // Factory/building icon
+        doc.save();
+        doc.rect(iconX, iconY + 2, 12, 10).lineWidth(1).strokeColor(textColor).stroke();
+        doc.rect(iconX + 2, iconY + 5, 3, 3).fill(textColor);
+        doc.rect(iconX + 7, iconY + 5, 3, 3).fill(textColor);
+        doc.moveTo(iconX, iconY + 2).lineTo(iconX + 6, iconY - 1).lineTo(iconX + 12, iconY + 2).lineWidth(1).strokeColor(textColor).stroke();
+        doc.restore();
+      }
+
+      doc.fillColor(textColor).font("Helvetica-Bold").fontSize(9).text(title.toUpperCase(), textX, y + 7, { width: bodyW - (textX - M) });
       y += 24;
       y += 4; // spacing between header and rows
     }
@@ -137,7 +165,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
       y += rowH;
     }
 
-    function locationSection(title: string, color: string, icon: string, data: {
+    function locationSection(title: string, color: string, icon: "parcel" | "pin" | "factory", data: {
       date?: string | null; time?: string | null; name?: string | null; address?: string | null;
       contact?: string | null; phone?: string | null; notes?: string | null;
     }) {
@@ -152,7 +180,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     }
 
     // ─── Collection ───────────────────────────────────────────────────────
-    locationSection("Collection", C.blue, "\u{1F4E6}", {
+    locationSection("Collection", C.blue, "parcel", {
       date: booking.collectionDate, time: booking.collectionTime,
       name: booking.collectionName,
       address: addrParts(booking.collectionAddress1, booking.collectionAddress2, booking.collectionArea, booking.collectionPostcode) || null,
@@ -163,7 +191,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     vias.forEach((v: any, i: number) => {
       const noteText = v.notes?.split("---ORDERS---")[0] || "";
       const label = `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` \u2014 ${v.viaType}` : ""}`;
-      locationSection(label, "#f0f4ff", "\u{1F4CD}", {
+      locationSection(label, "#f0f4ff", "pin", {
         date: v.viaDate, time: v.viaTime, name: v.name,
         address: addrParts(v.address1, v.address2, v.area, v.postcode) || null,
         contact: v.contact, phone: v.phone, notes: noteText,
@@ -171,7 +199,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     });
 
     // ─── Delivery ─────────────────────────────────────────────────────────
-    locationSection("Delivery", C.blue, "\u{1F3ED}", {
+    locationSection("Delivery", C.blue, "factory", {
       date: booking.deliveryDate || booking.collectionDate, time: booking.deliveryTime,
       name: booking.deliveryName,
       address: addrParts(booking.deliveryAddress1, booking.deliveryAddress2, booking.deliveryArea, booking.deliveryPostcode) || null,

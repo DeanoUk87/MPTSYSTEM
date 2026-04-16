@@ -42,6 +42,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 // Cross-browser time picker — replaces <input type="time"> (Firefox renders it as plain text)
 function TimePicker({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"hour" | "minute">("hour");
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -53,7 +54,7 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
       if (
         btnRef.current && !btnRef.current.contains(e.target as Node) &&
         dropRef.current && !dropRef.current.contains(e.target as Node)
-      ) setOpen(false);
+      ) { setOpen(false); setMode("hour"); }
     }
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
@@ -61,15 +62,22 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
   const toggle = () => {
     if (!open && btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      const dropH = 264; // approx picker height
+      const dropH = 320;
       const below = r.bottom + 4 + dropH < window.innerHeight;
       const topBelow = Math.min(r.bottom + 4, window.innerHeight - dropH - 8);
       const topAbove = Math.max(8, r.top - dropH - 4);
       setPos(below ? { top: topBelow, left: r.left } : { top: topAbove, left: r.left });
     }
     setOpen(p => !p);
+    setMode("hour");
   };
   const set = (h: number, m: number) => onChange(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+  const R = 90; // clock radius
+  const CX = 110; const CY = 110; // center
+  const clockNumbers = mode === "hour"
+    ? Array.from({ length: 24 }, (_, i) => i)
+    : Array.from({ length: 60 }, (_, i) => i);
+  const selected = mode === "hour" ? hh : mm;
   return (
     <div className="relative">
       <button ref={btnRef} type="button" onClick={toggle}
@@ -78,36 +86,102 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
         <span>{value || "00:00"}</span>
       </button>
       {open && (
-        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 280 }}
+        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 240 }}
           className="bg-white border border-slate-200 rounded-xl shadow-xl p-3">
-          <div className="flex items-center gap-2 mb-3">
+          {/* Digital display */}
+          <div className="flex items-center justify-center gap-1 mb-3">
+            <button type="button" onClick={() => setMode("hour")}
+              className={`text-2xl font-mono font-bold px-2 py-0.5 rounded-lg transition-colors ${
+                mode === "hour" ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-100"}`}>
+              {String(hh).padStart(2, "0")}
+            </button>
+            <span className="text-2xl font-bold text-slate-300">:</span>
+            <button type="button" onClick={() => setMode("minute")}
+              className={`text-2xl font-mono font-bold px-2 py-0.5 rounded-lg transition-colors ${
+                mode === "minute" ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-100"}`}>
+              {String(mm).padStart(2, "0")}
+            </button>
+          </div>
+          {/* Clock face */}
+          <div className="relative" style={{ width: 220, height: 220, margin: "0 auto" }}>
+            <svg width={220} height={220}>
+              <circle cx={CX} cy={CY} r={R + 8} fill="#f8fafc" stroke="#e2e8f0" strokeWidth={1} />
+              {/* Hand from center to selected */}
+              {(() => {
+                if (mode === "hour") {
+                  const angle = ((selected % 12) / 12) * 360 - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  const handR = selected < 12 ? R - 14 : R - 34;
+                  return <>
+                    <line x1={CX} y1={CY} x2={CX + Math.cos(rad) * handR} y2={CY + Math.sin(rad) * handR}
+                      stroke="#2563eb" strokeWidth={2} strokeLinecap="round" />
+                    <circle cx={CX} cy={CY} r={3} fill="#2563eb" />
+                  </>;
+                } else {
+                  const angle = (selected / 60) * 360 - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  return <>
+                    <line x1={CX} y1={CY} x2={CX + Math.cos(rad) * (R - 14)} y2={CY + Math.sin(rad) * (R - 14)}
+                      stroke="#2563eb" strokeWidth={2} strokeLinecap="round" />
+                    <circle cx={CX} cy={CY} r={3} fill="#2563eb" />
+                  </>;
+                }
+              })()}
+            </svg>
+            {/* Numbers */}
+            {mode === "hour" ? (
+              <>
+                {/* Outer ring: 0-11 */}
+                {Array.from({ length: 12 }, (_, i) => {
+                  const angle = (i / 12) * 360 - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  const x = CX + Math.cos(rad) * (R - 14);
+                  const y2 = CY + Math.sin(rad) * (R - 14);
+                  return <button key={i} type="button" onClick={() => { set(i, mm); setMode("minute"); }}
+                    className={`absolute w-7 h-7 -ml-3.5 -mt-3.5 flex items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                      hh === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}
+                    style={{ left: x, top: y2 }}>{i === 0 ? "00" : i}</button>;
+                })}
+                {/* Inner ring: 12-23 */}
+                {Array.from({ length: 12 }, (_, i) => {
+                  const h = i + 12;
+                  const angle = (i / 12) * 360 - 90;
+                  const rad = (angle * Math.PI) / 180;
+                  const x = CX + Math.cos(rad) * (R - 34);
+                  const y2 = CY + Math.sin(rad) * (R - 34);
+                  return <button key={h} type="button" onClick={() => { set(h, mm); setMode("minute"); }}
+                    className={`absolute w-6 h-6 -ml-3 -mt-3 flex items-center justify-center rounded-full text-[10px] font-medium transition-colors ${
+                      hh === h ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-400"}`}
+                    style={{ left: x, top: y2 }}>{h}</button>;
+                })}
+              </>
+            ) : (
+              /* Minutes: show every 5th number, all 60 clickable */
+              Array.from({ length: 60 }, (_, i) => {
+                const angle = (i / 60) * 360 - 90;
+                const rad = (angle * Math.PI) / 180;
+                const x = CX + Math.cos(rad) * (R - 14);
+                const y2 = CY + Math.sin(rad) * (R - 14);
+                const show = i % 5 === 0;
+                return <button key={i} type="button" onClick={() => { set(hh, i); setOpen(false); setMode("hour"); }}
+                  className={`absolute flex items-center justify-center rounded-full transition-colors ${
+                    show ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium" : "w-3 h-3 -ml-1.5 -mt-1.5"} ${
+                    mm === i ? "bg-blue-600 text-white" : show ? "hover:bg-blue-50 text-slate-700" : "hover:bg-blue-100 bg-transparent"}`}
+                  style={{ left: x, top: y2 }}>{show ? String(i).padStart(2, "0") : ""}</button>;
+              })
+            )}
+          </div>
+          {/* Direct input */}
+          <div className="mt-2">
             <input type="text" placeholder="HH:MM" defaultValue={value || "00:00"}
-              className="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm font-mono text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   const v = (e.target as HTMLInputElement).value;
-                  const m = v.match(/^(\d{1,2}):(\d{2})$/);
-                  if (m) { const h2 = Math.min(23, parseInt(m[1])); const m2 = Math.min(59, parseInt(m[2])); set(h2, m2); setOpen(false); }
+                  const mt = v.match(/^(\d{1,2}):(\d{2})$/);
+                  if (mt) { set(Math.min(23, parseInt(mt[1])), Math.min(59, parseInt(mt[2]))); setOpen(false); setMode("hour"); }
                 }
               }} />
-          </div>
-          <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Hour</p>
-          <div className="grid grid-cols-6 gap-1 mb-3">
-            {Array.from({ length: 24 }, (_, i) => (
-              <button key={i} type="button" onClick={() => set(i, mm)}
-                className={`text-xs py-1 rounded-lg font-mono font-medium transition-colors ${hh === i ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}>
-                {String(i).padStart(2, "0")}
-              </button>
-            ))}
-          </div>
-          <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Minute</p>
-          <div className="grid grid-cols-10 gap-1">
-            {Array.from({ length: 60 }, (_, m) => (
-              <button key={m} type="button" onClick={() => { set(hh, m); setOpen(false); }}
-                className={`text-[10px] py-1 rounded-lg font-mono font-medium transition-colors ${mm === m ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}>
-                {String(m).padStart(2, "0")}
-              </button>
-            ))}
           </div>
         </div>
       )}
