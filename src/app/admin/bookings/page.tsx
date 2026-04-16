@@ -259,7 +259,7 @@ export default function BookingsPage() {
     { key: "via6", label: "Via 6", render: (r) => r.viaAddresses?.[5]?.postcode || "—" },
     { key: "deliveryPostcode", label: "To", render: (r) => r.deliveryPostcode || "—" },
     { key: "driver", label: "Driver", render: (r) => r.driver?.name || <span className="text-rose-500 text-xs">Unassigned</span> },
-    { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—", financial: true },
+    { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—" },
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (
       <div className="flex items-center gap-1">
