@@ -419,7 +419,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         setLockState(d);
         if (!d.locked) await tryAcquire();
       }
-    }, 5_000);
+    }, 2_000);
     return () => {
       alive = false;
       clearInterval(pollRef.current!);

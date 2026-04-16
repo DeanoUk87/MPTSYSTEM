@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Plus, Eye, Pencil, Trash2, Loader2, CheckCircle, Clock, AlertCircle, FileText, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
+import { usePermissions } from "@/lib/use-permissions";
 
 interface Booking {
   id: string;
@@ -120,6 +121,7 @@ function SearchPick({ placeholder, onPick, onClear, picked }: {
 }
 
 export default function BookingsPage() {
+  const { has } = usePermissions();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Booking | null>(null);
@@ -261,15 +263,21 @@ export default function BookingsPage() {
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (
       <div className="flex items-center gap-1">
-        <Link href={`/admin/bookings/${r.id}`} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors">
-          <Eye className="w-4 h-4" />
-        </Link>
-        <Link href={`/admin/bookings/${r.id}/edit`} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors">
-          <Pencil className="w-4 h-4" />
-        </Link>
-        <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors">
-          <Trash2 className="w-4 h-4" />
-        </button>
+        {has("bookings_view") && (
+          <Link href={`/admin/bookings/${r.id}`} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors">
+            <Eye className="w-4 h-4" />
+          </Link>
+        )}
+        {has("bookings_edit") && (
+          <Link href={`/admin/bookings/${r.id}/edit`} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors">
+            <Pencil className="w-4 h-4" />
+          </Link>
+        )}
+        {has("bookings_delete") && (
+          <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors">
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
       </div>
     )},
   ];

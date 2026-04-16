@@ -6,6 +6,7 @@ import Modal from "@/components/Modal";
 import { Plus, Pencil, Trash2, Download, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { usePermissions } from "@/lib/use-permissions";
 
 interface Customer {
   id: string;
@@ -38,6 +39,7 @@ const emptyForm = {
 const inp = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 export default function CustomersPage() {
+  const { has } = usePermissions();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -158,8 +160,12 @@ export default function CustomersPage() {
             className="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
             Rates
           </Link>
-          <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600"><Pencil className="w-4 h-4" /></button>
-          <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
+          {has("customers_edit") && (
+            <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600"><Pencil className="w-4 h-4" /></button>
+          )}
+          {has("customers_delete") && (
+            <button onClick={() => setDeleteTarget(r)} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
+          )}
         </div>
       ),
     },

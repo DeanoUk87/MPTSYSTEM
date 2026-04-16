@@ -6,6 +6,7 @@ import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
 import { Plus, Pencil, Trash2, Users, Eye, Smartphone, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePermissions } from "@/lib/use-permissions";
 
 interface DriverContact {
   id: string; driverName: string; vehicleMake?: string;
@@ -34,6 +35,7 @@ const typeVariant: Record<string, any> = { Driver: "success", SubContractor: "wa
 const inp = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 export default function DriversPage() {
+  const { has } = usePermissions();
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -225,8 +227,12 @@ export default function DriversPage() {
             {r.hasAccess ? <CheckCircle2 className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
             {accessLoading === r.id ? "..." : r.hasAccess ? "Access Granted" : "Allow Access"}
           </button>
-          <button onClick={() => openEditDriver(r)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
-          <button onClick={() => setDeleteDriver(r)} className="p-1.5 rounded hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
+          {has("drivers_edit") && (
+            <button onClick={() => openEditDriver(r)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
+          )}
+          {has("drivers_delete") && (
+            <button onClick={() => setDeleteDriver(r)} className="p-1.5 rounded hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
+          )}
         </div>
       )
     },
