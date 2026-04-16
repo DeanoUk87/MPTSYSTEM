@@ -35,6 +35,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 function TimePicker({ value, onChange, className }: { value: string; onChange: (v: string) => void; className?: string }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"hour" | "minute">("hour");
+  const [hoveredMin, setHoveredMin] = useState<number | null>(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -46,7 +47,7 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
       if (
         btnRef.current && !btnRef.current.contains(e.target as Node) &&
         dropRef.current && !dropRef.current.contains(e.target as Node)
-      ) { setOpen(false); setMode("hour"); }
+      ) { setOpen(false); setMode("hour"); setHoveredMin(null); }
     }
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
@@ -66,7 +67,7 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
   const set = (h: number, m: number) => onChange(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
   const R = 90;
   const CX = 110; const CY = 110;
-  const selected = mode === "hour" ? hh : mm;
+  const selected = mode === "hour" ? hh : (hoveredMin !== null ? hoveredMin : mm);
   return (
     <div className="relative">
       <button ref={btnRef} type="button" onClick={toggle}
@@ -88,7 +89,7 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
             <button type="button" onClick={() => setMode("minute")}
               className={`text-2xl font-mono font-bold px-2 py-0.5 rounded-lg transition-colors ${
                 mode === "minute" ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-100"}`}>
-              {String(mm).padStart(2, "0")}
+              {String(hoveredMin !== null ? hoveredMin : mm).padStart(2, "0")}
             </button>
           </div>
           {/* Clock face */}
@@ -147,11 +148,16 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
                 const x = CX + Math.cos(rad) * (R - 14);
                 const y2 = CY + Math.sin(rad) * (R - 14);
                 const show = i % 5 === 0;
-                return <button key={i} type="button" onClick={() => { set(hh, i); setOpen(false); setMode("hour"); }}
-                  className={`absolute flex items-center justify-center rounded-full transition-colors ${
-                    show ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium" : "w-3 h-3 -ml-1.5 -mt-1.5"} ${
-                    mm === i ? "bg-blue-600 text-white" : show ? "hover:bg-blue-50 text-slate-700" : "hover:bg-blue-100 bg-transparent"}`}
-                  style={{ left: x, top: y2 }}>{show ? String(i).padStart(2, "0") : ""}</button>;
+                const isHovered = hoveredMin === i;
+                return <button key={i} type="button"
+                  onClick={() => { set(hh, i); setOpen(false); setMode("hour"); setHoveredMin(null); }}
+                  onMouseEnter={() => setHoveredMin(i)}
+                  onMouseLeave={() => setHoveredMin(null)}
+                  title={String(i).padStart(2, "0")}
+                  className={`absolute flex items-center justify-center rounded-full transition-all ${
+                    show || isHovered ? "w-7 h-7 -ml-3.5 -mt-3.5 text-xs font-medium" : "w-4 h-4 -ml-2 -mt-2"} ${
+                    mm === i ? "bg-blue-600 text-white" : isHovered ? "bg-blue-100 text-blue-700 ring-2 ring-blue-300" : show ? "hover:bg-blue-50 text-slate-700" : "hover:bg-blue-100 bg-slate-200"}`}
+                  style={{ left: x, top: y2 }}>{show || isHovered ? String(i).padStart(2, "0") : ""}</button>;
               })
             )}
           </div>
@@ -328,6 +334,12 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
   const [customer, setCustomer] = useState<any>(null);
   const [showUnitsModal, setShowUnitsModal] = useState(false);
   const [assigningUnit, setAssigningUnit] = useState<string | null>(null);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyDate, setCopyDate] = useState("");
+  const [copying, setCopying] = useState(false);
+  const [showSimilarModal, setShowSimilarModal] = useState(false);
+  const [similarJobs, setSimilarJobs] = useState<any[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
 
   const [f, setF] = useState<Record<string, any>>({});
   const [jt, setJt] = useState(0);
@@ -628,6 +640,105 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
     } catch { toast.error("Failed to update"); }
   }
 
+  // ─── Copy to New ──────────────────────────────────────────────────────
+  async function handleCopyToNew() {
+    if (!copyDate) { toast.error("Please select a date"); return; }
+    setCopying(true);
+    try {
+      // Build payload from current booking data, excluding driver/notes, PO = TBC
+      const payload: Record<string, any> = {
+        customerId: customer?.id,
+        vehicleId: f.vehicleId,
+        miles: f.miles,
+        customerPrice: f.customerPrice,
+        manualAmount: f.manualAmount,
+        manualDesc: f.manualDesc,
+        fuelSurchargePercent: f.fuelSurchargePercent,
+        extraCost2: f.extraCost2,
+        extraCost2Label: f.extraCost2Label,
+        avoidTolls: f.avoidTolls,
+        waitAndReturn: f.waitAndReturn,
+        purchaseOrder: "TBC",
+        bookedBy: f.bookedBy,
+        numberOfItems: f.numberOfItems,
+        weight: f.weight,
+        bookingTypeId: f.bookingTypeId,
+        jobNotes: "",
+        officeNotes: "",
+        driverId: null,
+        secondManId: null,
+        cxDriverId: null,
+        driverCost: "",
+        extraCost: "",
+        cxDriverCost: "",
+        collectionDate: copyDate,
+        collectionTime: f.collectionTime,
+        collectionName: f.collectionName,
+        collectionAddress1: f.collectionAddress1,
+        collectionAddress2: f.collectionAddress2,
+        collectionArea: f.collectionArea,
+        collectionCountry: f.collectionCountry,
+        collectionPostcode: f.collectionPostcode,
+        collectionContact: f.collectionContact,
+        collectionPhone: f.collectionPhone,
+        collectionNotes: "",
+        deliveryDate: copyDate,
+        deliveryTime: f.deliveryTime,
+        deliveryName: f.deliveryName,
+        deliveryAddress1: f.deliveryAddress1,
+        deliveryAddress2: f.deliveryAddress2,
+        deliveryArea: f.deliveryArea,
+        deliveryCountry: f.deliveryCountry,
+        deliveryPostcode: f.deliveryPostcode,
+        deliveryContact: f.deliveryContact,
+        deliveryPhone: f.deliveryPhone,
+        deliveryNotes: "",
+        jobStatus: 0,
+      };
+      // Copy vias without notes
+      const copiedVias = vias.filter((v: any) => v.name || v.postcode).map((v: any) => ({
+        name: v.name, address1: v.address1, address2: v.address2, area: v.area, postcode: v.postcode,
+        country: v.country, contact: v.contact, phone: v.phone, viaType: v.viaType,
+        viaDate: copyDate, viaTime: v.viaTime, notes: "",
+      }));
+      const res = await fetch("/api/bookings", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, viaAddresses: copiedVias }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Copy failed");
+      const created = await res.json();
+      toast.success("Job copied successfully");
+      setShowCopyModal(false);
+      router.push(`/admin/bookings/${created.id}/edit`);
+    } catch (e: any) { toast.error(e.message); } finally { setCopying(false); }
+  }
+
+  // ─── View Similar Jobs ────────────────────────────────────────────────
+  async function loadSimilarJobs() {
+    setLoadingSimilar(true);
+    setSimilarJobs([]);
+    setShowSimilarModal(true);
+    try {
+      // Search by collection and delivery postcodes + vehicle
+      const params = new URLSearchParams();
+      if (f.collectionPostcode) params.set("collectionPostcode", f.collectionPostcode);
+      if (f.deliveryPostcode) params.set("deliveryPostcode", f.deliveryPostcode);
+      if (f.vehicleId) params.set("vehicleId", f.vehicleId);
+      params.set("exclude", id);
+      const res = await fetch(`/api/bookings?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load");
+      const data = await res.json();
+      // Filter client-side for matching postcodes and vehicle
+      const matches = (Array.isArray(data) ? data : data.bookings || []).filter((b: any) => {
+        const colMatch = !f.collectionPostcode || b.collectionPostcode === f.collectionPostcode;
+        const delMatch = !f.deliveryPostcode || b.deliveryPostcode === f.deliveryPostcode;
+        const vehMatch = !f.vehicleId || b.vehicleId === f.vehicleId;
+        return (colMatch && delMatch && vehMatch) && b.id !== id;
+      });
+      setSimilarJobs(matches.slice(0, 50));
+    } catch (e: any) { toast.error(e.message); } finally { setLoadingSimilar(false); }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!f.purchaseOrder) { toast.error("Purchase Order is required"); return; }
@@ -708,11 +819,21 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
               <option value={2} className="text-slate-800">Out of Hours</option>
             </select>
           </div>
-          <button type="button" onClick={(e) => handleSubmit(e as any)} disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-xl font-semibold text-sm disabled:opacity-70 shadow-md transition-all">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓"}
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setShowCopyModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-semibold text-sm transition-all">
+              📋 Copy to New
+            </button>
+            <button type="button" onClick={loadSimilarJobs}
+              className="flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-semibold text-sm transition-all">
+              🔍 Similar Jobs
+            </button>
+            <button type="button" onClick={(e) => handleSubmit(e as any)} disabled={saving}
+              className="flex items-center gap-2 px-5 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-xl font-semibold text-sm disabled:opacity-70 shadow-md transition-all">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓"}
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4" noValidate>
@@ -1349,6 +1470,93 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 })}
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy to New Modal */}
+      {showCopyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <h2 className="font-bold text-slate-800 text-base">Copy Job to New Date</h2>
+              <button type="button" onClick={() => setShowCopyModal(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-slate-500">This will copy the entire job to a new date. Driver, notes, and PO will be cleared.</p>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">New Collection Date</label>
+                <input type="date" value={copyDate} onChange={e => setCopyDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setShowCopyModal(false)}
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 font-medium transition-colors">Cancel</button>
+                <button type="button" onClick={handleCopyToNew} disabled={copying || !copyDate}
+                  className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 disabled:opacity-70 transition-all">
+                  {copying && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {copying ? "Copying..." : "Copy"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Similar Jobs Modal */}
+      {showSimilarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+              <div>
+                <h2 className="font-bold text-slate-800 text-base">Similar Jobs</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Matching postcodes: {f.collectionPostcode || "—"} → {f.deliveryPostcode || "—"}</p>
+              </div>
+              <button type="button" onClick={() => setShowSimilarModal(false)} className="text-slate-400 hover:text-slate-700 text-xl font-bold">×</button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4">
+              {loadingSimilar ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                </div>
+              ) : similarJobs.length === 0 ? (
+                <p className="text-center text-slate-400 py-12 text-sm">No similar jobs found</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs text-slate-500 uppercase tracking-wider">
+                      <th className="pb-2 px-2">Job Ref</th>
+                      <th className="pb-2 px-2">Date</th>
+                      <th className="pb-2 px-2">Vehicle</th>
+                      <th className="pb-2 px-2 text-right">Miles</th>
+                      <th className="pb-2 px-2 text-right">Quote</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {similarJobs.map((b: any) => (
+                      <tr key={b.id} className="border-b border-slate-100 hover:bg-blue-50/50 transition-colors">
+                        <td className="py-2 px-2">
+                          <Link href={`/admin/bookings/${b.id}/edit`} onClick={() => setShowSimilarModal(false)}
+                            className="text-blue-600 hover:text-blue-800 font-semibold underline underline-offset-2">
+                            {b.jobRef || b.id.slice(-8).toUpperCase()}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-2 text-slate-600">
+                          {b.collectionDate ? b.collectionDate.split("-").reverse().join("/") : "—"}
+                        </td>
+                        <td className="py-2 px-2 text-slate-600">{b.vehicle?.name || "—"}</td>
+                        <td className="py-2 px-2 text-right font-mono text-slate-700">
+                          {b.miles ? `${Number(b.miles).toFixed(1)}` : "—"}
+                        </td>
+                        <td className="py-2 px-2 text-right font-semibold text-emerald-700">
+                          {b.customerPrice ? `£${Number(b.customerPrice).toFixed(2)}` : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

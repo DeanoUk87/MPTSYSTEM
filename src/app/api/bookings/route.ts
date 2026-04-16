@@ -15,9 +15,17 @@ export async function GET(req: NextRequest) {
   const dateTo = searchParams.get("dateTo");
   // podOnly=1 → only jobs with podDate+podTime+signature (completed) — for reports
   const podOnly = searchParams.get("podOnly") === "1";
+  const collectionPostcode = searchParams.get("collectionPostcode");
+  const deliveryPostcode = searchParams.get("deliveryPostcode");
+  const vehicleId = searchParams.get("vehicleId");
+  const exclude = searchParams.get("exclude");
 
   const where: any = {}; // deletedAt filter added via raw SQL after rebuild
   if (customerId) where.customerId = customerId;
+  if (collectionPostcode) where.collectionPostcode = collectionPostcode;
+  if (deliveryPostcode) where.deliveryPostcode = deliveryPostcode;
+  if (vehicleId) where.vehicleId = vehicleId;
+  if (exclude) where.id = { not: exclude };
   // driverId filter: match main driver OR second man OR CX driver
   if (driverId) {
     where.OR = [
