@@ -419,7 +419,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         setLockState(d);
         if (!d.locked) await tryAcquire();
       }
-    }, 30_000);
+    }, 5_000);
     return () => {
       alive = false;
       clearInterval(pollRef.current!);
@@ -891,7 +891,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
           </div>
           <h2 className="text-xl font-bold text-slate-800">Job Locked</h2>
           <p className="text-sm text-slate-600">
-            This job is currently being edited by <span className="font-semibold text-red-600">{lockState.lockedBy || "another user"}</span>.
+            This job is currently being edited by <span className="font-semibold text-red-600">{lockState.lockedBy?.name || "another user"}</span>.
           </p>
           <div className="flex gap-3 justify-center">
             <button onClick={() => router.push("/admin/bookings")}

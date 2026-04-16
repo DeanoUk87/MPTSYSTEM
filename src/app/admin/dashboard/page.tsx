@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import Link from "next/link";
-import { Users, Package, FileText, CheckCircle, Clock, Mail, Archive } from "lucide-react";
+import { Users, Package, Truck, Car } from "lucide-react";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
@@ -25,13 +25,8 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Total Customers" value={stats?.totalCustomers ?? "—"} icon={Users} color="blue" />
           <StatCard title="Total Sales" value={stats?.totalSales ?? "—"} icon={Package} color="purple" />
-          <StatCard title="Total Invoices" value={stats?.totalInvoices ?? "—"} icon={FileText} color="amber" />
-          <StatCard title="Emails Sent" value={stats?.sentInvoices ?? "—"} icon={Mail} color="green" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard title="Pending Invoices" value={stats?.pendingInvoices ?? "—"} icon={Clock} color="amber" trend="Awaiting print/send" />
-          <StatCard title="Unsent Invoices" value={stats?.unsent ?? "—"} icon={CheckCircle} color="rose" trend="Email not yet dispatched" />
-          <StatCard title="Archived Sales" value={stats?.archivedSales ?? "—"} icon={Archive} color="purple" trend="Moved to archive" />
+          <StatCard title="Total Vehicles" value={stats?.totalVehicles ?? "—"} icon={Car} color="amber" />
+          <StatCard title="Total Drivers" value={stats?.totalDrivers ?? "—"} icon={Truck} color="green" />
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">

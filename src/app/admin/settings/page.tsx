@@ -32,9 +32,7 @@ const fields: { key: keyof Settings; label: string; type?: string; rows?: number
   { key: "vatNumber", label: "VAT Number" },
   { key: "invoiceDueDate", label: "Invoice Due Days", type: "number" },
   { key: "invoiceDuePaymentBy", label: "Payment Method" },
-  { key: "sendLimit", label: "Email Send Limit (per batch)", type: "number" },
   { key: "bookingRefreshInterval", label: "Booking Dashboard Auto-Refresh (seconds, 0 to disable)", type: "number" },
-  { key: "messageTitle", label: "Invoice Email Subject" },
   { key: "defaultMessage", label: "Default Email Body 1", rows: 4 },
   { key: "defaultMessage2", label: "Default Email Body 2 (supports {invoice_number})", rows: 4 },
 ];

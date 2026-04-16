@@ -174,7 +174,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           await tryAcquire();
         }
       }
-    }, 30_000);
+    }, 5_000);
 
     return () => {
       alive = false;

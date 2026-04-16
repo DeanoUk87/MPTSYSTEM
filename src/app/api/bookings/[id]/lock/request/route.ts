@@ -6,7 +6,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const ok = setRequester(id, session.id, session.id);
+  const userName = (session as any).name || session.id;
+  const ok = setRequester(id, session.id, userName);
   return ok
     ? NextResponse.json({ requested: true })
     : NextResponse.json({ error: "No active lock found" }, { status: 404 });

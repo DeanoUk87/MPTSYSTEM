@@ -15,20 +15,14 @@ export async function GET(req: NextRequest) {
   const [
     totalCustomers,
     totalSales,
-    totalInvoices,
-    pendingInvoices,
-    sentInvoices,
-    unsent,
-    archivedSales,
+    totalVehicles,
+    totalDrivers,
     recentBookings,
   ] = await Promise.all([
     prisma.customer.count(),
     prisma.sale.count(),
-    prisma.invoice.count(),
-    prisma.invoice.count({ where: { printer: 0 } }),
-    prisma.invoice.count({ where: { emailStatus: 1 } }),
-    prisma.invoice.count({ where: { emailStatus: 0 } }),
-    prisma.saleArchive.count(),
+    prisma.vehicle.count(),
+    prisma.driver.count({ where: { type: "Driver" } }),
     prisma.booking.findMany({
       where: {},
       take: 15,
@@ -54,7 +48,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    stats: { totalCustomers, totalSales, totalInvoices, pendingInvoices, sentInvoices, unsent, archivedSales },
+    stats: { totalCustomers, totalSales, totalVehicles, totalDrivers },
     recentBookings,
   });
   } catch (e: any) {

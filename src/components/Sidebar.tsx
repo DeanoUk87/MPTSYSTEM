@@ -3,9 +3,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Users, Package, Settings,
-  UserCog, Shield, Mail, Archive, LogOut, Building2,
-  Truck, Car, Thermometer, ClipboardList, ReceiptText,
+  LayoutDashboard, Users, Settings,
+  UserCog, Shield, LogOut, Building2,
+  Truck, Car, Thermometer, ClipboardList,
   Fuel, BookMarked, Map, ChevronLeft, ChevronRight
 } from "lucide-react";
 import clsx from "clsx";
@@ -25,15 +25,7 @@ const navGroups = [
       { label: "Map Routing", href: "/admin/map-routing", icon: Map },
     ],
   },
-  {
-    label: "Accounts",
-    items: [
-      { label: "Sales", href: "/admin/sales", icon: Package },
-      { label: "Invoices", href: "/admin/invoices", icon: ReceiptText },
-      { label: "Archive", href: "/admin/archive", icon: Archive },
-      { label: "Composer", href: "/admin/composer", icon: Mail },
-    ],
-  },
+
   {
     label: "Admin",
     items: [
