@@ -55,8 +55,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     fetch("/api/branding").then(r => r.json()).then(d => setBranding(d)).catch(() => {});
     // Fetch current user's permissions from JWT
     fetch("/api/me").then(r => r.json()).then(d => {
-      if (d?.permissions) setUserPerms(new Set(d.permissions));
-      else if (d?.roles?.includes("admin")) setUserPerms(null); // admin sees all (null = no filtering)
+      if (d?.roles?.includes("admin")) setUserPerms(null); // admin sees all (null = no filtering)
+      else if (d?.permissions) setUserPerms(new Set(d.permissions));
       else setUserPerms(new Set());
     }).catch(() => setUserPerms(new Set()));
   }, []);
