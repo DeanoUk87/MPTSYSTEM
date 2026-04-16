@@ -7,16 +7,30 @@ async function main() {
   console.log("Seeding database...");
 
   const permissionNames = [
-    "admin_roles_permissions",
-    "customers_view", "customers_create", "customers_edit", "customers_delete", "customers_export", "customers_import",
-    "sales_view", "sales_create", "sales_edit", "sales_delete", "sales_export", "sales_import",
-    "invoices_view", "invoices_create", "invoices_edit", "invoices_delete", "invoices_export", "invoices_send",
+    // Dashboard
+    "dashboard_view",
+    // Bookings
+    "bookings_view", "bookings_create", "bookings_edit", "bookings_delete",
+    // Drivers
+    "drivers_view", "drivers_create", "drivers_edit", "drivers_delete",
+    // Vehicles
+    "vehicles_view", "vehicles_create", "vehicles_edit", "vehicles_delete",
+    // Storage
+    "storage_view", "storage_create", "storage_edit", "storage_delete",
+    // Customers
+    "customers_view", "customers_create", "customers_edit", "customers_delete",
+    // Addresses
+    "addresses_view", "addresses_create", "addresses_edit", "addresses_delete",
+    // Fuel Surcharges
+    "fuel_view", "fuel_create", "fuel_edit", "fuel_delete",
+    // Map Routing
+    "map_view",
+    // Settings
     "settings_view", "settings_edit",
-    "posts_view", "posts_create", "posts_edit", "posts_delete",
+    // Users
     "users_view", "users_create", "users_edit", "users_delete",
+    // Roles
     "roles_view", "roles_create", "roles_edit", "roles_delete",
-    "archive_view", "archive_restore",
-    "composer_view", "composer_create", "composer_send",
   ];
 
   const permissions: Record<string, { id: string }> = {};
@@ -53,7 +67,7 @@ async function main() {
     });
   }
 
-  const userPerms = ["customers_view", "invoices_view", "sales_view"];
+  const userPerms = ["dashboard_view", "bookings_view", "customers_view"];
   for (const pName of userPerms) {
     await prisma.rolePermission.upsert({
       where: { roleId_permissionId: { roleId: userRole.id, permissionId: permissions[pName].id } },
@@ -63,7 +77,7 @@ async function main() {
   }
 
   const admin2Perms = permissionNames.filter(
-    (p) => !["settings_edit", "users_create", "users_delete", "roles_create", "roles_delete", "admin_roles_permissions"].includes(p)
+    (p) => !["settings_edit", "users_create", "users_delete", "roles_create", "roles_delete"].includes(p)
   );
   for (const pName of admin2Perms) {
     await prisma.rolePermission.upsert({

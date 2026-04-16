@@ -14,24 +14,24 @@ const navGroups = [
   {
     label: "Transport",
     items: [
-      { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-      { label: "Bookings", href: "/admin/bookings", icon: ClipboardList },
-      { label: "Drivers", href: "/admin/drivers", icon: Truck },
-      { label: "Vehicles", href: "/admin/vehicles", icon: Car },
-      { label: "Storage Units", href: "/admin/storage", icon: Thermometer },
-      { label: "Customers", href: "/admin/customers", icon: Users },
-      { label: "Addresses", href: "/admin/addresses", icon: BookMarked },
-      { label: "Fuel Surcharges", href: "/admin/fuel-surcharges", icon: Fuel },
-      { label: "Map Routing", href: "/admin/map-routing", icon: Map },
+      { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, perm: "dashboard_view" },
+      { label: "Bookings", href: "/admin/bookings", icon: ClipboardList, perm: "bookings_view" },
+      { label: "Drivers", href: "/admin/drivers", icon: Truck, perm: "drivers_view" },
+      { label: "Vehicles", href: "/admin/vehicles", icon: Car, perm: "vehicles_view" },
+      { label: "Storage Units", href: "/admin/storage", icon: Thermometer, perm: "storage_view" },
+      { label: "Customers", href: "/admin/customers", icon: Users, perm: "customers_view" },
+      { label: "Addresses", href: "/admin/addresses", icon: BookMarked, perm: "addresses_view" },
+      { label: "Fuel Surcharges", href: "/admin/fuel-surcharges", icon: Fuel, perm: "fuel_view" },
+      { label: "Map Routing", href: "/admin/map-routing", icon: Map, perm: "map_view" },
     ],
   },
 
   {
     label: "Admin",
     items: [
-      { label: "Settings", href: "/admin/settings", icon: Settings },
-      { label: "Users", href: "/admin/users", icon: UserCog },
-      { label: "Roles", href: "/admin/roles", icon: Shield },
+      { label: "Settings", href: "/admin/settings", icon: Settings, perm: "settings_view" },
+      { label: "Users", href: "/admin/users", icon: UserCog, perm: "users_view" },
+      { label: "Roles", href: "/admin/roles", icon: Shield, perm: "roles_view" },
     ],
   },
 ];
@@ -47,11 +47,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const [mounted, setMounted] = useState(false);
   const [tooltip, setTooltip] = useState<{ label: string; y: number } | null>(null);
   const [branding, setBranding] = useState<{ logo: string | null; menuLogo: string | null; companyName: string } | null>(null);
+  const [userPerms, setUserPerms] = useState<Set<string> | null>(null); // null = loading
   useEffect(() => setMounted(true), []);
   useEffect(() => { if (!collapsed) setTooltip(null); }, [collapsed]);
 
   useEffect(() => {
     fetch("/api/branding").then(r => r.json()).then(d => setBranding(d)).catch(() => {});
+    // Fetch current user's permissions from JWT
+    fetch("/api/me").then(r => r.json()).then(d => {
+      if (d?.permissions) setUserPerms(new Set(d.permissions));
+      else if (d?.roles?.includes("admin")) setUserPerms(null); // admin sees all (null = no filtering)
+      else setUserPerms(new Set());
+    }).catch(() => setUserPerms(new Set()));
   }, []);
 
   const showTip = (e: React.MouseEvent, label: string) => {
@@ -105,13 +112,19 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Nav */}
       <nav className={clsx("flex-1 py-3 overflow-y-auto px-2 space-y-0.5", !collapsed && "overflow-x-hidden")}>
-        {navGroups.map((group, gi) => (
+        {navGroups.map((group, gi) => {
+          // Filter items by permission — if userPerms is null (still loading or admin), show all
+          const visibleItems = userPerms === null
+            ? group.items
+            : group.items.filter(item => !item.perm || userPerms.has(item.perm));
+          if (visibleItems.length === 0) return null;
+          return (
           <div key={group.label} className={gi > 0 ? "pt-2" : ""}>
             {collapsed
               ? <div className="border-t border-slate-700/40 mx-1 my-2" />
               : <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-1 mt-1">{group.label}</p>
             }
-            {group.items.map((item) => {
+            {visibleItems.map((item) => {
               const Icon = item.icon;
               const active = mounted && (pathname === item.href || (item.href !== "/admin/dashboard" && pathname.startsWith(item.href)));
               return (
@@ -134,7 +147,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
               );
             })}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer */}
