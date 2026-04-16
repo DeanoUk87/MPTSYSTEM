@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = session as any;
-  if (!user.dcontactId) return NextResponse.json({ error: "Not a driver contact account" }, { status: 403 });
+  if (!user.driverId) return NextResponse.json({ error: "Not a driver account" }, { status: 403 });
 
   const { searchParams } = new URL(req.url);
   const today = new Date().toISOString().split("T")[0];
@@ -17,23 +17,35 @@ export async function GET(req: NextRequest) {
   try {
     const bookings = await prisma.booking.findMany({
       where: {
-        driverContactId: user.dcontactId,
+        OR: [
+          { driverId: user.driverId },
+          { secondManId: user.driverId },
+          { cxDriverId: user.driverId },
+        ],
         collectionDate: { gte: dateFrom, lte: dateTo },
+        deletedAt: null,
       },
-      include: {
-        customer: { select: { name: true } },
-        vehicle: { select: { name: true } },
-        driver: { select: { name: true } },
-        secondMan: { select: { name: true } },
-        chillUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
-        ambientUnit: { select: { id: true, unitNumber: true, unitType: true, imei: true } },
-        viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" } },
+      select: {
+        id: true,
+        jobRef: true,
+        collectionDate: true,
+        collectionPostcode: true,
+        collectionName: true,
+        deliveryPostcode: true,
+        deliveryName: true,
+        driverCost: true,
+        extraCost: true,
+        viaAddresses: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: "asc" },
+          select: { id: true, postcode: true, name: true },
+        },
       },
       orderBy: [{ collectionDate: "asc" }, { collectionTime: "asc" }],
     });
     return NextResponse.json(bookings);
   } catch (e: any) {
-    console.error("Driver bookings GET error:", e.message);
+    console.error("Driver portal bookings GET error:", e.message);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

@@ -60,7 +60,7 @@ export default function DriverPortalPage() {
   useEffect(() => {
     fetch("/api/me").then(r => r.json()).then(d => {
       if (d?.name) setDriverName(d.name);
-      if (!d?.driverId) { router.replace("/login"); }
+      if (!d?.dcontactId) { router.replace("/login"); }
     }).catch(() => router.replace("/login"));
   }, [router]);
 

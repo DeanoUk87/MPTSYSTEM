@@ -59,7 +59,13 @@ export async function POST(req: NextRequest) {
       .setExpirationTime("7d")
       .sign(new TextEncoder().encode(SECRET));
 
-    const redirectTo = user.customerId ? "/portal" : user.driverId ? "/driver" : "/admin";
+    const redirectTo = user.customerId
+      ? "/portal"
+      : user.driverId
+      ? "/driver-portal"
+      : user.dcontactId
+      ? "/driver"
+      : "/admin";
     const res = NextResponse.json({ ok: true, redirectTo });
     res.cookies.set("mp-session", token, {
       httpOnly: true,

@@ -35,10 +35,28 @@ export async function middleware(req: NextRequest) {
       url.pathname = "/portal";
       return NextResponse.redirect(url);
     }
-    // Drivers must only access /driver, not /admin
+    // Main drivers must only access /driver-portal, not /admin
     if (pathname.startsWith("/admin") && (payload as any).driverId) {
       const url = req.nextUrl.clone();
+      url.pathname = "/driver-portal";
+      return NextResponse.redirect(url);
+    }
+    // Driver contacts must only access /driver, not /admin
+    if (pathname.startsWith("/admin") && (payload as any).dcontactId) {
+      const url = req.nextUrl.clone();
       url.pathname = "/driver";
+      return NextResponse.redirect(url);
+    }
+    // Driver contacts must not access /driver-portal
+    if (pathname.startsWith("/driver-portal") && !(payload as any).driverId) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    // Main drivers must not access /driver (mobile contact page)
+    if (pathname.startsWith("/driver") && !pathname.startsWith("/driver-portal") && !(payload as any).dcontactId) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
