@@ -4,12 +4,13 @@ import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
-import { Plus, Pencil, Trash2, Users, Eye, Smartphone } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Eye, Smartphone, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface DriverContact {
   id: string; driverName: string; vehicleMake?: string;
   vehicleRegistration?: string; driverPhone?: string;
+  hasAccess?: boolean;
 }
 
 interface Driver {
@@ -17,6 +18,7 @@ interface Driver {
   email?: string; phone?: string; notes?: string;
   costPerMile: number; costPerMileWeekends: number; costPerMileOutOfHours: number;
   contacts?: DriverContact[];
+  hasAccess?: boolean;
 }
 
 const emptyDriverForm = {
@@ -185,6 +187,7 @@ export default function DriversPage() {
       if (!res.ok) throw new Error((await res.json()).error || "Failed");
       const data = await res.json();
       setCredsModal({ name: driverName, username: data.username, password: data.password });
+      fetchDrivers(); // refresh so hasAccess updates visually
     } catch (e: any) { toast.error(e.message); } finally { setAccessLoading(null); }
   }
 
@@ -212,11 +215,15 @@ export default function DriversPage() {
           <button
             onClick={() => handleGrantAccess(r.id, r.name)}
             disabled={accessLoading === r.id}
-            title="Grant mobile login access"
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
+            title={r.hasAccess ? "Access already granted — click to reset password" : "Grant login access"}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+              r.hasAccess
+                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 ring-1 ring-emerald-400"
+                : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+            }`}
           >
-            <Smartphone className="w-3 h-3" />
-            {accessLoading === r.id ? "..." : "Mobile"}
+            {r.hasAccess ? <CheckCircle2 className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
+            {accessLoading === r.id ? "..." : r.hasAccess ? "Access Granted" : "Allow Access"}
           </button>
           <button onClick={() => openEditDriver(r)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600"><Pencil className="w-4 h-4" /></button>
           <button onClick={() => setDeleteDriver(r)} className="p-1.5 rounded hover:bg-rose-50 text-rose-600"><Trash2 className="w-4 h-4" /></button>
@@ -328,11 +335,15 @@ export default function DriversPage() {
                         <button
                           onClick={() => contactsDriver && handleGrantAccess(contactsDriver.id, c.driverName, c.id)}
                           disabled={accessLoading === c.id}
-                          title="Grant mobile login access"
-                          className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
+                          title={c.hasAccess ? "Mobile access already granted — click to reset password" : "Grant mobile access"}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                            c.hasAccess
+                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 ring-1 ring-emerald-400"
+                              : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                          }`}
                         >
-                          <Smartphone className="w-3 h-3" />
-                          {accessLoading === c.id ? "..." : "Mobile Access"}
+                          {c.hasAccess ? <CheckCircle2 className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
+                          {accessLoading === c.id ? "..." : c.hasAccess ? "Access Granted" : "Mobile Access"}
                         </button>
                         <button onClick={() => { setViewContact(c); setViewContactModal(true); }}
                           className="p-1 rounded hover:bg-blue-50 text-blue-600"><Eye className="w-3.5 h-3.5" /></button>

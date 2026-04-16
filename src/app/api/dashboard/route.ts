@@ -24,11 +24,12 @@ export async function GET(req: NextRequest) {
     prisma.vehicle.count(),
     prisma.driver.count({ where: { driverType: "Driver" } }),
     prisma.booking.findMany({
-      where: {},
+      where: { deletedAt: null },
       take: 15,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
+        jobRef: true,
         collectionDate: true,
         collectionTime: true,
         collectionPostcode: true,
@@ -40,6 +41,8 @@ export async function GET(req: NextRequest) {
         podDataVerify: true,
         customer: { select: { name: true } },
         driver: { select: { name: true } },
+        cxDriver: { select: { name: true } },
+        secondMan: { select: { name: true } },
         vehicle: { select: { name: true } },
         bookingType: { select: { name: true } },
         viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, signedBy: true } },

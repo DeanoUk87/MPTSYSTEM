@@ -20,7 +20,37 @@ export async function GET(req: NextRequest) {
       orderBy: { name: "asc" },
       ...(q ? { take: 20 } : {}),
     });
-    return NextResponse.json(drivers);
+
+    // Attach hasAccess flags without schema changes
+    const driverIds = drivers.map(d => d.id);
+    const contactIds = drivers.flatMap(d => (d.contacts as any[]).map((c: any) => c.id));
+
+    const [driverUsers, contactUsers] = await Promise.all([
+      prisma.user.findMany({
+        where: { driverId: { in: driverIds }, dcontactId: null },
+        select: { driverId: true },
+      }),
+      contactIds.length > 0
+        ? prisma.user.findMany({
+            where: { dcontactId: { in: contactIds } },
+            select: { dcontactId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const driverAccessSet = new Set(driverUsers.map(u => u.driverId));
+    const contactAccessSet = new Set(contactUsers.map(u => u.dcontactId));
+
+    const result = drivers.map(d => ({
+      ...d,
+      hasAccess: driverAccessSet.has(d.id),
+      contacts: (d.contacts as any[]).map((c: any) => ({
+        ...c,
+        hasAccess: contactAccessSet.has(c.id),
+      })),
+    }));
+
+    return NextResponse.json(result);
   } catch (e: any) {
     console.error("Drivers GET error:", e.message);
     return NextResponse.json({ error: e.message }, { status: 500 });
