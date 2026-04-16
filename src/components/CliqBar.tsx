@@ -27,6 +27,7 @@ interface CliqMessage {
 const POLL_INTERVAL = 30_000;
 const HIDDEN_KEY = "cliq_hidden_chats";
 const INIT_KEY = "cliq_bar_initialized";
+const READ_KEY = "cliq_read_times"; // tracks when each chat was last read by this browser user
 
 function loadHidden(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY) ?? "[]")); } catch { return new Set(); }
@@ -34,6 +35,14 @@ function loadHidden(): Set<string> {
 function saveHidden(s: Set<string>) { localStorage.setItem(HIDDEN_KEY, JSON.stringify([...s])); }
 function isFirstLoad(): boolean { return !localStorage.getItem(INIT_KEY); }
 function markInitialized() { localStorage.setItem(INIT_KEY, "1"); }
+function loadReadTimes(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(READ_KEY) ?? "{}"); } catch { return {}; }
+}
+function saveReadTime(chatId: string, time: string) {
+  const rt = loadReadTimes();
+  rt[chatId] = time;
+  localStorage.setItem(READ_KEY, JSON.stringify(rt));
+}
 
 function ChatIcon({ chat }: { chat: CliqChat }) {
   if (chat.is_channel) return <Hash className="w-3 h-3 shrink-0" />;
@@ -74,6 +83,18 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
   const visibleChats = chats.filter(c => !hiddenIds.has(c.chat_id));
   const totalUnread = chats.reduce((n, c) => n + (c.unread_message_count ?? 0), 0);
 
+  // Compute client-side unread by comparing last_message time vs last-read time
+  const computeUnread = useCallback((incoming: CliqChat[]): CliqChat[] => {
+    const readTimes = loadReadTimes();
+    return incoming.map(c => {
+      const lastMsgTime = c.last_message_info?.time ?? c.last_modified_time ?? "";
+      const lastReadTime = readTimes[c.chat_id] ?? "";
+      // If the chat has a newer message than when we last read it, mark as 1 unread
+      const hasNew = lastMsgTime && (!lastReadTime || lastMsgTime > lastReadTime);
+      return { ...c, unread_message_count: hasNew ? Math.max(c.unread_message_count ?? 0, 1) : 0 };
+    });
+  }, []);
+
   const fetchChats = useCallback(async (retry = 0) => {
     try {
       const res = await fetch("/api/cliq/chats");
@@ -93,14 +114,21 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
       const incoming: CliqChat[] = d.chats ?? [];
       // Filter out chats with no recent activity (inactive/removed users)
       const active = incoming.filter(c => c.last_message_info || c.is_channel);
-      setChats(active);
-      // First-ever load: auto-hide all chats with no unread messages
+      // Apply client-side unread tracking (Zoho API unread counts are unreliable via server OAuth)
+      const withUnread = computeUnread(active);
+      setChats(withUnread);
+      // First-ever load: auto-hide all chats with no unread messages + mark all as read
       setHiddenIds(prev => {
         if (!isFirstLoad()) return prev;
         markInitialized();
+        const now = new Date().toISOString();
+        // Mark all current chats as read so they don't show badges on first visit
+        withUnread.forEach(c => saveReadTime(c.chat_id, now));
         const next = new Set(prev);
         active.forEach(c => { if (!c.unread_message_count) next.add(c.chat_id); });
         saveHidden(next);
+        // Re-compute with read times now set
+        setChats(computeUnread(active));
         return next;
       });
     } catch (e: any) { setFetchError(e?.message ?? "Network error"); setConfigured(true); }
@@ -129,9 +157,11 @@ export default function CliqBar({ collapsed }: { collapsed: boolean }) {
       .finally(() => setMessagesLoading(false));
   }, [activeChat]);
 
-  // When active chat changes, mark it as read locally
+  // When active chat changes, mark it as read locally + persist read time
   useEffect(() => {
     if (!activeChat) return;
+    const now = new Date().toISOString();
+    saveReadTime(activeChat.chat_id, now);
     setChats(prev => prev.map(c => c.chat_id === activeChat.chat_id ? { ...c, unread_message_count: 0 } : c));
   }, [activeChat]);
 
