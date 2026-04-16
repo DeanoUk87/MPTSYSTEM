@@ -24,6 +24,7 @@ interface Booking {
   purchaseOrder?: string; jobNotes?: string;
   jobStatus: number; podSignature?: string; podDataVerify: boolean;
   podDate?: string; podTime?: string; podRelationship?: string; deliveredTemperature?: string;
+  podUpload?: string;
   hideTrackingTemperature: boolean; hideTrackingMap: boolean;
   driver?: { name: string };
   chillUnit?: StorageUnit; ambientUnit?: StorageUnit;
@@ -325,6 +326,14 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                 {b.deliveredTemperature && <div><p className="text-xs text-slate-400">Delivered Temp</p><p className="font-medium text-slate-700">{b.deliveredTemperature}</p></div>}
                 {!b.podSignature && <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD sign-off…</div>}
               </div>
+              {b.podUpload && (
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <a href={b.podUpload} target="_blank" rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
+                    📎 Download POD Document
+                  </a>
+                </div>
+              )}
             </div>
 
           </div>

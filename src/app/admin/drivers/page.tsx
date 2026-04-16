@@ -244,9 +244,11 @@ export default function DriversPage() {
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-500">{drivers.length} driver(s)</p>
+          {has("drivers_create") && (
           <button onClick={openCreateDriver} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
             <Plus className="w-4 h-4" /> Add Driver
           </button>
+          )}
         </div>
         <DataTable data={drivers} columns={columns} searchKeys={["name", "email", "phone"]} loading={loading} />
       </div>
@@ -281,6 +283,7 @@ export default function DriversPage() {
             </div>
           </div>
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider border-t pt-3">Rates (£ per mile)</p>
+          {has("drivers_rates") && (
           <div className="grid grid-cols-3 gap-3">
             {[
               { k: "costPerMile", l: "Normal" },
@@ -294,6 +297,7 @@ export default function DriversPage() {
               </div>
             ))}
           </div>
+          )}
           <div className="flex gap-3 pt-2">
             <button onClick={() => setDriverModal(false)} className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
             <button onClick={saveDriver} disabled={savingDriver} className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60">
@@ -338,6 +342,7 @@ export default function DriversPage() {
                     <td className="px-3 py-2 text-slate-600">{c.driverPhone || "—"}</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-1">
+                        {has("drivers_access") && (
                         <button
                           onClick={() => contactsDriver && handleGrantAccess(contactsDriver.id, c.driverName, c.id)}
                           disabled={accessLoading === c.id}
@@ -351,12 +356,15 @@ export default function DriversPage() {
                           {c.hasAccess ? <CheckCircle2 className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
                           {accessLoading === c.id ? "..." : c.hasAccess ? "Access Granted" : "Mobile Access"}
                         </button>
+                        )}
                         <button onClick={() => { setViewContact(c); setViewContactModal(true); }}
                           className="p-1 rounded hover:bg-blue-50 text-blue-600"><Eye className="w-3.5 h-3.5" /></button>
                         <button onClick={() => openEditContact(c)}
                           className="p-1 rounded hover:bg-slate-100 text-slate-600"><Pencil className="w-3.5 h-3.5" /></button>
+                        {has("driver_contacts_delete") && (
                         <button onClick={() => deleteContact(c.id)}
                           className="p-1 rounded hover:bg-rose-50 text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MapPin, Clock, User, Truck, Package, CheckCircle, XCircle, Pencil, ArrowLeft, Loader2, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
+import { usePermissions } from "@/lib/use-permissions";
 
 interface Booking {
   id: string;
@@ -25,6 +26,7 @@ interface Booking {
   jobNotes?: string; officeNotes?: string; weekend: number; jobStatus: number;
   podSignature?: string; podTime?: string; podDate?: string; podDataVerify: boolean;
   podRelationship?: string; driverNote?: string; deliveredTemperature?: string;
+  podUpload?: string;
   hideTrackingTemperature: boolean; hideTrackingMap: boolean;
   jobRef?: string;
   viaAddresses?: any[];
@@ -114,6 +116,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   const [lockChecked, setLockChecked] = useState(false);
   const isMineRef = useRef(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { has } = usePermissions();
 
   useEffect(() => {
     fetch(`/api/bookings/${id}`)
@@ -388,6 +391,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Financials */}
+          {has("bookings_financials") && (
           <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-2">
             <h3 className="font-semibold text-slate-800 mb-3 flex items-center gap-2"><Truck className="w-4 h-4 text-blue-600" />Drivers & Financials</h3>
             <InfoRow label="Driver" value={booking.driver?.name} />
@@ -405,6 +409,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {/* POD */}
@@ -421,6 +426,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 <InfoRow label="POD Time" value={booking.podTime} />
                 <InfoRow label="Temperature" value={booking.deliveredTemperature} />
                 {booking.driverNote && <InfoRow label="Driver Note" value={booking.driverNote} />}
+              </div>
+            )}
+            {booking.podUpload && (
+              <div className="border-t border-slate-100 pt-3 mt-3">
+                <a href={booking.podUpload} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors">
+                  📎 Download POD Document
+                </a>
               </div>
             )}
             {booking.viaAddresses?.map((v: any, idx: number) => v.signedBy ? (

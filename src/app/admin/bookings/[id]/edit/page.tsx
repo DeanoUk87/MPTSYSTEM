@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/lib/use-permissions";
 import { Loader2, ArrowLeft, Plus, ExternalLink, RefreshCw, Thermometer, MapPin, CheckCircle, Clock, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import Script from "next/script";
@@ -343,11 +344,14 @@ function NameSearch({ value, onChange, onApply }: {
 export default function EditBookingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { has } = usePermissions();
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<any>(null);
   const directionsRendererRef = useRef<any>(null);
 
   const [saving, setSaving] = useState(false);
+  const [podUpload, setPodUpload] = useState("");
+  const [podUploading, setPodUploading] = useState(false);
   const [calcMiles, setCalcMiles] = useState(false);
   const [loadingBooking, setLoadingBooking] = useState(true);
   const [routeInfo, setRouteInfo] = useState<{ miles: number; duration: string } | null>(null);
@@ -547,6 +551,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         jobStatus: booking.jobStatus ?? 0,
         jobRef: booking.jobRef || "",
       });
+      setPodUpload(booking.podUpload || "");
       setLoadingBooking(false);
     });
   }, [id]);
@@ -1113,7 +1118,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-medium text-slate-500 w-16 shrink-0">Quote (£)</label>
-                    <input type="number" step="0.01" min="0" value={f.customerPrice || ""} onChange={e => s("customerPrice", e.target.value)} className={inp + " font-bold"} placeholder="0.00" />
+                    {has("bookings_financials") && <input type="number" step="0.01" min="0" value={f.customerPrice || ""} onChange={e => s("customerPrice", e.target.value)} className={inp + " font-bold"} placeholder="0.00" />}
                   </div>
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-medium text-slate-500 w-16 shrink-0">Fuel Surcharge</label>
@@ -1230,12 +1235,14 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
               <div className={panel}>
                 <SHead color="bg-emerald-600" icon="💰" label="Profit &amp; Notes" />
                 <div className="p-4 space-y-3">
+                  {has("bookings_financials") && (
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-bold text-slate-600 shrink-0">PROFIT £</label>
                     <div className={`flex-1 px-3 py-2 border rounded-xl text-sm font-bold text-center ${profit >= 0 ? "text-emerald-700 bg-emerald-50 border-emerald-200" : "text-rose-700 bg-rose-50 border-rose-200"}`}>
                       {profit.toFixed(2)}
                     </div>
                   </div>
+                  )}
                   <textarea value={f.jobNotes || ""} onChange={e => s("jobNotes", e.target.value)} placeholder="Job Notes" rows={4} className={inp + " resize-none"} />
                 </div>
               </div>
@@ -1340,8 +1347,8 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         <option value="">— Select Driver —</option>
                         {drivers.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
                       </select>
-                      <span className="text-xs text-slate-400 shrink-0">£</span>
-                      <input type="number" step="0.01" min="0" value={f.driverCost || ""} onChange={e => s("driverCost", e.target.value)} className={costInp} placeholder="0.00" />
+                      {has("bookings_financials") && <><span className="text-xs text-slate-400 shrink-0">£</span>
+                      <input type="number" step="0.01" min="0" value={f.driverCost || ""} onChange={e => s("driverCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
                     </div>
                   </div>
                   <div>
@@ -1351,13 +1358,14 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         const id = e.target.value;
                         const miles = Math.round(parseFloat(f.miles) || 0);
                         const dr = subcons.find((d: any) => d.id === id);
+                        if (!id) { setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "" })); return; }
                         setF(p => ({ ...p, secondManId: id, secondManContactId: "", extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost }));
                       }} className={inp}>
                         <option value="">— Select SubCon —</option>
                         {subcons.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
                       </select>
-                      <span className="text-xs text-slate-400 shrink-0">£</span>
-                      <input type="number" step="0.01" min="0" value={f.extraCost || ""} onChange={e => s("extraCost", e.target.value)} className={costInp} placeholder="0.00" />
+                      {has("bookings_financials") && <><span className="text-xs text-slate-400 shrink-0">£</span>
+                      <input type="number" step="0.01" min="0" value={f.extraCost || ""} onChange={e => s("extraCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
                     </div>
                     {subconContacts.length > 0 && (
                       <select value={f.secondManContactId || ""} onChange={e => s("secondManContactId", e.target.value)} className={inp + " mt-1.5"}>
@@ -1373,13 +1381,14 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         const id = e.target.value;
                         const miles = Math.round(parseFloat(f.miles) || 0);
                         const dr = cxDrivers.find((d: any) => d.id === id);
+                        if (!id) { setF(p => ({ ...p, cxDriverId: "", cxDriverContactId: "", cxDriverCost: "" })); return; }
                         setF(p => ({ ...p, cxDriverId: id, cxDriverContactId: "", cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost }));
                       }} className={inp}>
                         <option value="">— Select CX Driver —</option>
                         {cxDrivers.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
                       </select>
-                      <span className="text-xs text-slate-400 shrink-0">£</span>
-                      <input type="number" step="0.01" min="0" value={f.cxDriverCost || ""} onChange={e => s("cxDriverCost", e.target.value)} className={costInp} placeholder="0.00" />
+                      {has("bookings_financials") && <><span className="text-xs text-slate-400 shrink-0">£</span>
+                      <input type="number" step="0.01" min="0" value={f.cxDriverCost || ""} onChange={e => s("cxDriverCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
                     </div>
                     {cxContacts.length > 0 && (
                       <select value={f.cxDriverContactId || ""} onChange={e => s("cxDriverContactId", e.target.value)} className={inp + " mt-1.5"}>
@@ -1461,6 +1470,43 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div className="flex items-center gap-3 pt-1">
                     <Toggle checked={!!f.podDataVerify} onChange={v => s("podDataVerify", v)} label="POD Verified" />
+                  </div>
+                  {/* POD File Upload */}
+                  <div className="border-t border-slate-100 pt-3">
+                    <label className="text-xs font-medium text-slate-500 block mb-2">POD Document</label>
+                    {podUpload && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <a href={podUpload} target="_blank" rel="noreferrer"
+                          className="text-xs text-blue-600 hover:text-blue-800 underline truncate max-w-[200px]">
+                          {podUpload.split("/").pop()}
+                        </a>
+                        <button type="button" onClick={async () => {
+                          if (!confirm("Remove POD document?")) return;
+                          await fetch(`/api/bookings/${id}/pod`, { method: "DELETE" });
+                          setPodUpload("");
+                          toast.success("POD document removed");
+                        }} className="text-rose-500 hover:text-rose-700 text-xs font-bold">&times;</button>
+                      </div>
+                    )}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <span className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs bg-white hover:bg-slate-50 font-medium transition-colors">
+                        {podUploading ? "Uploading…" : podUpload ? "Replace file" : "Choose file"}
+                      </span>
+                      <input type="file" className="hidden" accept="image/*,.pdf" disabled={podUploading}
+                        onChange={async e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setPodUploading(true);
+                          try {
+                            const fd = new FormData();
+                            fd.append("file", file);
+                            const res = await fetch(`/api/bookings/${id}/pod`, { method: "POST", body: fd });
+                            const data = await res.json();
+                            if (data.podUpload) { setPodUpload(data.podUpload); toast.success("POD document uploaded"); }
+                            else toast.error(data.error || "Upload failed");
+                          } catch { toast.error("Upload failed"); } finally { setPodUploading(false); e.target.value = ""; }
+                        }} />
+                    </label>
                   </div>
                 </div>
               </div>

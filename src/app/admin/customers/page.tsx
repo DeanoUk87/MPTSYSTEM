@@ -144,6 +144,7 @@ export default function CustomersPage() {
       key: "actions", label: "Actions",
       render: r => (
         <div className="flex items-center gap-1">
+          {has("customers_access") && (
           <button
             onClick={() => handleGrantAccess(r)}
             disabled={loginLoading === r.id}
@@ -156,10 +157,13 @@ export default function CustomersPage() {
           >
             {loginLoading === r.id ? "..." : r.hasLoginAccess ? "🔓 Login" : "🔒 Login"}
           </button>
+          )}
+          {has("customers_rates") && (
           <Link href={`/admin/customers/${r.id}`}
             className="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
             Rates
           </Link>
+          )}
           {has("customers_edit") && (
             <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-600"><Pencil className="w-4 h-4" /></button>
           )}
@@ -243,11 +247,13 @@ export default function CustomersPage() {
               <label className="block text-xs font-medium text-slate-600 mb-1">PO Email</label>
               <input type="email" value={form.poEmail} onChange={e => set("poEmail", e.target.value)} className={inp} />
             </div>
+            {has("customers_jobref") && (
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Job Ref Start Number</label>
               <input type="number" min="1" value={form.jobRefStart} onChange={e => set("jobRefStart", e.target.value)} className={inp} />
               <p className="text-xs text-slate-400 mt-0.5">First job ref number for this customer (e.g. 1 = ACC-00001)</p>
             </div>
+            )}
             <div className="col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">Internal Notes</label>
               <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} className={inp + " resize-none"} />

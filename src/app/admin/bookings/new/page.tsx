@@ -1031,22 +1031,12 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                 </div>
               </div>
 
-              {/* POD Upload + Office Notes */}
+              {/* Office Notes */}
               <div className={panel}>
-                <SHead color="bg-teal-600" icon="📎" label="POD Upload" />
-                <div className="p-4 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <label className="px-3 py-2 border border-slate-200 rounded-lg text-xs bg-white hover:bg-slate-50 cursor-pointer font-medium transition-colors">
-                      Choose file
-                      <input type="file" className="hidden" accept="image/*,.pdf" />
-                    </label>
-                    <span className="text-xs text-slate-400">No file chosen</span>
-                  </div>
-                  <button type="button" className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs hover:bg-emerald-700 font-medium transition-colors">
-                    <Plus className="w-3 h-3" /> Add file
-                  </button>
+                <SHead color="bg-teal-600" icon="📝" label="Office Notes" />
+                <div className="p-4">
                   <textarea value={f.officeNotes} onChange={e => s("officeNotes", e.target.value)}
-                    placeholder="Office Notes" rows={3} className={inp + " resize-none"} />
+                    placeholder="Office Notes" rows={4} className={inp + " resize-none"} />
                 </div>
               </div>
             </div>
