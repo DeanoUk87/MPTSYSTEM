@@ -2,17 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import nodemailer from "nodemailer";
-import React from "react";
-// @react-pdf/renderer loaded lazily inside POST to prevent V8 WASM/large-bundle OOM at startup
-let Document: any, Page: any, Text: any, View: any, renderToBuffer: any, PdfImage: any;
-let S: any = null;
-async function ensurePdfLoaded() {
-  if (renderToBuffer) return;
-  const pdf: any = await import("@react-pdf/renderer");
-  Document = pdf.Document; Page = pdf.Page; Text = pdf.Text; View = pdf.View;
-  renderToBuffer = pdf.renderToBuffer; PdfImage = pdf.Image;
-  S = pdf.StyleSheet.create(rawStyles);
-}
+
+// ─── Pure-JS PDF generation (no WASM dependencies) ───────────────────────────
 
 function fmt(s?: string | null) {
   if (!s) return "";
@@ -24,229 +15,187 @@ function addrParts(...parts: (string | null | undefined)[]) {
   return parts.filter(Boolean).join(", ") || "";
 }
 
-// ─── PDF Styles ───────────────────────────────────────────────────────────────
-
-const rawStyles = {
-  page: { fontFamily: "Helvetica", fontSize: 9, color: "#374151", backgroundColor: "#f8fafc", paddingBottom: 30 },
-  header: { backgroundColor: "#1a3a5c", padding: "16 20 14 20", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  headerLeft: { flex: 1 },
-  headerCompany: { fontSize: 16, fontFamily: "Helvetica-Bold", color: "#ffffff", marginBottom: 3 },
-  headerSub: { fontSize: 8, color: "rgba(255,255,255,0.75)", marginTop: 1 },
-  headerLogo: { width: 70, height: 35, objectFit: "contain" },
-  jobRefBox: { backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 6, padding: "8 12", textAlign: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" },
-  jobRefLabel: { fontSize: 7, color: "rgba(255,255,255,0.75)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 },
-  jobRefValue: { fontSize: 16, fontFamily: "Helvetica-Bold", color: "#ffffff" },
-
-  customerBanner: { backgroundColor: "#eff6ff", padding: "8 20", flexDirection: "row", gap: 20, borderBottomWidth: 1, borderBottomColor: "#dde4f5" },
-  bannerItem: { flex: 1 },
-  bannerLabel: { fontSize: 7, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 },
-  bannerValue: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#111827" },
-
-  sectionHeader: { backgroundColor: "#1e4976", padding: "6 14", color: "#ffffff", fontSize: 9, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
-  sectionHeaderGrey: { backgroundColor: "#374151", padding: "6 14", color: "#ffffff", fontSize: 9, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
-  sectionHeaderIndigo: { backgroundColor: "#4338ca", padding: "6 14", color: "#ffffff", fontSize: 9, fontFamily: "Helvetica-Bold", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 8 },
-  body: { paddingHorizontal: 14, paddingTop: 5 },
-  row: { flexDirection: "row", paddingVertical: 3, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
-  rowLabel: { fontFamily: "Helvetica-Bold", width: 100, color: "#374151", paddingRight: 6 },
-  rowValue: { flex: 1, color: "#374151" },
-  rowValueAmber: { flex: 1, color: "#b45309" },
-
-  notesBox: { margin: "6 14 0 14", padding: "8 10", backgroundColor: "#fffbeb", borderRadius: 4, borderLeftWidth: 3, borderLeftColor: "#f59e0b" },
-  notesLabel: { fontFamily: "Helvetica-Bold", fontSize: 8, color: "#b45309", marginBottom: 2 },
-  notesText: { fontSize: 9, color: "#92400e" },
-
-  footer: { position: "absolute", bottom: 10, left: 20, right: 20, textAlign: "center", fontSize: 8, color: "#9ca3af" },
-  gap: { marginTop: 4 },
-  content: { margin: "0 14" },
+/* Colours */
+const C = {
+  navy: "#1a3a5c",
+  blue: "#1e4976",
+  indigo: "#4338ca",
+  grey: "#374151",
+  text: "#374151",
+  muted: "#6b7280",
+  light: "#9ca3af",
+  amber: "#b45309",
+  amberDark: "#92400e",
+  bannerBg: "#eff6ff",
+  bannerBorder: "#dde4f5",
+  rowBorder: "#f1f5f9",
+  notesBg: "#fffbeb",
+  notesBorder: "#f59e0b",
+  white: "#ffffff",
 };
 
-// ─── Section Row helper ───────────────────────────────────────────────────────
-
-function Row({ label, value }: { label: string; value?: string | null }) {
-  if (!value?.trim()) return null;
-  return React.createElement(View, { style: S.row },
-    React.createElement(Text, { style: S.rowLabel }, label),
-    React.createElement(Text, { style: S.rowValue }, value)
-  );
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
 
-// ─── Location section (collection / via / delivery) ───────────────────────────
+async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
+  const PDFDocument = (await import("pdfkit")).default;
 
-function LocationSection({ title, color, date, time, name, address, contact, phone, notes }: {
-  title: string; color: "blue" | "indigo" | "grey";
-  date?: string | null; time?: string | null; name?: string | null; address?: string | null;
-  contact?: string | null; phone?: string | null; notes?: string | null;
-}) {
-  const headerStyle = color === "indigo" ? S.sectionHeaderIndigo : color === "grey" ? S.sectionHeaderGrey : S.sectionHeader;
-  return React.createElement(React.Fragment, null,
-    React.createElement(Text, { style: headerStyle }, title),
-    React.createElement(View, { style: S.body },
-      React.createElement(View, { style: S.row },
-        React.createElement(Text, { style: S.rowLabel }, "Date:"),
-        React.createElement(Text, { style: S.rowValue }, [fmt(date), time].filter(Boolean).join("  ") || "—")
-      ),
-      React.createElement(View, { style: S.row },
-        React.createElement(Text, { style: S.rowLabel }, "Name:"),
-        React.createElement(Text, { style: S.rowValue }, name || "—")
-      ),
-      React.createElement(View, { style: S.row },
-        React.createElement(Text, { style: S.rowLabel }, "Address:"),
-        React.createElement(Text, { style: S.rowValue }, address || "—")
-      ),
-      contact ? React.createElement(View, { style: S.row },
-        React.createElement(Text, { style: S.rowLabel }, "Contact Name:"),
-        React.createElement(Text, { style: S.rowValue }, contact)
-      ) : null,
-      phone ? React.createElement(View, { style: S.row },
-        React.createElement(Text, { style: S.rowLabel }, "Telephone:"),
-        React.createElement(Text, { style: S.rowValue }, phone)
-      ) : null,
-      notes?.trim() ? React.createElement(View, { style: S.row },
-        React.createElement(Text, { style: S.rowLabel }, "Notes:"),
-        React.createElement(Text, { style: S.rowValueAmber }, notes.trim())
-      ) : null,
-    )
-  );
-}
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const doc = new PDFDocument({ size: "A4", margin: 0, bufferPages: true });
+    doc.on("data", (c: Buffer) => chunks.push(c));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
 
-// ─── PDF Document ─────────────────────────────────────────────────────────────
+    const W = 595.28; // A4 width in points
+    const M = 20; // margin
+    const bodyX = M;
+    const bodyW = W - 2 * M;
+    let y = 0;
 
-function JobSheetDoc({ booking, settings }: { booking: any; settings: any }) {
-  const company = settings?.companyName || "MP Transport";
-  const jobRef = booking.jobRef || booking.id.slice(-8).toUpperCase();
-  const vias: any[] = booking.viaAddresses || [];
-  const logoUrl = settings?.logo || null;
+    const company = settings?.companyName || "MP Transport";
+    const jobRef = (booking as any).jobRef || booking.id.slice(-8).toUpperCase();
+    const vias: any[] = booking.viaAddresses || [];
+    const rawJobNotes = booking.jobNotes || "";
+    const items = booking.numberOfItems ? String(booking.numberOfItems) : null;
+    const weight = booking.weight ? `${booking.weight} kg` : null;
+    const miles = booking.miles ? `${Number(booking.miles).toFixed(1)} mi` : null;
+    const units = [booking.chillUnit, booking.ambientUnit].filter(Boolean);
 
-  const rawJobNotes = booking.jobNotes || "";
-  const items = booking.numberOfItems ? String(booking.numberOfItems) : null;
-  const weight = booking.weight ? `${booking.weight} kg` : null;
-  const miles = booking.miles ? `${Number(booking.miles).toFixed(1)} mi` : null;
-  const units = [booking.chillUnit, booking.ambientUnit].filter(Boolean);
+    // ─── Header bar ───────────────────────────────────────────────────────
+    const headerH = 60;
+    doc.rect(0, 0, W, headerH).fill(C.navy);
+    doc.fillColor(C.white).font("Helvetica-Bold").fontSize(16).text(company, M, 14, { width: 300 });
+    if (settings?.companyAddress1) {
+      doc.font("Helvetica").fontSize(8).fillColor("#c0c8d4")
+        .text(addrParts(settings.companyAddress1, settings.city, settings.postcode), M, 34, { width: 300 });
+    }
+    if (settings?.phone) {
+      doc.text(`Tel: ${settings.phone}`, M, 44, { width: 300 });
+    }
+    // Job ref box (right side)
+    const refBoxW = 100;
+    const refBoxX = W - M - refBoxW;
+    doc.roundedRect(refBoxX, 10, refBoxW, 40, 4).lineWidth(1).strokeColor("#ffffff").fillAndStroke("#2a4d6e", "#ffffff");
+    doc.fillColor("#c0c8d4").font("Helvetica").fontSize(7).text("JOB REFERENCE", refBoxX, 16, { width: refBoxW, align: "center" });
+    doc.fillColor(C.white).font("Helvetica-Bold").fontSize(14).text(jobRef, refBoxX, 28, { width: refBoxW, align: "center" });
+    y = headerH;
 
-  return React.createElement(Document, null,
-    React.createElement(Page, { size: "A4", style: S.page },
+    // ─── Customer banner ──────────────────────────────────────────────────
+    const bannerH = 36;
+    doc.rect(0, y, W, bannerH).fill(C.bannerBg);
+    doc.moveTo(0, y + bannerH).lineTo(W, y + bannerH).lineWidth(1).strokeColor(C.bannerBorder).stroke();
 
-      // Header
-      React.createElement(View, { style: S.header },
-        React.createElement(View, { style: S.headerLeft },
-          logoUrl
-            ? React.createElement(PdfImage, { src: logoUrl, style: S.headerLogo })
-            : React.createElement(Text, { style: S.headerCompany }, company),
-          settings?.companyAddress1
-            ? React.createElement(Text, { style: S.headerSub }, addrParts(settings.companyAddress1, settings.city, settings.postcode))
-            : null,
-          settings?.phone
-            ? React.createElement(Text, { style: S.headerSub }, `Tel: ${settings.phone}`)
-            : null,
-        ),
-        React.createElement(View, { style: S.jobRefBox },
-          React.createElement(Text, { style: S.jobRefLabel }, "Job Reference"),
-          React.createElement(Text, { style: S.jobRefValue }, jobRef),
-        )
-      ),
+    const bannerCols = [
+      { label: "Customer", value: booking.customer?.name || "—" },
+      { label: "Job Ref", value: jobRef },
+      { label: "Vehicle", value: booking.vehicle?.name || "—" },
+    ];
+    if (miles) bannerCols.push({ label: "Mileage", value: miles });
+    const colW = bodyW / bannerCols.length;
+    bannerCols.forEach((col, i) => {
+      const cx = M + i * colW;
+      doc.fillColor(C.muted).font("Helvetica").fontSize(7).text(col.label.toUpperCase(), cx, y + 6, { width: colW });
+      doc.fillColor("#111827").font("Helvetica-Bold").fontSize(10).text(col.value, cx, y + 18, { width: colW });
+    });
+    y += bannerH + 1;
 
-      // Customer banner — customer name + vehicle + job ref only
-      React.createElement(View, { style: S.customerBanner },
-        React.createElement(View, { style: S.bannerItem },
-          React.createElement(Text, { style: S.bannerLabel }, "Customer"),
-          React.createElement(Text, { style: S.bannerValue }, booking.customer?.name || "—"),
-        ),
-        React.createElement(View, { style: S.bannerItem },
-          React.createElement(Text, { style: S.bannerLabel }, "Job Ref"),
-          React.createElement(Text, { style: S.bannerValue }, jobRef),
-        ),
-        React.createElement(View, { style: S.bannerItem },
-          React.createElement(Text, { style: S.bannerLabel }, "Vehicle"),
-          React.createElement(Text, { style: S.bannerValue }, booking.vehicle?.name || "—"),
-        ),
-        miles ? React.createElement(View, { style: S.bannerItem },
-          React.createElement(Text, { style: S.bannerLabel }, "Mileage"),
-          React.createElement(Text, { style: S.bannerValue }, miles),
-        ) : null,
-      ),
+    // ─── Helpers ──────────────────────────────────────────────────────────
 
-      // Collection
-      React.createElement(LocationSection, {
-        title: "Collection",
-        color: "blue",
-        date: booking.collectionDate,
-        time: booking.collectionTime,
-        name: booking.collectionName,
-        address: addrParts(booking.collectionAddress1, booking.collectionAddress2, booking.collectionArea, booking.collectionPostcode) || null,
-        contact: booking.collectionContact,
-        phone: booking.collectionPhone,
-        notes: booking.collectionNotes,
-      }),
+    function sectionHeader(title: string, color: string) {
+      if (y > 750) { doc.addPage(); y = M; }
+      doc.rect(0, y, W, 22).fill(color);
+      doc.fillColor(C.white).font("Helvetica-Bold").fontSize(9).text(title.toUpperCase(), M, y + 6, { width: bodyW });
+      y += 22;
+    }
 
-      // Via stops
-      ...vias.map((v: any, i: number) => {
-        const noteText = v.notes?.split("---ORDERS---")[0] || "";
-        return React.createElement(LocationSection, {
-          key: v.id || i,
-          title: `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` — ${v.viaType}` : ""}`,
-          color: "indigo",
-          date: v.viaDate,
-          time: v.viaTime,
-          name: v.name,
-          address: addrParts(v.address1, v.address2, v.area, v.postcode) || null,
-          contact: v.contact,
-          phone: v.phone,
-          notes: noteText,
-        });
-      }),
+    function row(label: string, value: string | null | undefined, valueColor = C.text) {
+      if (!value?.trim()) return;
+      if (y > 780) { doc.addPage(); y = M; }
+      const rowH = 16;
+      doc.moveTo(M, y + rowH).lineTo(W - M, y + rowH).lineWidth(0.5).strokeColor(C.rowBorder).stroke();
+      doc.fillColor(C.text).font("Helvetica-Bold").fontSize(9).text(label, M, y + 3, { width: 100 });
+      doc.fillColor(valueColor).font("Helvetica").fontSize(9).text(value.trim(), M + 104, y + 3, { width: bodyW - 104 });
+      y += rowH;
+    }
 
-      // Delivery
-      React.createElement(LocationSection, {
-        title: "Delivery",
-        color: "blue",
-        date: booking.deliveryDate || booking.collectionDate,
-        time: booking.deliveryTime,
-        name: booking.deliveryName,
-        address: addrParts(booking.deliveryAddress1, booking.deliveryAddress2, booking.deliveryArea, booking.deliveryPostcode) || null,
-        contact: booking.deliveryContact,
-        phone: booking.deliveryPhone,
-        notes: (booking.deliveryNotes || "").split("---ORDERS---")[0] || null,
-      }),
+    function locationSection(title: string, color: string, data: {
+      date?: string | null; time?: string | null; name?: string | null; address?: string | null;
+      contact?: string | null; phone?: string | null; notes?: string | null;
+    }) {
+      sectionHeader(title, color);
+      row("Date:", [fmt(data.date), data.time].filter(Boolean).join("  ") || "—");
+      row("Name:", data.name || "—");
+      row("Address:", data.address || "—");
+      if (data.contact) row("Contact Name:", data.contact);
+      if (data.phone) row("Telephone:", data.phone);
+      if (data.notes?.trim()) row("Notes:", data.notes.trim(), C.amber);
+    }
 
-      // Driver / Job Information
-      React.createElement(Text, { style: S.sectionHeaderGrey }, "Driver / Job Information"),
-      React.createElement(View, { style: S.body },
-        React.createElement(View, { style: S.row },
-          React.createElement(Text, { style: S.rowLabel }, "Driver:"),
-          React.createElement(Text, { style: S.rowValue }, booking.driver?.name || "TBC")
-        ),
-        booking.secondMan?.name ? React.createElement(View, { style: S.row },
-          React.createElement(Text, { style: S.rowLabel }, "2nd Man:"),
-          React.createElement(Text, { style: S.rowValue }, booking.secondMan.name)
-        ) : null,
-        booking.cxDriver?.name ? React.createElement(View, { style: S.row },
-          React.createElement(Text, { style: S.rowLabel }, "CX Driver:"),
-          React.createElement(Text, { style: S.rowValue }, booking.cxDriver.name)
-        ) : null,
-        items ? React.createElement(View, { style: S.row },
-          React.createElement(Text, { style: S.rowLabel }, "Items:"),
-          React.createElement(Text, { style: S.rowValue }, items)
-        ) : null,
-        weight ? React.createElement(View, { style: S.row },
-          React.createElement(Text, { style: S.rowLabel }, "Weight:"),
-          React.createElement(Text, { style: S.rowValue }, weight)
-        ) : null,
-        units.length > 0 ? React.createElement(View, { style: S.row },
-          React.createElement(Text, { style: S.rowLabel }, "Temp Units:"),
-          React.createElement(Text, { style: S.rowValue }, units.map((u: any) => `${u.unitType || "Unit"}: ${u.unitNumber}`).join("  |  "))
-        ) : null,
-      ),
+    // ─── Collection ───────────────────────────────────────────────────────
+    locationSection("Collection", C.blue, {
+      date: booking.collectionDate, time: booking.collectionTime,
+      name: booking.collectionName,
+      address: addrParts(booking.collectionAddress1, booking.collectionAddress2, booking.collectionArea, booking.collectionPostcode) || null,
+      contact: booking.collectionContact, phone: booking.collectionPhone, notes: booking.collectionNotes,
+    });
 
-      // Main job notes — highlighted box
-      rawJobNotes ? React.createElement(View, { style: S.notesBox },
-        React.createElement(Text, { style: S.notesLabel }, "DRIVER NOTES"),
-        React.createElement(Text, { style: S.notesText }, rawJobNotes),
-      ) : null,
+    // ─── Via stops ────────────────────────────────────────────────────────
+    vias.forEach((v: any, i: number) => {
+      const noteText = v.notes?.split("---ORDERS---")[0] || "";
+      const label = `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` — ${v.viaType}` : ""}`;
+      locationSection(label, C.indigo, {
+        date: v.viaDate, time: v.viaTime, name: v.name,
+        address: addrParts(v.address1, v.address2, v.area, v.postcode) || null,
+        contact: v.contact, phone: v.phone, notes: noteText,
+      });
+    });
 
-      // Footer — company name only
-      React.createElement(Text, { style: S.footer }, company),
-    )
-  );
+    // ─── Delivery ─────────────────────────────────────────────────────────
+    locationSection("Delivery", C.blue, {
+      date: booking.deliveryDate || booking.collectionDate, time: booking.deliveryTime,
+      name: booking.deliveryName,
+      address: addrParts(booking.deliveryAddress1, booking.deliveryAddress2, booking.deliveryArea, booking.deliveryPostcode) || null,
+      contact: booking.deliveryContact, phone: booking.deliveryPhone,
+      notes: (booking.deliveryNotes || "").split("---ORDERS---")[0] || null,
+    });
+
+    // ─── Driver / Job Information ─────────────────────────────────────────
+    sectionHeader("Driver / Job Information", C.grey);
+    row("Driver:", booking.driver?.name || "TBC");
+    if (booking.secondMan?.name) row("2nd Man:", booking.secondMan.name);
+    if (booking.cxDriver?.name) row("CX Driver:", booking.cxDriver.name);
+    if (items) row("Items:", items);
+    if (weight) row("Weight:", weight);
+    if (units.length > 0) row("Temp Units:", units.map((u: any) => `${u.unitType || "Unit"}: ${u.unitNumber}`).join("  |  "));
+
+    // ─── Driver notes (highlighted box) ───────────────────────────────────
+    if (rawJobNotes) {
+      y += 6;
+      if (y > 740) { doc.addPage(); y = M; }
+      const noteX = M;
+      const noteW = bodyW;
+      const textW = noteW - 18;
+      // measure height
+      const measuredH = doc.font("Helvetica").fontSize(9).heightOfString(rawJobNotes, { width: textW });
+      const boxH = measuredH + 28;
+      // background
+      doc.roundedRect(noteX, y, noteW, boxH, 4).fill(C.notesBg);
+      // left accent bar
+      doc.rect(noteX, y, 3, boxH).fill(C.notesBorder);
+      // label
+      doc.fillColor(C.amber).font("Helvetica-Bold").fontSize(8).text("DRIVER NOTES", noteX + 10, y + 6, { width: textW });
+      doc.fillColor(C.amberDark).font("Helvetica").fontSize(9).text(rawJobNotes, noteX + 10, y + 18, { width: textW });
+      y += boxH;
+    }
+
+    // ─── Footer ───────────────────────────────────────────────────────────
+    doc.fillColor(C.light).font("Helvetica").fontSize(8).text(company, 0, 820, { width: W, align: "center" });
+
+    doc.end();
+  });
 }
 
 // ─── API Route ────────────────────────────────────────────────────────────────
@@ -273,15 +222,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-  const jobRef = booking.jobRef || booking.id.slice(-8).toUpperCase();
+  const jobRef = (booking as any).jobRef || booking.id.slice(-8).toUpperCase();
   const from = settings?.cemail || process.env.SMTP_USER || "noreply@mptransport.com";
   const subject = `Job Sheet — ${jobRef} — ${booking.customer?.name || ""}`;
 
   try {
-    await ensurePdfLoaded();
-    const pdfBuffer = await renderToBuffer(
-      React.createElement(JobSheetDoc, { booking, settings }) as any
-    );
+    const pdfBuffer = await buildJobSheetPdf(booking, settings);
 
     const smtpPort = parseInt(process.env.SMTP_PORT || "587");
     const transporter = nodemailer.createTransport({
