@@ -56,6 +56,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     let y = 0;
 
     const company = settings?.companyName || "MP Transport";
+    const logoDataUrl: string | null = settings?.logo || null;
     const jobRef = (booking as any).jobRef || booking.id.slice(-8).toUpperCase();
     const vias: any[] = booking.viaAddresses || [];
     const rawJobNotes = booking.jobNotes || "";
@@ -67,7 +68,18 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     // ─── Header bar ───────────────────────────────────────────────────────
     const headerH = 60;
     doc.rect(0, 0, W, headerH).fill(C.navy);
-    doc.fillColor(C.white).font("Helvetica-Bold").fontSize(16).text(company, M, 14, { width: 300 });
+    // Logo or company name
+    if (logoDataUrl && logoDataUrl.startsWith("data:image")) {
+      try {
+        const base64 = logoDataUrl.split(",")[1];
+        const imgBuf = Buffer.from(base64, "base64");
+        doc.image(imgBuf, M, 8, { height: 44, fit: [200, 44] });
+      } catch {
+        doc.fillColor(C.white).font("Helvetica-Bold").fontSize(16).text(company, M, 14, { width: 300 });
+      }
+    } else {
+      doc.fillColor(C.white).font("Helvetica-Bold").fontSize(16).text(company, M, 14, { width: 300 });
+    }
     if (settings?.companyAddress1) {
       doc.font("Helvetica").fontSize(8).fillColor("#c0c8d4")
         .text(addrParts(settings.companyAddress1, settings.city, settings.postcode), M, 34, { width: 300 });
@@ -104,11 +116,15 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
 
     // ─── Helpers ──────────────────────────────────────────────────────────
 
-    function sectionHeader(title: string, color: string) {
+    function sectionHeader(title: string, color: string, icon?: string) {
       if (y > 750) { doc.addPage(); y = M; }
-      doc.rect(0, y, W, 22).fill(color);
-      doc.fillColor(C.white).font("Helvetica-Bold").fontSize(9).text(title.toUpperCase(), M, y + 6, { width: bodyW });
-      y += 22;
+      const isLight = color === "#f0f4ff";
+      doc.rect(0, y, W, 24).fill(color);
+      const textColor = isLight ? "#4338ca" : C.white;
+      const label = icon ? `${icon}  ${title.toUpperCase()}` : title.toUpperCase();
+      doc.fillColor(textColor).font("Helvetica-Bold").fontSize(9).text(label, M, y + 7, { width: bodyW });
+      y += 24;
+      y += 4; // spacing between header and rows
     }
 
     function row(label: string, value: string | null | undefined, valueColor = C.text) {
@@ -121,12 +137,13 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
       y += rowH;
     }
 
-    function locationSection(title: string, color: string, data: {
+    function locationSection(title: string, color: string, icon: string, data: {
       date?: string | null; time?: string | null; name?: string | null; address?: string | null;
       contact?: string | null; phone?: string | null; notes?: string | null;
     }) {
-      sectionHeader(title, color);
-      row("Date:", [fmt(data.date), data.time].filter(Boolean).join("  ") || "—");
+      sectionHeader(title, color, icon);
+      row("Date:", fmt(data.date) || "—");
+      row("Time:", data.time || "—");
       row("Name:", data.name || "—");
       row("Address:", data.address || "—");
       if (data.contact) row("Contact Name:", data.contact);
@@ -135,7 +152,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     }
 
     // ─── Collection ───────────────────────────────────────────────────────
-    locationSection("Collection", C.blue, {
+    locationSection("Collection", C.blue, "\u{1F4E6}", {
       date: booking.collectionDate, time: booking.collectionTime,
       name: booking.collectionName,
       address: addrParts(booking.collectionAddress1, booking.collectionAddress2, booking.collectionArea, booking.collectionPostcode) || null,
@@ -145,8 +162,8 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     // ─── Via stops ────────────────────────────────────────────────────────
     vias.forEach((v: any, i: number) => {
       const noteText = v.notes?.split("---ORDERS---")[0] || "";
-      const label = `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` — ${v.viaType}` : ""}`;
-      locationSection(label, C.indigo, {
+      const label = `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` \u2014 ${v.viaType}` : ""}`;
+      locationSection(label, "#f0f4ff", "\u{1F4CD}", {
         date: v.viaDate, time: v.viaTime, name: v.name,
         address: addrParts(v.address1, v.address2, v.area, v.postcode) || null,
         contact: v.contact, phone: v.phone, notes: noteText,
@@ -154,7 +171,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     });
 
     // ─── Delivery ─────────────────────────────────────────────────────────
-    locationSection("Delivery", C.blue, {
+    locationSection("Delivery", C.blue, "\u{1F3ED}", {
       date: booking.deliveryDate || booking.collectionDate, time: booking.deliveryTime,
       name: booking.deliveryName,
       address: addrParts(booking.deliveryAddress1, booking.deliveryAddress2, booking.deliveryArea, booking.deliveryPostcode) || null,

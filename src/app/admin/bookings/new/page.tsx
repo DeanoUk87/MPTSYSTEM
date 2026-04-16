@@ -78,8 +78,19 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
         <span>{value || "00:00"}</span>
       </button>
       {open && (
-        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 236 }}
+        <div ref={dropRef} style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999, width: 280 }}
           className="bg-white border border-slate-200 rounded-xl shadow-xl p-3">
+          <div className="flex items-center gap-2 mb-3">
+            <input type="text" placeholder="HH:MM" defaultValue={value || "00:00"}
+              className="w-full border border-slate-200 rounded-lg px-2 py-1 text-sm font-mono text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const v = (e.target as HTMLInputElement).value;
+                  const m = v.match(/^(\d{1,2}):(\d{2})$/);
+                  if (m) { const h2 = Math.min(23, parseInt(m[1])); const m2 = Math.min(59, parseInt(m[2])); set(h2, m2); setOpen(false); }
+                }
+              }} />
+          </div>
           <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Hour</p>
           <div className="grid grid-cols-6 gap-1 mb-3">
             {Array.from({ length: 24 }, (_, i) => (
@@ -90,10 +101,10 @@ function TimePicker({ value, onChange, className }: { value: string; onChange: (
             ))}
           </div>
           <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-2">Minute</p>
-          <div className="grid grid-cols-6 gap-1">
-            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => (
+          <div className="grid grid-cols-10 gap-1">
+            {Array.from({ length: 60 }, (_, m) => (
               <button key={m} type="button" onClick={() => { set(hh, m); setOpen(false); }}
-                className={`text-xs py-1 rounded-lg font-mono font-medium transition-colors ${mm === m ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}>
+                className={`text-[10px] py-1 rounded-lg font-mono font-medium transition-colors ${mm === m ? "bg-blue-600 text-white" : "hover:bg-blue-50 text-slate-700"}`}>
                 {String(m).padStart(2, "0")}
               </button>
             ))}
