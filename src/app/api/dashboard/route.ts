@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
     try { await jwtVerify(token, new TextEncoder().encode(SECRET)); } catch { /* allow */ }
   }
 
+  const date = req.nextUrl.searchParams.get("date") || null;
+
   try {
   const [
     totalCustomers,
@@ -24,9 +26,8 @@ export async function GET(req: NextRequest) {
     prisma.vehicle.count(),
     prisma.driver.count({ where: { driverType: "Driver" } }),
     prisma.booking.findMany({
-      where: { deletedAt: null },
-      take: 15,
-      orderBy: { createdAt: "desc" },
+      where: { deletedAt: null, ...(date ? { collectionDate: date } : {}) },
+      orderBy: { collectionTime: "asc" },
       select: {
         id: true,
         jobRef: true,

@@ -3,19 +3,33 @@ import { useEffect, useState } from "react";
 import Topbar from "@/components/Topbar";
 import StatCard from "@/components/StatCard";
 import Link from "next/link";
-import { Users, Package, Truck, Car } from "lucide-react";
+import { Users, Package, Truck, Car, ChevronLeft, ChevronRight } from "lucide-react";
 import { usePermissions } from "@/lib/use-permissions";
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
   const { has } = usePermissions();
 
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  const [selectedDate, setSelectedDate] = useState(() => todayStr());
+
   useEffect(() => {
-    fetch("/api/dashboard")
+    setData(null);
+    fetch(`/api/dashboard?date=${selectedDate}`)
       .then((r) => r.ok ? r.json() : null)
       .then((d) => setData(d))
       .catch(() => setData(null));
-  }, []);
+  }, [selectedDate]);
+
+  function navigateDay(dir: 1 | -1) {
+    const d = new Date(selectedDate + "T00:00:00");
+    d.setDate(d.getDate() + dir);
+    setSelectedDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`);
+  }
 
   const stats = data?.stats;
   const bookings: any[] = Array.isArray(data?.recentBookings) ? data.recentBookings : [];
@@ -33,8 +47,22 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="p-5 border-b border-slate-200 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-slate-800">Recent Bookings</h2>
-            <Link href="/admin/bookings" className="text-xs text-blue-600 hover:underline font-medium">View all</Link>
+            <h2 className="text-base font-semibold text-slate-800">Bookings</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={() => navigateDay(-1)} title="Previous day"
+                className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              </button>
+              <input type="date" value={selectedDate}
+                onChange={e => setSelectedDate(e.target.value)}
+                onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
+                className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
+              <button onClick={() => navigateDay(1)} title="Next day"
+                className="p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
+              <Link href="/admin/bookings" className="text-xs text-blue-600 hover:underline font-medium">View all</Link>
+            </div>
           </div>
           {bookings.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
