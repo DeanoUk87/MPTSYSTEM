@@ -4,7 +4,7 @@ import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Eye, Pencil, Trash2, Loader2, CheckCircle, Clock, AlertCircle, FileText, TrendingUp } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Loader2, CheckCircle, Clock, AlertCircle, FileText, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { usePermissions } from "@/lib/use-permissions";
@@ -125,8 +125,14 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Booking | null>(null);
-  const [filterDateFrom, setFilterDateFrom] = useState("");
-  const [filterDateTo, setFilterDateTo] = useState("");
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  const [filterDateFrom, setFilterDateFrom] = useState(() => todayStr());
+  const [filterDateTo, setFilterDateTo] = useState(() => todayStr());
   const [filterStatus, setFilterStatus] = useState("");
   const [pickedCustomer, setPickedCustomer] = useState<{ id: string; label: string } | null>(null);
   const [pickedDriver, setPickedDriver] = useState<{ id: string; label: string } | null>(null);
@@ -136,7 +142,7 @@ export default function BookingsPage() {
   // pending = what user is building; applied = what's fetched
   const [appliedFilters, setAppliedFilters] = useState<{
     dateFrom: string; dateTo: string; status: string; customerId: string; driverId: string;
-  }>({ dateFrom: "", dateTo: "", status: "", customerId: "", driverId: "" });
+  }>(() => { const t = todayStr(); return { dateFrom: t, dateTo: t, status: "", customerId: "", driverId: "" }; });
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -212,9 +218,20 @@ export default function BookingsPage() {
   }
 
   function clearFilters() {
-    setFilterDateFrom(""); setFilterDateTo(""); setFilterStatus("");
+    const t = todayStr();
+    setFilterDateFrom(t); setFilterDateTo(t); setFilterStatus("");
     setPickedCustomer(null); setPickedDriver(null);
-    setAppliedFilters({ dateFrom: "", dateTo: "", status: "", customerId: "", driverId: "" });
+    setAppliedFilters({ dateFrom: t, dateTo: t, status: "", customerId: "", driverId: "" });
+  }
+
+  function navigateDay(dir: 1 | -1) {
+    const base = filterDateFrom || todayStr();
+    const d = new Date(base + "T00:00:00");
+    d.setDate(d.getDate() + dir);
+    const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    setFilterDateFrom(next);
+    setFilterDateTo(next);
+    setAppliedFilters(prev => ({ ...prev, dateFrom: next, dateTo: next }));
   }
 
   function openReport(type: "financial" | "driver") {
@@ -289,6 +306,10 @@ export default function BookingsPage() {
         {/* Filters + Actions */}
         <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
           <div className="flex items-center flex-wrap gap-2">
+            <button onClick={() => navigateDay(-1)} title="Previous day"
+              className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+              <ChevronLeft className="w-4 h-4 text-slate-500" />
+            </button>
             <div className="flex items-center gap-1.5">
               <label className="text-xs text-slate-500 font-medium whitespace-nowrap">Date from</label>
               <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
@@ -301,6 +322,10 @@ export default function BookingsPage() {
                 onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
                 className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
             </div>
+            <button onClick={() => navigateDay(1)} title="Next day"
+              className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            </button>
             <SearchPick placeholder="Search customer..." onPick={r => setPickedCustomer({ id: r.id, label: r.name })} onClear={() => setPickedCustomer(null)} picked={pickedCustomer} />
             <SearchPick placeholder="Search driver / subcon..." onPick={r => setPickedDriver({ id: r.id, label: r.name })} onClear={() => setPickedDriver(null)} picked={pickedDriver} />
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
