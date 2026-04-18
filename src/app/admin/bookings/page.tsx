@@ -43,7 +43,8 @@ interface Booking {
 function StatusBadge({ booking }: { booking: Booking }) {
   const isQuote = booking.bookingType?.name?.toLowerCase() === "quote";
   if (isQuote) return <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>;
-  if (!booking.driver) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>;
+  const hasDriver = !!(booking.driver || booking.secondMan || booking.cxDriver);
+  if (!hasDriver) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>;
   const allViasPodded = !booking.viaAddresses?.length || booking.viaAddresses.every(v => v.signedBy);
   if (booking.podSignature && booking.podDataVerify && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">Completed</span>;
   if (booking.podSignature && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>;
