@@ -409,7 +409,7 @@ export default function BookingsPage() {
               if (isQuote) return "bg-slate-50";
               if (b.podSignature && b.podDataVerify && allViasPodded) return "bg-blue-50 border-l-4 border-l-blue-400";
               if (b.podSignature && allViasPodded) return "bg-emerald-50 border-l-4 border-l-emerald-400";
-              if (b.driver) return "bg-amber-50 border-l-4 border-l-amber-400";
+              if (b.driver || b.secondMan || b.cxDriver) return "bg-amber-50 border-l-4 border-l-amber-400";
               return "bg-rose-50 border-l-4 border-l-rose-400";
             }}
           />

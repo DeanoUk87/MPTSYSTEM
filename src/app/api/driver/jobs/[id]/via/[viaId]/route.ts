@@ -25,7 +25,7 @@ export async function POST(
     if (!contact) return NextResponse.json({ error: "Driver not found" }, { status: 404 });
 
     const booking = await prisma.booking.findFirst({
-      where: { id, driverId: contact.driverId, deletedAt: null },
+      where: { id, secondManId: contact.driverId, driverContactId: contact.id, deletedAt: null },
     });
     if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 

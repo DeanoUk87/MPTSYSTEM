@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!contact) return NextResponse.json({ error: "Driver not found" }, { status: 404 });
 
     const booking = await prisma.booking.findFirst({
-      where: { id, driverId: contact.driverId, deletedAt: null },
+      where: { id, secondManId: contact.driverId, driverContactId: contact.id, deletedAt: null },
       select: {
         id: true,
         jobRef: true,

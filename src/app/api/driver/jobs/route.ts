@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
 
     const bookings = await prisma.booking.findMany({
       where: {
-        driverId: contact.driverId,
+        secondManId: contact.driverId,
+        driverContactId: contact.id,
         collectionDate: todayStr,
         deletedAt: null,
       },
