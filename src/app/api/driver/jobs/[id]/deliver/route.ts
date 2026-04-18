@@ -1,0 +1,88 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireDriverAuth } from "@/lib/api-auth";
+import { writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
+
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "pod");
+
+async function ensureDir() {
+  if (!existsSync(UPLOAD_DIR)) await mkdir(UPLOAD_DIR, { recursive: true });
+}
+
+function parsePodFiles(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  if (raw.startsWith("[")) { try { return JSON.parse(raw); } catch { return []; } }
+  return [raw];
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await requireDriverAuth(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+
+  try {
+    const contact = await prisma.driverContact.findUnique({ where: { id: session.dcontactId } });
+    if (!contact) return NextResponse.json({ error: "Driver not found" }, { status: 404 });
+
+    const booking = await prisma.booking.findFirst({
+      where: { id, driverId: contact.driverId, deletedAt: null },
+      select: { id: true, podUpload: true },
+    });
+    if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+
+    const formData = await req.formData();
+    const signedBy = (formData.get("signedBy") as string)?.trim();
+    const time = (formData.get("time") as string)?.trim();
+    const relationship = (formData.get("relationship") as string)?.trim() || null;
+    const temperature = (formData.get("temperature") as string)?.trim() || null;
+    const notes = (formData.get("notes") as string)?.trim() || null;
+    const photo = formData.get("photo") as File | null;
+
+    if (!signedBy) return NextResponse.json({ error: "Signed by is required" }, { status: 400 });
+    if (!time || !/^\d{2}:\d{2}$/.test(time)) {
+      return NextResponse.json({ error: "Invalid time format (HH:MM)" }, { status: 400 });
+    }
+
+    const today = new Date();
+    const podDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+    let podUploadValue: string | undefined;
+    if (photo && photo.size > 0) {
+      const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
+      if (!allowed.includes(photo.type)) return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
+      if (photo.size > 15 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 15 MB)" }, { status: 400 });
+
+      await ensureDir();
+      const ext = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const filename = `${id}-${Date.now()}.${ext}`;
+      const filepath = path.join(UPLOAD_DIR, filename);
+      await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
+
+      const existing = parsePodFiles(booking.podUpload);
+      existing.push(`/uploads/pod/${filename}`);
+      podUploadValue = JSON.stringify(existing);
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: {
+        podSignature: signedBy,
+        podTime: time,
+        podDate,
+        podRelationship: relationship,
+        deliveredTemperature: temperature,
+        driverNote: notes,
+        podMobile: true,
+        ...(podUploadValue ? { podUpload: podUploadValue } : {}),
+      },
+      select: { id: true, podSignature: true, podTime: true },
+    });
+
+    return NextResponse.json(updated);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}

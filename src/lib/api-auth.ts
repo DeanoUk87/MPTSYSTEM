@@ -13,3 +13,15 @@ export async function requireAuth(req: NextRequest): Promise<{ id: string; roles
     return null;
   }
 }
+
+export async function requireDriverAuth(req: NextRequest): Promise<{ id: string; dcontactId: string; name: string } | null> {
+  const token = req.cookies.get("mp-session")?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, new TextEncoder().encode(SECRET));
+    if (!(payload as any).dcontactId) return null;
+    return payload as any;
+  } catch {
+    return null;
+  }
+}

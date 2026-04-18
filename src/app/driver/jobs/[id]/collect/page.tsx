@@ -1,0 +1,155 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, CheckCircle } from "lucide-react";
+
+interface Job {
+  id: string;
+  jobRef?: string;
+  collectionName?: string;
+  collectionPostcode?: string;
+  chillUnit?: { unitNumber: string } | null;
+  ambientUnit?: { unitNumber: string } | null;
+  driverConfirmCollectionAt?: string | null;
+}
+
+function now() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+export default function CollectPage() {
+  const [job, setJob] = useState<Job | null>(null);
+  const [time, setTime] = useState(now);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const params = useParams<{ id: string }>();
+
+  useEffect(() => {
+    if (!params?.id) return;
+    fetch(`/api/driver/jobs/${params.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) { router.back(); return; }
+        setJob(data);
+        if (data.driverConfirmCollectionAt) setConfirmed(true);
+        setLoading(false);
+      })
+      .catch(() => router.back());
+  }, [params?.id, router]);
+
+  async function handleConfirm() {
+    if (!params?.id) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/driver/jobs/${params.id}/collect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ time }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to confirm collection");
+      }
+      setConfirmed(true);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0a0a14]">
+        <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!job) return null;
+
+  return (
+    <div className="min-h-screen bg-[#0a0a14] pb-10">
+      <div className="px-5 pt-10 pb-5">
+        <button onClick={() => router.back()} className="flex items-center gap-1 text-gray-400 mb-5">
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm">Back</span>
+        </button>
+
+        <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Collection</p>
+        <p className="text-gray-500 text-sm">Job {job.jobRef || job.id.slice(-8).toUpperCase()}</p>
+      </div>
+
+      <div className="px-4 space-y-4">
+        {/* Unit pills */}
+        <div className="flex flex-wrap gap-1.5">
+          {job.chillUnit && (
+            <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+              MPT{job.chillUnit.unitNumber} Chill
+            </span>
+          )}
+          {job.ambientUnit && (
+            <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
+              MPT{job.ambientUnit.unitNumber} Ambient
+            </span>
+          )}
+        </div>
+
+        {/* Collection info */}
+        <div className="bg-[#1c1c2e] rounded-2xl p-4">
+          <p className="text-xs text-gray-500 mb-3">Collection from</p>
+          <p className="text-white font-semibold">{job.collectionName || "—"}</p>
+          <p className="text-gray-400 text-sm">{job.collectionPostcode || ""}</p>
+        </div>
+
+        {/* Success state */}
+        {confirmed ? (
+          <div className="bg-emerald-900/40 border border-emerald-500/50 rounded-2xl p-5 flex items-center gap-3">
+            <CheckCircle className="w-8 h-8 text-emerald-400 shrink-0" />
+            <div>
+              <p className="font-semibold text-emerald-400">Collection Confirmed</p>
+              <p className="text-sm text-gray-400">Collection has been recorded at {time}</p>
+            </div>
+          </div>
+        ) : (
+          /* Confirm form */
+          <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-4">
+            <h2 className="font-semibold text-white">Confirm collection</h2>
+
+            <div>
+              <label className="block text-xs text-gray-500 mb-1.5">Collection time</label>
+              <input
+                type="time"
+                value={time}
+                onChange={e => setTime(e.target.value)}
+                className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+
+            <button
+              onClick={handleConfirm}
+              disabled={saving}
+              className="w-full bg-blue-600 text-white font-semibold py-4 rounded-2xl text-base disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? "Confirming..." : "Confirm Collection"}
+            </button>
+          </div>
+        )}
+
+        {confirmed && (
+          <button
+            onClick={() => router.back()}
+            className="w-full bg-[#1c1c2e] border border-white/10 text-white font-semibold py-4 rounded-2xl text-base">
+            Back to Job
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
