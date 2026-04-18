@@ -38,7 +38,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
   const body = await req.json();
 
-  const { chillUnitId, ambientUnitId, driverId, viaAddresses: viaData,
+  const { chillUnitId, ambientUnitId, driverId, secondManId, viaAddresses: viaData,
           secondManContactId: _smc, cxDriverContactId: _cxc,
           deadMilesEnabled: _dme, deadMiles: _dm,
           // Strip nested relation objects returned by GET — Prisma rejects these in .update()
@@ -47,6 +47,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           geoTracking: _gt, podUpload: _pu,
           id: _id, createdAt: _ca, updatedAt: _ua, deletedAt: _da, jobRef: _jr,
           ...rest } = body;
+
+  // The driver responsible for the units: main driver, or SubCon if no main driver
+  const assignedDriverId = driverId || secondManId || null;
 
   // Load current booking so we can detect which units are being removed
   const existing = await prisma.booking.findUnique({
@@ -78,11 +81,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   // Update storage unit records for currently-assigned units
   for (const unitId of newUnits) {
-    if (driverId) {
-      // Driver + unit: enable tracking
+    if (assignedDriverId) {
+      // Driver/SubCon + unit: enable tracking
       await prisma.storageUnit.update({
         where: { id: unitId },
-        data: { trackable: 1, availability: "No", currentDriverId: driverId, jobId: id },
+        data: { trackable: 1, availability: "No", currentDriverId: assignedDriverId, jobId: id },
       }).catch(() => {});
     } else {
       // Unit assigned but no driver — unavailable, tracking OFF

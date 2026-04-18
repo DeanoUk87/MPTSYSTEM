@@ -38,24 +38,24 @@ interface Job {
   viaAddresses?: ViaAddress[];
 }
 
-function UnitPills({ job }: { job: Job }) {
-  const units = [
-    job.chillUnit,
-    job.ambientUnit,
-  ].filter(Boolean) as { unitNumber: string; unitType?: string; temperature?: string | null }[];
+function jobRefDisplay(job: Job) {
+  if (job.jobRef) {
+    const parts = job.jobRef.split("-");
+    return parts.length > 1 ? parts[parts.length - 1] : job.jobRef;
+  }
+  return job.id.slice(-8).toUpperCase();
+}
+
+function UnitCard({ unit }: { unit: { unitNumber: string; unitType?: string; temperature?: string | null } }) {
+  const isChill = (unit.unitType || "").toLowerCase().startsWith("chill");
   return (
-    <>
-      {units.map((u, i) => {
-        const isChill = (u.unitType || "").toLowerCase().startsWith("chill");
-        return (
-          <span key={i} className={`px-2.5 py-1 text-white text-xs font-semibold rounded-full ${
-            isChill ? "bg-blue-600" : "bg-amber-500"
-          }`}>
-            {u.unitNumber} {isChill ? "Chill" : "Ambient"}{u.temperature != null ? ` · ${u.temperature}°C` : ""}
-          </span>
-        );
-      })}
-    </>
+    <div className={`rounded-xl px-3 py-2 text-xs ${
+      isChill ? "bg-blue-900/50 border border-blue-500/30" : "bg-amber-900/50 border border-amber-500/30"
+    }`}>
+      <p className="font-bold text-white leading-tight">{unit.unitNumber}</p>
+      <p className={`mt-0.5 ${isChill ? "text-blue-300" : "text-amber-300"}`}>{isChill ? "Chill" : "Ambient"}</p>
+      <p className="text-gray-500 mt-0.5">{unit.temperature != null ? `${unit.temperature}°C` : "—°C"}</p>
+    </div>
   );
 }
 
@@ -111,12 +111,25 @@ export default function JobDetailPage() {
       </div>
 
       <div className="px-4 space-y-4">
-        {/* Job ref + unit pills */}
+        {/* Job ref + unit cards */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4">
-          <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Job Ref</p>
-          <p className="font-bold text-white text-2xl mb-3">{job.jobRef || job.id.slice(-8).toUpperCase()}</p>
-          <div className="flex flex-wrap gap-1.5">
-            <UnitPills job={job} />
+          <div className="flex items-start justify-between gap-3">
+            {/* Left: Job Ref */}
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Job Ref</p>
+              <p className="font-bold text-white text-3xl leading-tight">{jobRefDisplay(job)}</p>
+              {isDelivered && (
+                <span className="mt-2 inline-block px-2 py-0.5 bg-emerald-900/60 border border-emerald-500/40 text-emerald-400 text-xs font-medium rounded-full">Completed</span>
+              )}
+            </div>
+            {/* Right: Unit cards */}
+            {[job.chillUnit, job.ambientUnit].filter(Boolean).length > 0 && (
+              <div className="flex gap-2 shrink-0">
+                {[job.chillUnit, job.ambientUnit].filter(Boolean).map((u, i) => (
+                  <UnitCard key={i} unit={u!} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -146,12 +159,6 @@ export default function JobDetailPage() {
               <span className="text-white font-medium">{job.deliveryPostcode || "—"}</span>
             </div>
           </div>
-          {job.miles != null && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Miles</span>
-              <span className="text-white font-medium">{job.miles}</span>
-            </div>
-          )}
         </div>
 
         {/* Collected orders */}

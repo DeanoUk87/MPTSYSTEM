@@ -89,7 +89,7 @@ export default function DashboardPage() {
                     const isQuote = b.bookingType?.name?.toLowerCase() === "quote";
                     const bookingVias: any[] = Array.isArray(b.viaAddresses) ? b.viaAddresses : [];
                     const allViasPodded = !bookingVias.length || bookingVias.every((v: any) => v.signedBy);
-                    const assignedDriver = b.driver || b.cxDriver;
+                    const assignedDriver = b.driver || b.secondMan || b.cxDriver;
                     const rowCls = isQuote ? "bg-slate-50" : b.podSignature && b.podDataVerify && allViasPodded ? "bg-blue-50 border-l-4 border-l-blue-500" : b.podSignature && allViasPodded ? "bg-emerald-50 border-l-4 border-l-emerald-500" : assignedDriver ? "bg-amber-50 border-l-4 border-l-amber-400" : "bg-rose-50 border-l-4 border-l-rose-500";
                     return (
                       <tr key={b.id} className={`border-b border-slate-100 hover:brightness-95 transition-all ${rowCls}`}>
@@ -108,6 +108,8 @@ export default function DashboardPage() {
                         <td className="px-2 py-2 text-xs text-slate-600 whitespace-nowrap">
                           {b.driver?.name
                             ? b.driver.name
+                            : b.secondMan?.name
+                            ? <span className="text-purple-600">{b.secondMan.name} <span className="text-xs opacity-70">(sub)</span></span>
                             : b.cxDriver?.name
                             ? <span className="text-amber-600">{b.cxDriver.name} <span className="text-xs opacity-70">(cx)</span></span>
                             : <span className="text-rose-500 font-semibold">Unassigned</span>}
@@ -117,7 +119,7 @@ export default function DashboardPage() {
                         {has("bookings_financials") && <td className="px-2 py-2 text-xs font-semibold text-slate-700 whitespace-nowrap">{b.customerPrice ? `£${Number(b.customerPrice).toFixed(2)}` : "—"}</td>}
                         <td className="px-2 py-2 whitespace-nowrap">
                           {isQuote ? <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>
-                            : !(b.driver || b.cxDriver) ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>
+                            : !(b.driver || b.secondMan || b.cxDriver) ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>
                             : b.podSignature && b.podDataVerify && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">Completed</span>
                             : b.podSignature && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>
                             : <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>}

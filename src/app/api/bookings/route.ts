@@ -88,6 +88,9 @@ export async function POST(req: NextRequest) {
     // Destructure out form-only fields that are not in the Booking schema
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { chillUnitId, ambientUnitId, driverId, secondManContactId: _smc, cxDriverContactId: _cxc, viaAddresses: viaData, ...rest } = body;
+    // secondManId is in rest — extract it for unit tracking
+    const secondManId = rest.secondManId || null;
+    const assignedDriverId = driverId || secondManId || null;
 
     const booking = await prisma.booking.create({
       data: {
@@ -118,11 +121,11 @@ export async function POST(req: NextRequest) {
 
     // Allocate storage units — trackable only when a driver is also assigned
     for (const unitId of [chillUnitId, ambientUnitId].filter(Boolean)) {
-      if (driverId) {
-        // Driver + unit assigned: mark in-use and enable tracking
+      if (assignedDriverId) {
+        // Driver/SubCon + unit assigned: mark in-use and enable tracking
         await prisma.storageUnit.update({
           where: { id: unitId },
-          data: { availability: "No", currentDriverId: driverId, jobId: booking.id, trackable: 1 },
+          data: { availability: "No", currentDriverId: assignedDriverId, jobId: booking.id, trackable: 1 },
         }).catch(() => {});
       } else {
         // Unit assigned to job but no driver yet — unavailable but NOT trackable
