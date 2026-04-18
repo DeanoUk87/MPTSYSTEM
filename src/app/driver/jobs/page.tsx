@@ -116,7 +116,8 @@ export default function DriverJobsPage() {
                   </div>
                   {vias.length > 0 && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">{vias.length === 1 ? "1 Via" : `${vias.length} Vias`}</span>
+                      <span className="text-gray-500">Via</span>
+                      <span className="font-bold text-white">{vias.length} {vias.length === 1 ? "Via" : "Vias"}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-sm">
