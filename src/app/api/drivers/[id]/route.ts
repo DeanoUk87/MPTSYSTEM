@@ -49,6 +49,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
+
+  // Unlink any storage units assigned to this driver before deleting —
+  // prevents cascade issues and leaves units available in the pool.
+  await prisma.storageUnit.updateMany({
+    where: { currentDriverId: id },
+    data: { currentDriverId: null, availability: "Yes", trackable: 0, jobId: null },
+  });
+
   await prisma.driver.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
