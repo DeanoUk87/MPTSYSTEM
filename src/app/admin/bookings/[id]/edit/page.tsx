@@ -512,7 +512,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         secondManContactId: "",
         extraCost: booking.extraCost != null ? String(booking.extraCost) : "",
         cxDriverId: booking.cxDriverId || "",
-        cxDriverContactId: "",
+        cxDriverContactId: booking.driverContactId || "",
         cxDriverCost: booking.cxDriverCost != null ? String(booking.cxDriverCost) : "",
         chillUnitId: booking.chillUnitId || "",
         ambientUnitId: booking.ambientUnitId || "",
@@ -557,6 +557,20 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       setLoadingBooking(false);
     });
   }, [id]);
+
+  // Load subcon contacts when subcon changes
+  useEffect(() => {
+    if (!f.secondManId) { setSubconContacts([]); return; }
+    fetch(`/api/drivers/${f.secondManId}`)
+      .then(r => r.json()).then(d => setSubconContacts(d.contacts ?? []));
+  }, [f.secondManId]);
+
+  // Load CX driver contacts when CX changes
+  useEffect(() => {
+    if (!f.cxDriverId) { setCxContacts([]); return; }
+    fetch(`/api/drivers/${f.cxDriverId}`)
+      .then(r => r.json()).then(d => setCxContacts(d.contacts ?? []));
+  }, [f.cxDriverId]);
 
   // Auto-draw route on map once booking data and map are both ready
   useEffect(() => {
