@@ -266,8 +266,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         {/* Status bar */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            {booking.driver ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-rose-500" />}
-            <span className="text-sm">{booking.driver ? `Driver: ${booking.driver.name}` : "No driver assigned"}</span>
+            {(() => {
+              const assigned = booking.driver || booking.secondMan || booking.cxDriver;
+              const label = booking.driver ? `Driver: ${booking.driver.name}` : booking.secondMan ? `SubCon: ${booking.secondMan.name}` : booking.cxDriver ? `CX Driver: ${booking.cxDriver.name}` : "No driver assigned";
+              return <>
+                {assigned ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-rose-500" />}
+                <span className="text-sm">{label}</span>
+              </>;
+            })()}
           </div>
           <div className="flex items-center gap-2">
             {booking.podSignature ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-amber-500" />}
