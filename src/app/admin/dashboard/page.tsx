@@ -74,6 +74,13 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
                     {["Job Ref", "Date", "Time", "Customer", "From", "Via 1", "Via 2", "Via 3", "Via 4", "Via 5", "Via 6", "To", "Driver"].map((h) => (
+                      <th key={h} className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    ))}
+                    {has("bookings_financials") && <th className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Driver Cost</th>}
+                    {["Vehicle"].map((h) => (
+                      <th key={h} className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    ))}
+                    <th className="px-2 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
                 <tbody>
