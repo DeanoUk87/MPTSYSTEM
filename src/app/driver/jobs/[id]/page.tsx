@@ -156,17 +156,16 @@ export default function JobDetailPage() {
 
         {/* Collected orders */}
         {(() => {
-          const allOrders: { ref: string; type: string; source: string }[] = [];
-          const parseSrc = (raw: string | undefined | null, source: string) => {
+          const allOrders: { ref: string; type: string }[] = [];
+          const parseSrc = (raw: string | undefined | null) => {
             if (!raw?.includes("---ORDERS---")) return;
             try {
               const orders = JSON.parse(raw.split("---ORDERS---")[1] || "[]");
-              orders.forEach((o: any) => allOrders.push({ ref: o.ref, type: o.type, source }));
+              orders.forEach((o: any) => allOrders.push({ ref: o.ref, type: o.type }));
             } catch { /* ignore */ }
           };
-          parseSrc(job.collectionNotes, "Collection");
-          parseSrc(job.deliveryNotes, "Delivery");
-          job.viaAddresses?.forEach((v, i) => parseSrc((v as any).notes, `Via ${i + 1}`));
+          parseSrc(job.deliveryNotes);
+          job.viaAddresses?.forEach((v) => parseSrc((v as any).notes));
           if (allOrders.length === 0) return null;
           return (
             <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-2">
@@ -255,35 +254,51 @@ export default function JobDetailPage() {
         </div>
 
         {/* Notes sections */}
-        {(job.collectionNotes || job.deliveryNotes || job.jobNotes || job.officeNotes) && (
-          <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-3">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Notes</h2>
-            {job.collectionNotes && (
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Collection notes</p>
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.collectionNotes.split("---ORDERS---")[0].trim()}</p>
-              </div>
-            )}
-            {job.deliveryNotes && job.deliveryNotes.split("---ORDERS---")[0].trim() && (
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Delivery notes</p>
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.deliveryNotes.split("---ORDERS---")[0].trim()}</p>
-              </div>
-            )}
-            {job.jobNotes && (
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Job notes</p>
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.jobNotes}</p>
-              </div>
-            )}
-            {job.officeNotes && (
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Office notes</p>
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.officeNotes}</p>
-              </div>
-            )}
-          </div>
-        )}
+        {(() => {
+          const collText = job.collectionNotes?.trim();
+          const delivText = job.deliveryNotes?.split("---ORDERS---")[0].trim();
+          const viaNotesItems = (job.viaAddresses || []).map((v, i) => ({
+            label: `Via ${i + 1} notes`,
+            text: (v as any).notes?.split("---ORDERS---")[0].trim(),
+          })).filter(x => x.text);
+          const hasNotes = collText || delivText || viaNotesItems.length > 0 || job.jobNotes || job.officeNotes;
+          if (!hasNotes) return null;
+          return (
+            <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-3">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Notes</h2>
+              {collText && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Collection notes</p>
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{collText}</p>
+                </div>
+              )}
+              {delivText && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Delivery notes</p>
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{delivText}</p>
+                </div>
+              )}
+              {viaNotesItems.map((vn, i) => (
+                <div key={i}>
+                  <p className="text-xs text-gray-500 mb-1">{vn.label}</p>
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{vn.text}</p>
+                </div>
+              ))}
+              {job.jobNotes && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Job notes</p>
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.jobNotes}</p>
+                </div>
+              )}
+              {job.officeNotes && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Office notes</p>
+                  <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.officeNotes}</p>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
