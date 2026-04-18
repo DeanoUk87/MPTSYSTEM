@@ -32,9 +32,15 @@ export async function POST(
 
     const via = await prisma.viaAddress.findFirst({
       where: { id: viaId, bookingId: id, deletedAt: null },
-      select: { id: true, notes: true, podUpload: true },
+      select: { id: true, notes: true },
     });
     if (!via) return NextResponse.json({ error: "Via stop not found" }, { status: 404 });
+
+    // Read podUpload via raw query since the generated client may not have this field yet
+    const rawVia = await prisma.$queryRaw<{ podUpload: string | null }[]>`
+      SELECT podUpload FROM via_addresses WHERE id = ${viaId} LIMIT 1
+    `;
+    const existingPodUpload = rawVia[0]?.podUpload ?? null;
 
     const formData = await req.formData();
     const signedBy = (formData.get("signedBy") as string)?.trim();
@@ -74,7 +80,7 @@ export async function POST(
     }
     let podUploadValue: string | undefined;
     if (photoPath) {
-      const existing = parsePaths(via.podUpload);
+      const existing = parsePaths(existingPodUpload);
       existing.push(photoPath);
       podUploadValue = JSON.stringify(existing);
     }
@@ -89,10 +95,14 @@ export async function POST(
         deliveredTemp: temperature,
         notes: notes ?? via.notes,
         viaPodMobile: true,
-        ...(podUploadValue ? { podUpload: podUploadValue } : {}),
       },
       select: { id: true, signedBy: true, podTime: true },
     });
+
+    // Write podUpload separately via raw SQL (generated client may not have this field yet)
+    if (podUploadValue) {
+      await prisma.$executeRaw`UPDATE via_addresses SET podUpload = ${podUploadValue} WHERE id = ${viaId}`;
+    }
 
     return NextResponse.json(updated);
   } catch (e: any) {
