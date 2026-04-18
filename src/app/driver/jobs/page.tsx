@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Package } from "lucide-react";
-import { BottomNav } from "../page";
+import { BottomNav } from "../BottomNav";
 
 interface ViaAddress { id: string; signedBy?: string | null; }
 

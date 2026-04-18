@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, User } from "lucide-react";
-import { BottomNav } from "../page";
+import { BottomNav } from "../BottomNav";
 
 export default function DriverProfilePage() {
   const [me, setMe] = useState<any>(null);
