@@ -866,6 +866,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         chillUnitId: f.chillUnitId || null, ambientUnitId: f.ambientUnitId || null,
       };
       delete payload.secondManContactId;
+      payload.driverContactId = f.cxDriverContactId || null;
       delete payload.cxDriverContactId;
       payload.deadMileageStatus = f.deadMilesEnabled && f.deadMiles ? String(parseFloat(f.deadMiles) || 0) : null;
       delete payload.deadMilesEnabled;

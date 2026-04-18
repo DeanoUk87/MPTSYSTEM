@@ -862,6 +862,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       };
       // Remove form-only fields not in the Booking schema
       delete payload.secondManContactId;
+      payload.driverContactId = f.cxDriverContactId || null;
       delete payload.cxDriverContactId;
       payload.deadMileageStatus = f.deadMilesEnabled && f.deadMiles ? String(parseFloat(f.deadMiles) || 0) : null;
       delete payload.deadMilesEnabled;
