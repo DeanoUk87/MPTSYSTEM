@@ -276,7 +276,10 @@ export default function BookingsPage() {
     { key: "via5", label: "Via 5", render: (r) => r.viaAddresses?.[4]?.postcode || "—" },
     { key: "via6", label: "Via 6", render: (r) => r.viaAddresses?.[5]?.postcode || "—" },
     { key: "deliveryPostcode", label: "To", render: (r) => r.deliveryPostcode || "—" },
-    { key: "driver", label: "Driver", render: (r) => r.driver?.name || <span className="text-rose-500 text-xs">Unassigned</span> },
+    { key: "driver", label: "Driver", render: (r) => {
+      const name = r.driver?.name || r.secondMan?.name || r.cxDriver?.name;
+      return name ? <span className="whitespace-nowrap">{name}</span> : <span className="text-rose-500 text-xs">Unassigned</span>;
+    }},
     { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—" },
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (
@@ -371,8 +374,8 @@ export default function BookingsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: "Total", value: bookings.length, icon: CheckCircle, color: "text-blue-600 bg-blue-50" },
-            { label: "No Driver", value: bookings.filter(b => !b.driver).length, icon: AlertCircle, color: "text-rose-600 bg-rose-50" },
-            { label: "In Progress", value: bookings.filter(b => b.driver && !b.podSignature).length, icon: Clock, color: "text-amber-600 bg-amber-50" },
+            { label: "No Driver", value: bookings.filter(b => !b.driver && !b.secondMan && !b.cxDriver).length, icon: AlertCircle, color: "text-rose-600 bg-rose-50" },
+            { label: "In Progress", value: bookings.filter(b => (b.driver || b.secondMan || b.cxDriver) && !b.podSignature).length, icon: Clock, color: "text-amber-600 bg-amber-50" },
             { label: "Completed", value: bookings.filter(b => b.podSignature && b.podDataVerify).length, icon: CheckCircle, color: "text-blue-600 bg-blue-50" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">

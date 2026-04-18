@@ -22,18 +22,17 @@ interface Job {
 }
 
 function UnitPills({ job }: { job: Job }) {
+  const units = [job.chillUnit, job.ambientUnit].filter(Boolean) as { unitNumber: string; unitType?: string }[];
   return (
     <span className="flex gap-1.5">
-      {job.chillUnit && (
-        <span className="px-2 py-0.5 bg-blue-600 text-white text-xs font-semibold rounded-full">
-          MPT{job.chillUnit.unitNumber} Chill
-        </span>
-      )}
-      {job.ambientUnit && (
-        <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-semibold rounded-full">
-          MPT{job.ambientUnit.unitNumber} Ambient
-        </span>
-      )}
+      {units.map((u, i) => {
+        const isChill = (u.unitType || "").toLowerCase().startsWith("chill");
+        return (
+          <span key={i} className={`px-2 py-0.5 text-white text-xs font-semibold rounded-full ${isChill ? "bg-blue-600" : "bg-amber-500"}`}>
+            {u.unitNumber} {isChill ? "Chill" : "Ambient"}
+          </span>
+        );
+      })}
     </span>
   );
 }

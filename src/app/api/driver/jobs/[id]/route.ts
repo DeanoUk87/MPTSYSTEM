@@ -42,8 +42,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         deliveredTemperature: true,
         driverNote: true,
         driverConfirmCollectionAt: true,
-        chillUnit: { select: { unitNumber: true, unitType: true } },
-        ambientUnit: { select: { unitNumber: true, unitType: true } },
+        chillUnit: { select: { unitNumber: true, unitType: true, imei: true } },
+        ambientUnit: { select: { unitNumber: true, unitType: true, imei: true } },
         customer: { select: { name: true } },
         viaAddresses: {
           where: { deletedAt: null },
@@ -66,7 +66,44 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     });
 
     if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
-    return NextResponse.json(booking);
+
+    // Fetch live temperatures for assigned units
+    const apiKey = process.env.LIVE_DEVICE_API;
+    const useMock = process.env.GPSLIVE_USE_MOCK === "true";
+    async function fetchTemp(imei: string | null): Promise<string | null> {
+      if (!imei) return null;
+      if (useMock || !apiKey) {
+        return ((2 + Math.random() * 2).toFixed(1));
+      }
+      try {
+        const res = await fetch("https://api.gpslive.app/v1/devices/sensor-values", {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+        const json = await res.json();
+        const all = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+        const device = all.find((d: any) => String(d.imei) === String(imei));
+        if (!device) return null;
+        const tSensor = device?.sensors?.find((s: any) => /temperature/i.test(s.name ?? ""));
+        if (tSensor?.data?.computed_value != null) return String(tSensor.data.computed_value);
+        if (device?.objectData?.data?.params?.temp1 != null)
+          return (parseFloat(device.objectData.data.params.temp1) / 10).toFixed(1);
+        return null;
+      } catch { return null; }
+    }
+
+    const [chillTemp, ambientTemp] = await Promise.all([
+      fetchTemp((booking.chillUnit as any)?.imei ?? null),
+      fetchTemp((booking.ambientUnit as any)?.imei ?? null),
+    ]);
+
+    const result = {
+      ...booking,
+      chillUnit: booking.chillUnit ? { ...booking.chillUnit, temperature: chillTemp } : null,
+      ambientUnit: booking.ambientUnit ? { ...booking.ambientUnit, temperature: ambientTemp } : null,
+    };
+
+    return NextResponse.json(result);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

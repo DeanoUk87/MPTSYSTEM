@@ -32,25 +32,29 @@ interface Job {
   collectionTime?: string;
   driverConfirmCollectionAt?: string | null;
   podSignature?: string | null;
-  chillUnit?: { unitNumber: string; unitType?: string } | null;
-  ambientUnit?: { unitNumber: string; unitType?: string } | null;
+  chillUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
+  ambientUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
   customer?: { name: string } | null;
   viaAddresses?: ViaAddress[];
 }
 
 function UnitPills({ job }: { job: Job }) {
+  const units = [
+    job.chillUnit,
+    job.ambientUnit,
+  ].filter(Boolean) as { unitNumber: string; unitType?: string; temperature?: string | null }[];
   return (
     <>
-      {job.chillUnit && (
-        <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-          MPT{job.chillUnit.unitNumber} Chill
-        </span>
-      )}
-      {job.ambientUnit && (
-        <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-          MPT{job.ambientUnit.unitNumber} Ambient
-        </span>
-      )}
+      {units.map((u, i) => {
+        const isChill = (u.unitType || "").toLowerCase().startsWith("chill");
+        return (
+          <span key={i} className={`px-2.5 py-1 text-white text-xs font-semibold rounded-full ${
+            isChill ? "bg-blue-600" : "bg-amber-500"
+          }`}>
+            {u.unitNumber} {isChill ? "Chill" : "Ambient"}{u.temperature != null ? ` · ${u.temperature}°C` : ""}
+          </span>
+        );
+      })}
     </>
   );
 }
@@ -148,12 +152,6 @@ export default function JobDetailPage() {
               <span className="text-white font-medium">{job.miles}</span>
             </div>
           )}
-          {job.purchaseOrder && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Order ref</span>
-              <span className="text-white font-medium">{job.purchaseOrder}</span>
-            </div>
-          )}
         </div>
 
         {/* Delivery stages */}
@@ -235,13 +233,13 @@ export default function JobDetailPage() {
             {job.collectionNotes && (
               <div>
                 <p className="text-xs text-gray-500 mb-1">Collection notes</p>
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.collectionNotes}</p>
+                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.collectionNotes.split("---ORDERS---")[0].trim()}</p>
               </div>
             )}
-            {job.deliveryNotes && (
+            {job.deliveryNotes && job.deliveryNotes.split("---ORDERS---")[0].trim() && (
               <div>
                 <p className="text-xs text-gray-500 mb-1">Delivery notes</p>
-                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.deliveryNotes}</p>
+                <p className="text-sm text-gray-300 whitespace-pre-wrap">{job.deliveryNotes.split("---ORDERS---")[0].trim()}</p>
               </div>
             )}
             {job.jobNotes && (
