@@ -154,6 +154,34 @@ export default function JobDetailPage() {
           )}
         </div>
 
+        {/* Collected orders */}
+        {(() => {
+          const allOrders: { ref: string; type: string; source: string }[] = [];
+          const parseSrc = (raw: string | undefined | null, source: string) => {
+            if (!raw?.includes("---ORDERS---")) return;
+            try {
+              const orders = JSON.parse(raw.split("---ORDERS---")[1] || "[]");
+              orders.forEach((o: any) => allOrders.push({ ref: o.ref, type: o.type, source }));
+            } catch { /* ignore */ }
+          };
+          parseSrc(job.collectionNotes, "Collection");
+          parseSrc(job.deliveryNotes, "Delivery");
+          job.viaAddresses?.forEach((v, i) => parseSrc((v as any).notes, `Via ${i + 1}`));
+          if (allOrders.length === 0) return null;
+          return (
+            <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-2">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Collected Orders</h2>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {allOrders.map((o, i) => (
+                  <span key={i} className="px-2 py-1 bg-orange-900/50 border border-orange-500/40 text-orange-300 rounded-full text-xs font-medium">
+                    {o.ref} · {o.type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Delivery stages */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Delivery stages</h2>
