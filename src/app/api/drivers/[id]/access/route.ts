@@ -74,7 +74,13 @@ export async function POST(
     username = existingUser.username ?? generateUsername(displayName);
     await prisma.user.update({
       where: { id: existingUser.id },
-      data: { password: hashedPassword, userStatus: 1, username },
+      data: {
+        password: hashedPassword,
+        userStatus: 1,
+        username,
+        // Clear driverId for contacts so they route to /driver not /driver-portal
+        ...(contactId ? { driverId: null } : {}),
+      },
     });
     userId = existingUser.id;
   } else {
@@ -98,7 +104,9 @@ export async function POST(
         username,
         password: hashedPassword,
         userStatus: 1,
-        driverId: id,
+        // Only set driverId when granting access to the main driver (not a contact).
+        // Contacts must only have dcontactId set so login routes them to /driver, not /driver-portal.
+        driverId: contactId ? null : id,
         dcontactId: contactId,
       },
     });
