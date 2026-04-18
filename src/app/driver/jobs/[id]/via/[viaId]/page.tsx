@@ -14,9 +14,22 @@ interface ViaAddress {
 interface Job {
   id: string;
   jobRef?: string;
-  chillUnit?: { unitNumber: string } | null;
-  ambientUnit?: { unitNumber: string } | null;
+  chillUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
+  ambientUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
   viaAddresses?: ViaAddress[];
+}
+
+function UnitCard({ unit }: { unit: { unitNumber: string; unitType?: string; temperature?: string | null } }) {
+  const isChill = (unit.unitType || "").toLowerCase().startsWith("chill");
+  return (
+    <div className={`rounded-xl px-3 py-2 text-xs ${
+      isChill ? "bg-blue-900/50 border border-blue-500/30" : "bg-amber-900/50 border border-amber-500/30"
+    }`}>
+      <p className="font-bold text-white leading-tight">{unit.unitNumber}</p>
+      <p className={`mt-0.5 ${isChill ? "text-blue-300" : "text-amber-300"}`}>{isChill ? "Chill" : "Ambient"}</p>
+      <p className="text-gray-500 mt-0.5">{unit.temperature != null ? `${unit.temperature}°C` : "—°C"}</p>
+    </div>
+  );
 }
 
 function now() {
@@ -131,22 +144,18 @@ export default function ViaDeliverPage() {
         </button>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Via Delivery</p>
-            <p className="text-3xl font-bold text-white leading-tight">
-              {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
-            </p>
+            <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1 whitespace-nowrap">Via Delivery</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-3xl font-bold text-white leading-tight">
+                {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
+              </p>
+              <p className="text-xs text-gray-500">Work Job</p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1.5 justify-end pt-1 shrink-0">
-            {job.chillUnit && (
-              <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-                MPT{job.chillUnit.unitNumber} Chill
-              </span>
-            )}
-            {job.ambientUnit && (
-              <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-                MPT{job.ambientUnit.unitNumber} Ambient
-              </span>
-            )}
+          <div className="flex gap-2 shrink-0 pt-1">
+            {[job.chillUnit, job.ambientUnit].filter(Boolean).map((u, i) => (
+              <UnitCard key={i} unit={u!} />
+            ))}
           </div>
         </div>
       </div>
@@ -178,7 +187,7 @@ export default function ViaDeliverPage() {
           if (orders.length === 0) return null;
           return (
             <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-2">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Collected Orders</h2>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Order Number(s)</h2>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {orders.map((o, i) => (
                   <span key={i} className="px-2 py-1 bg-orange-900/50 border border-orange-500/40 text-orange-300 rounded-full text-xs font-medium">
