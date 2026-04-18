@@ -26,11 +26,13 @@ export async function POST(
 
     const booking = await prisma.booking.findFirst({
       where: { id, secondManId: contact.driverId, driverContactId: contact.id, deletedAt: null },
+      select: { id: true },
     });
     if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
     const via = await prisma.viaAddress.findFirst({
       where: { id: viaId, bookingId: id, deletedAt: null },
+      select: { id: true, notes: true, podUpload: true },
     });
     if (!via) return NextResponse.json({ error: "Via stop not found" }, { status: 404 });
 
@@ -64,6 +66,19 @@ export async function POST(
       photoPath = `/uploads/pod/${filename}`;
     }
 
+    // Merge new photo with any existing via photos
+    function parsePaths(raw: string | null | undefined): string[] {
+      if (!raw) return [];
+      if (raw.startsWith("[")) { try { return JSON.parse(raw); } catch { return []; } }
+      return [raw];
+    }
+    let podUploadValue: string | undefined;
+    if (photoPath) {
+      const existing = parsePaths(via.podUpload);
+      existing.push(photoPath);
+      podUploadValue = JSON.stringify(existing);
+    }
+
     const updated = await prisma.viaAddress.update({
       where: { id: viaId },
       data: {
@@ -74,7 +89,7 @@ export async function POST(
         deliveredTemp: temperature,
         notes: notes ?? via.notes,
         viaPodMobile: true,
-        ...(photoPath ? { /* store in notes for now if needed */ } : {}),
+        ...(podUploadValue ? { podUpload: podUploadValue } : {}),
       },
       select: { id: true, signedBy: true, podTime: true },
     });

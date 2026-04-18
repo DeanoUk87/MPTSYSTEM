@@ -145,11 +145,11 @@ export default function ViaDeliverPage() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1 whitespace-nowrap">Via Delivery</p>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-xs text-gray-500">Job</p>
               <p className="text-3xl font-bold text-white leading-tight">
                 {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
               </p>
-              <p className="text-xs text-gray-500">Work Job</p>
             </div>
           </div>
           <div className="flex gap-2 shrink-0 pt-1">

@@ -380,6 +380,7 @@ model ViaAddress {
   deliveredTemp    String?
   latitude         Float?
   longitude        Float?
+  podUpload        String?
   viaPodVerify     Boolean   @default(false)
   viaPodMobile     Boolean   @default(false)
   deletedAt        DateTime?

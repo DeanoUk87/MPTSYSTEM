@@ -8,9 +8,23 @@ interface Job {
   jobRef?: string;
   deliveryName?: string;
   deliveryPostcode?: string;
+  deliveryNotes?: string;
   purchaseOrder?: string;
-  chillUnit?: { unitNumber: string } | null;
-  ambientUnit?: { unitNumber: string } | null;
+  chillUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
+  ambientUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
+}
+
+function UnitCard({ unit }: { unit: { unitNumber: string; unitType?: string; temperature?: string | null } }) {
+  const isChill = (unit.unitType || "").toLowerCase().startsWith("chill");
+  return (
+    <div className={`rounded-xl px-3 py-2 text-xs ${
+      isChill ? "bg-blue-900/50 border border-blue-500/30" : "bg-amber-900/50 border border-amber-500/30"
+    }`}>
+      <p className="font-bold text-white leading-tight">{unit.unitNumber}</p>
+      <p className={`mt-0.5 ${isChill ? "text-blue-300" : "text-amber-300"}`}>{isChill ? "Chill" : "Ambient"}</p>
+      <p className="text-gray-500 mt-0.5">{unit.temperature != null ? `${unit.temperature}°C` : "—°C"}</p>
+    </div>
+  );
 }
 
 function now() {
@@ -115,34 +129,34 @@ export default function DeliverPage() {
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
         </button>
-        <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Final Delivery</p>
-        <p className="text-gray-500 text-sm">Job {job.jobRef || job.id.slice(-8).toUpperCase()}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1 whitespace-nowrap">Final Delivery</p>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-xs text-gray-500">Job</p>
+              <p className="text-3xl font-bold text-white leading-tight">
+                {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0 pt-1">
+            {[job.chillUnit, job.ambientUnit].filter(Boolean).map((u, i) => (
+              <UnitCard key={i} unit={u!} />
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="px-4 space-y-4">
-        {/* Unit pills */}
-        <div className="flex flex-wrap gap-1.5">
-          {job.chillUnit && (
-            <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-              MPT{job.chillUnit.unitNumber} Chill
-            </span>
-          )}
-          {job.ambientUnit && (
-            <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-              MPT{job.ambientUnit.unitNumber} Ambient
-            </span>
-          )}
-        </div>
-
         {/* Delivery info */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-1.5">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Delivery to</span>
-            <span className="text-white font-medium">{job.deliveryName || "—"}</span>
+            <span className="text-white font-bold text-right">{job.deliveryName || "—"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Postcode</span>
-            <span className="text-white font-medium">{job.deliveryPostcode || "—"}</span>
+            <span className="text-white font-bold">{job.deliveryPostcode || "—"}</span>
           </div>
           {job.purchaseOrder && (
             <div className="flex justify-between text-sm">
@@ -151,6 +165,26 @@ export default function DeliverPage() {
             </div>
           )}
         </div>
+
+        {/* Collected orders assigned to final delivery */}
+        {(() => {
+          if (!job.deliveryNotes?.includes("---ORDERS---")) return null;
+          let orders: { ref: string; type: string }[] = [];
+          try { orders = JSON.parse(job.deliveryNotes.split("---ORDERS---")[1] || "[]"); } catch { /* ignore */ }
+          if (orders.length === 0) return null;
+          return (
+            <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-2">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Order Number(s)</h2>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {orders.map((o, i) => (
+                  <span key={i} className="px-2 py-1 bg-orange-900/50 border border-orange-500/40 text-orange-300 rounded-full text-xs font-medium">
+                    {o.ref} · {o.type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* POD photo */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-3">
