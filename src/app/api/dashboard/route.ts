@@ -37,6 +37,8 @@ export async function GET(req: NextRequest) {
         deliveryPostcode: true,
         customerPrice: true,
         driverCost: true,
+        extraCost: true,
+        cxDriverCost: true,
         jobStatus: true,
         podSignature: true,
         podDataVerify: true,

@@ -23,6 +23,8 @@ interface Booking {
   purchaseOrder?: string;
   customerPrice?: number;
   driverCost?: number;
+  extraCost?: number;
+  cxDriverCost?: number;
   miles?: number;
   weight?: number;
   jobStatus: number;
@@ -279,7 +281,7 @@ export default function BookingsPage() {
       const name = r.driver?.name || r.secondMan?.name || r.cxDriver?.name;
       return name ? <span className="whitespace-nowrap">{name}</span> : <span className="text-rose-500 text-xs">Unassigned</span>;
     }},
-    { key: "driverCost", label: "Driver Cost", render: (r) => r.driverCost ? `£${r.driverCost.toFixed(2)}` : "—" },
+    { key: "driverCost", label: "Driver Cost", render: (r) => { const cost = r.driverCost || r.extraCost || r.cxDriverCost; return cost ? `£${cost.toFixed(2)}` : "—"; } },
     { key: "vehicle", label: "Vehicle", render: (r) => r.vehicle?.name || "—" },
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (

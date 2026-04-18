@@ -105,15 +105,11 @@ export default function DashboardPage() {
                         ))}
                         <td className="px-2 py-2 font-mono text-xs text-slate-600 whitespace-nowrap">{b.deliveryPostcode ?? "—"}</td>
                         <td className="px-2 py-2 text-xs text-slate-600 whitespace-nowrap">
-                          {b.driver?.name
-                            ? b.driver.name
-                            : b.secondMan?.name
-                            ? <span className="text-purple-600">{b.secondMan.name} <span className="text-xs opacity-70">(sub)</span></span>
-                            : b.cxDriver?.name
-                            ? <span className="text-amber-600">{b.cxDriver.name} <span className="text-xs opacity-70">(cx)</span></span>
+                          {b.driver?.name || b.secondMan?.name || b.cxDriver?.name
+                            ? <span>{b.driver?.name || b.secondMan?.name || b.cxDriver?.name}</span>
                             : <span className="text-rose-500 font-semibold">Unassigned</span>}
                         </td>
-                        {has("bookings_financials") && <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{b.driverCost ? `£${Number(b.driverCost).toFixed(2)}` : "—"}</td>}
+                        {has("bookings_financials") && <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{(b.driverCost || b.extraCost || b.cxDriverCost) ? `£${Number(b.driverCost || b.extraCost || b.cxDriverCost).toFixed(2)}` : "—"}</td>}
                         <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{b.vehicle?.name ?? "—"}</td>
                         <td className="px-2 py-2 whitespace-nowrap">
                           {isQuote ? <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700">Quote</span>

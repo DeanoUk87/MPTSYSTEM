@@ -129,42 +129,66 @@ export default function ViaDeliverPage() {
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
         </button>
-        <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Via Delivery</p>
-        <p className="text-gray-500 text-sm">Job {job.jobRef || job.id.slice(-8).toUpperCase()}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Via Delivery</p>
+            <p className="text-3xl font-bold text-white leading-tight">
+              {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5 justify-end pt-1 shrink-0">
+            {job.chillUnit && (
+              <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+                MPT{job.chillUnit.unitNumber} Chill
+              </span>
+            )}
+            {job.ambientUnit && (
+              <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
+                MPT{job.ambientUnit.unitNumber} Ambient
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="px-4 space-y-4">
-        {/* Unit pills */}
-        <div className="flex flex-wrap gap-1.5">
-          {job.chillUnit && (
-            <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-              MPT{job.chillUnit.unitNumber} Chill
-            </span>
-          )}
-          {job.ambientUnit && (
-            <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-              MPT{job.ambientUnit.unitNumber} Ambient
-            </span>
-          )}
-        </div>
-
-        {/* Via info */}
+        {/* Via / Delivery info */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-1.5">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Delivery to</span>
-            <span className="text-white font-medium">{via.name || "—"}</span>
+            <span className="text-white font-bold text-right">{via.name || "—"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Postcode</span>
-            <span className="text-white font-medium">{via.postcode || "—"}</span>
+            <span className="text-white font-bold">{via.postcode || "—"}</span>
           </div>
-          {via.notes && (
+          {via.notes?.split("---ORDERS---")[0].trim() && (
             <div className="pt-2 border-t border-white/5">
               <p className="text-xs text-gray-500 mb-1">Notes</p>
-              <p className="text-sm text-gray-300">{via.notes}</p>
+              <p className="text-sm text-gray-300">{via.notes.split("---ORDERS---")[0].trim()}</p>
             </div>
           )}
         </div>
+
+        {/* Collected orders for this via */}
+        {(() => {
+          if (!via.notes?.includes("---ORDERS---")) return null;
+          let orders: { ref: string; type: string }[] = [];
+          try { orders = JSON.parse(via.notes.split("---ORDERS---")[1] || "[]"); } catch { /* ignore */ }
+          if (orders.length === 0) return null;
+          return (
+            <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-2">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Collected Orders</h2>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {orders.map((o, i) => (
+                  <span key={i} className="px-2 py-1 bg-orange-900/50 border border-orange-500/40 text-orange-300 rounded-full text-xs font-medium">
+                    {o.ref} · {o.type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* POD photo */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-3">

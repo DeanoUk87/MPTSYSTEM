@@ -81,30 +81,39 @@ export default function CollectPage() {
           <span className="text-sm">Back</span>
         </button>
 
-        <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Collection</p>
-        <p className="text-gray-500 text-sm">Job {job.jobRef || job.id.slice(-8).toUpperCase()}</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs text-blue-400 font-semibold uppercase tracking-widest mb-1">Collection</p>
+            <p className="text-3xl font-bold text-white leading-tight">
+              {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5 justify-end pt-1 shrink-0">
+            {job.chillUnit && (
+              <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+                MPT{job.chillUnit.unitNumber} Chill
+              </span>
+            )}
+            {job.ambientUnit && (
+              <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
+                MPT{job.ambientUnit.unitNumber} Ambient
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="px-4 space-y-4">
-        {/* Unit pills */}
-        <div className="flex flex-wrap gap-1.5">
-          {job.chillUnit && (
-            <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-              MPT{job.chillUnit.unitNumber} Chill
-            </span>
-          )}
-          {job.ambientUnit && (
-            <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-              MPT{job.ambientUnit.unitNumber} Ambient
-            </span>
-          )}
-        </div>
-
         {/* Collection info */}
-        <div className="bg-[#1c1c2e] rounded-2xl p-4">
-          <p className="text-xs text-gray-500 mb-3">Collection from</p>
-          <p className="text-white font-semibold">{job.collectionName || "—"}</p>
-          <p className="text-gray-400 text-sm">{job.collectionPostcode || ""}</p>
+        <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-1.5">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Collection From</span>
+            <span className="text-white font-bold text-right">{job.collectionName || "—"}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Postcode</span>
+            <span className="text-white font-bold">{job.collectionPostcode || "—"}</span>
+          </div>
         </div>
 
         {/* Success state */}
@@ -119,7 +128,8 @@ export default function CollectPage() {
         ) : (
           /* Confirm form */
           <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-4">
-            <h2 className="font-semibold text-white">Confirm collection</h2>
+            <h2 className="font-semibold text-white">Confirm collection time</h2>
+            <p className="text-xs text-gray-400 leading-relaxed">By confirming, you agree that you have collected the goods for this job, The storage units are correct and you are ready to start the delivery(s)</p>
 
             <div>
               <label className="block text-xs text-gray-500 mb-1.5">Collection time</label>
