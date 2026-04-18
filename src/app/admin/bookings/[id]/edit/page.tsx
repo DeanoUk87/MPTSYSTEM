@@ -509,10 +509,9 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         driverId: booking.driverId || "",
         driverCost: booking.driverCost != null ? String(booking.driverCost) : "",
         secondManId: booking.secondManId || "",
-        secondManContactId: "",
+        secondManContactId: booking.driverContactId || "",
         extraCost: booking.extraCost != null ? String(booking.extraCost) : "",
         cxDriverId: booking.cxDriverId || "",
-        cxDriverContactId: booking.driverContactId || "",
         cxDriverCost: booking.cxDriverCost != null ? String(booking.cxDriverCost) : "",
         chillUnitId: booking.chillUnitId || "",
         ambientUnitId: booking.ambientUnitId || "",
@@ -879,9 +878,8 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
         bookingTypeId: f.bookingTypeId || null,
         chillUnitId: f.chillUnitId || null, ambientUnitId: f.ambientUnitId || null,
       };
+      payload.driverContactId = f.secondManContactId || null;
       delete payload.secondManContactId;
-      payload.driverContactId = f.cxDriverContactId || null;
-      delete payload.cxDriverContactId;
       payload.deadMileageStatus = f.deadMilesEnabled && f.deadMiles ? String(parseFloat(f.deadMiles) || 0) : null;
       delete payload.deadMilesEnabled;
       delete payload.deadMiles;
@@ -1402,8 +1400,8 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         const id = e.target.value;
                         const miles = Math.round(parseFloat(f.miles) || 0);
                         const dr = cxDrivers.find((d: any) => d.id === id);
-                        if (!id) { setF(p => ({ ...p, cxDriverId: "", cxDriverContactId: "", cxDriverCost: "" })); return; }
-                        setF(p => ({ ...p, cxDriverId: id, cxDriverContactId: "", cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost }));
+                        if (!id) { setF(p => ({ ...p, cxDriverId: "", cxDriverCost: "" })); return; }
+                        setF(p => ({ ...p, cxDriverId: id, cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost }));
                       }} className={inp}>
                         <option value="">— Select CX Driver —</option>
                         {cxDrivers.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
@@ -1411,12 +1409,6 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       {has("bookings_financials") && <><span className="text-xs text-slate-400 shrink-0">£</span>
                       <input type="number" step="0.01" min="0" value={f.cxDriverCost || ""} onChange={e => s("cxDriverCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
                     </div>
-                    {cxContacts.length > 0 && (
-                      <select value={f.cxDriverContactId || ""} onChange={e => s("cxDriverContactId", e.target.value)} className={inp + " mt-1.5"}>
-                        <option value="">— Assign driver under CX —</option>
-                        {cxContacts.map((c: any) => <option key={c.id} value={c.id}>{c.driverName}{c.vehicleRegistration ? ` · ${c.vehicleRegistration}` : ""}</option>)}
-                      </select>
-                    )}
                   </div>
                   {/* Storage units — only show when a driver is selected */}
                   {activeDriverId && <div className="border-t border-slate-100 pt-3 space-y-2">

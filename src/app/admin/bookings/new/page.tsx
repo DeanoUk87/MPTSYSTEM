@@ -502,7 +502,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     jobNotes: "", officeNotes: "",
     driverId: "", driverCost: "",
     secondManId: "", secondManContactId: "", extraCost: "",
-    cxDriverId: "", cxDriverContactId: "", cxDriverCost: "",
+    cxDriverId: "", cxDriverCost: "",
     chillUnitId: "", ambientUnitId: "",
     hideTrackingTemperature: false, hideTrackingMap: false,
     // Collection
@@ -607,13 +607,6 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
       .then(r => r.json()).then(d => setSubconContacts(d.contacts ?? []));
   }, [f.secondManId]);
 
-  // Load CX driver contacts when CX changes
-  useEffect(() => {
-    if (!f.cxDriverId) { setCxContacts([]); s("cxDriverContactId", ""); return; }
-    fetch(`/api/drivers/${f.cxDriverId}`)
-      .then(r => r.json()).then(d => setCxContacts(d.contacts ?? []));
-  }, [f.cxDriverId]);
-
   // Handle driver change — update cost, auto-fill that driver's assigned units, or clear if deselected
   function handleDriverChange(driverId: string) {
     if (!driverId) {
@@ -660,21 +653,10 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     }));
   }
 
-  // CX contact selection — recalc cxDriverCost from parent CX driver's rate
-  function handleCxContactChange(contactId: string) {
-    const miles = Math.round(parseFloat(f.miles) || 0);
-    const dr = cxDrivers.find((d: any) => d.id === f.cxDriverId);
-    setF(p => ({
-      ...p,
-      cxDriverContactId: contactId,
-      cxDriverCost: contactId && dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost,
-    }));
-  }
-
   // Handle CX driver change — update cost or clear if deselected
   function handleCxChange(cxId: string) {
     if (!cxId) {
-      setF(p => ({ ...p, cxDriverId: "", cxDriverContactId: "", cxDriverCost: "" }));
+      setF(p => ({ ...p, cxDriverId: "", cxDriverCost: "" }));
       return;
     }
     const miles = Math.round(parseFloat(f.miles) || 0);
@@ -682,7 +664,6 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     setF(p => ({
       ...p,
       cxDriverId: cxId,
-      cxDriverContactId: "",
       cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost,
     }));
   }
@@ -861,9 +842,8 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
         chillUnitId: f.chillUnitId || null, ambientUnitId: f.ambientUnitId || null,
       };
       // Remove form-only fields not in the Booking schema
+      payload.driverContactId = f.secondManContactId || null;
       delete payload.secondManContactId;
-      payload.driverContactId = f.cxDriverContactId || null;
-      delete payload.cxDriverContactId;
       payload.deadMileageStatus = f.deadMilesEnabled && f.deadMiles ? String(parseFloat(f.deadMiles) || 0) : null;
       delete payload.deadMilesEnabled;
       delete payload.deadMiles;
@@ -1453,16 +1433,6 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                       <input type="number" step="0.01" min="0" value={f.cxDriverCost}
                         onChange={e => s("cxDriverCost", e.target.value)} className={costInp} placeholder="0.00" />
                     </div>
-                    {cxContacts.length > 0 && (
-                      <div className="mt-1.5">
-                        <select value={f.cxDriverContactId} onChange={e => handleCxContactChange(e.target.value)} className={inp}>
-                          <option value="">— Assign driver under CX —</option>
-                          {cxContacts.map((c: any) => (
-                            <option key={c.id} value={c.id}>{c.driverName}{c.vehicleRegistration ? ` · ${c.vehicleRegistration}` : ""}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
                   </div>
 
                   {/* Storage unit assignment — only show when a driver is selected */}

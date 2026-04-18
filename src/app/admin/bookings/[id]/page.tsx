@@ -418,8 +418,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             <h3 className="font-semibold text-slate-800 mb-3 flex items-center gap-2"><Truck className="w-4 h-4 text-blue-600" />Drivers & Financials</h3>
             <InfoRow label="Driver" value={booking.driver?.name} />
             <InfoRow label="Driver Cost" value={booking.driverCost ? `£${booking.driverCost.toFixed(2)}` : undefined} />
-            <InfoRow label="Second Man" value={booking.secondMan?.name} />
-            <InfoRow label="2nd Man Cost" value={booking.extraCost ? `£${booking.extraCost.toFixed(2)}` : undefined} />
+            <InfoRow label="SubContractor" value={booking.secondMan?.name} />
+            <InfoRow label="SubCon Cost" value={booking.extraCost ? `£${booking.extraCost.toFixed(2)}` : undefined} />
             <InfoRow label="CX Driver" value={booking.cxDriver?.name} />
             <InfoRow label="CX Cost" value={booking.cxDriverCost ? `£${booking.cxDriverCost.toFixed(2)}` : undefined} />
             <div className="border-t border-slate-100 pt-2 mt-2 space-y-1">
