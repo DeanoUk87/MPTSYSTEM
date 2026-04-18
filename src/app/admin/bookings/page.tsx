@@ -24,7 +24,6 @@ interface Booking {
   customerPrice?: number;
   driverCost?: number;
   miles?: number;
-  numberOfItems?: number;
   weight?: number;
   jobStatus: number;
   podDataVerify: boolean;
@@ -280,7 +279,8 @@ export default function BookingsPage() {
       const name = r.driver?.name || r.secondMan?.name || r.cxDriver?.name;
       return name ? <span className="whitespace-nowrap">{name}</span> : <span className="text-rose-500 text-xs">Unassigned</span>;
     }},
-    { key: "customerPrice", label: "Total", render: (r) => r.customerPrice ? `£${r.customerPrice.toFixed(2)}` : "—" },
+    { key: "driverCost", label: "Driver Cost", render: (r) => r.driverCost ? `£${r.driverCost.toFixed(2)}` : "—" },
+    { key: "vehicle", label: "Vehicle", render: (r) => r.vehicle?.name || "—" },
     { key: "status", label: "Status", render: (r) => <StatusBadge booking={r} /> },
     { key: "actions", label: "Actions", render: (r) => (
       <div className="flex items-center gap-1">
@@ -401,7 +401,7 @@ export default function BookingsPage() {
         <div className="overflow-x-auto">
           <DataTable
             data={bookings}
-            columns={columns.filter(c => c.key !== "customerPrice" || has("bookings_financials"))}
+            columns={columns.filter(c => (c.key !== "customerPrice" && c.key !== "driverCost") || has("bookings_financials"))}
             compact
             searchKeys={["collectionPostcode", "deliveryPostcode"]}
             loading={loading}

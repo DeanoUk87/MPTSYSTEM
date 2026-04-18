@@ -12,6 +12,8 @@ interface StorageUnit {
   id: string; unitNumber: string; imei?: string; unitSize?: string; unitType?: string;
   availability: string; calibrationDate?: string; trackable: number; jobId?: string;
   currentDriver?: { name: string };
+  assignedDriverName?: string | null;
+  isDriverContact?: boolean;
 }
 
 const emptyForm = { unitNumber: "", imei: "", unitSize: "", unitType: "chill", availability: "Yes", calibrationDate: "", trackable: 0 };
@@ -102,7 +104,10 @@ export default function StoragePage() {
         {r.availability === "Yes" ? "In Store" : "Assigned"}
       </span>
     )},
-    { key: "currentDriver", label: "Current Driver", render: r => r.currentDriver?.name || "—" },
+    { key: "currentDriver", label: "Current Driver", render: r => {
+      if (r.assignedDriverName) return <span title={r.isDriverContact ? "Driver Contact" : "Driver"}>{r.assignedDriverName}{r.isDriverContact ? <span className="ml-1 text-xs text-purple-500">(contact)</span> : null}</span>;
+      return r.currentDriver?.name || "—";
+    }},
     { key: "imei", label: "IMEI", render: r => r.imei ? <span className="font-mono text-xs">{r.imei}</span> : "—" },
     { key: "calibrationDate", label: "Calibration", render: r => r.calibrationDate || "—" },
     { key: "trackable", label: "Temp / Tracking", render: r => {
@@ -133,6 +138,7 @@ export default function StoragePage() {
 
   // Temperature range checks
   const tempAlerts = units.filter(u => {
+    if (!u.trackable) return false;
     const td = tempData[u.id];
     if (!td?.temperature) return false;
     const temp = parseFloat(td.temperature);
@@ -180,7 +186,7 @@ export default function StoragePage() {
               <div key={unit.id} className="flex items-center gap-3 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-800">
                 <Thermometer className="w-4 h-4 text-rose-600 shrink-0" />
                 <span><strong>{unit.unitNumber}</strong> ({unit.unitType}) — temperature <strong>{temp.toFixed(1)}°C</strong> is outside the expected range <strong>{range}</strong></span>
-                {unit.currentDriver && <span className="ml-auto text-xs text-rose-600 shrink-0">Driver: {unit.currentDriver.name}</span>}
+                {(unit.assignedDriverName || unit.currentDriver?.name) && <span className="ml-auto text-xs text-rose-600 shrink-0">{unit.isDriverContact ? "Driver Contact" : "Driver"}: {unit.assignedDriverName || unit.currentDriver?.name}</span>}
               </div>
             ))}
           </div>

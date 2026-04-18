@@ -14,7 +14,46 @@ export async function GET(req: NextRequest) {
       include: { currentDriver: { select: { id: true, name: true } } },
       orderBy: { unitNumber: "asc" },
     });
-    return NextResponse.json(units);
+
+    // For units that belong to SubCon bookings, resolve the DriverContact name
+    const unitIds = units.filter(u => u.currentDriverId).map(u => u.id);
+    let driverContactMap: Record<string, string> = {};
+    if (unitIds.length > 0) {
+      const bookings = await prisma.booking.findMany({
+        where: {
+          deletedAt: null,
+          driverContactId: { not: null },
+          OR: [
+            { chillUnitId: { in: unitIds } },
+            { ambientUnitId: { in: unitIds } },
+          ],
+        },
+        select: { chillUnitId: true, ambientUnitId: true, driverContactId: true },
+      });
+      const contactIds = [...new Set(bookings.map(b => b.driverContactId!))];
+      if (contactIds.length > 0) {
+        const contacts = await prisma.driverContact.findMany({
+          where: { id: { in: contactIds } },
+          select: { id: true, driverName: true },
+        });
+        const contactNameMap = Object.fromEntries(contacts.map(c => [c.id, c.driverName]));
+        for (const b of bookings) {
+          const name = contactNameMap[b.driverContactId!];
+          if (name) {
+            if (b.chillUnitId && unitIds.includes(b.chillUnitId)) driverContactMap[b.chillUnitId] = name;
+            if (b.ambientUnitId && unitIds.includes(b.ambientUnitId)) driverContactMap[b.ambientUnitId] = name;
+          }
+        }
+      }
+    }
+
+    const augmented = units.map(u => ({
+      ...u,
+      assignedDriverName: driverContactMap[u.id] || u.currentDriver?.name || null,
+      isDriverContact: !!driverContactMap[u.id],
+    }));
+
+    return NextResponse.json(augmented);
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

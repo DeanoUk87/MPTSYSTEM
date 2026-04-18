@@ -1043,7 +1043,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="p-4 grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Date</label>
-                    <input type="date" value={f.collectionDate || ""} onChange={e => s("collectionDate", e.target.value)} className={inp} />
+                    <input type="date" value={f.collectionDate || ""} onChange={e => s("collectionDate", e.target.value)} onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }} className={inp} />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Time</label>
@@ -1274,7 +1274,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                 <div className="p-4 grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Date</label>
-                    <input type="date" value={f.deliveryDate || ""} onChange={e => s("deliveryDate", e.target.value)} className={inp} />
+                    <input type="date" value={f.deliveryDate || ""} onChange={e => s("deliveryDate", e.target.value)} onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }} className={inp} />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-slate-500 block mb-1">Time</label>
@@ -1393,23 +1393,6 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       </select>
                     )}
                   </div>
-                  <div>
-                    <label className="text-xs font-medium text-slate-500 block mb-1">CX Driver</label>
-                    <div className="flex items-center gap-2">
-                      <select value={f.cxDriverId || ""} onChange={e => {
-                        const id = e.target.value;
-                        const miles = Math.round(parseFloat(f.miles) || 0);
-                        const dr = cxDrivers.find((d: any) => d.id === id);
-                        if (!id) { setF(p => ({ ...p, cxDriverId: "", cxDriverCost: "" })); return; }
-                        setF(p => ({ ...p, cxDriverId: id, cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost }));
-                      }} className={inp}>
-                        <option value="">— Select CX Driver —</option>
-                        {cxDrivers.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
-                      </select>
-                      {has("bookings_financials") && <><span className="text-xs text-slate-400 shrink-0">£</span>
-                      <input type="number" step="0.01" min="0" value={f.cxDriverCost || ""} onChange={e => s("cxDriverCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
-                    </div>
-                  </div>
                   {/* Storage units — only show when a driver is selected */}
                   {activeDriverId && <div className="border-t border-slate-100 pt-3 space-y-2">
                     <div className="flex items-center justify-between">
@@ -1446,10 +1429,27 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       </select>
                     </div>
                   </div>}
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-500 block mb-1">CX Driver</label>
+                    <div className="flex items-center gap-2">
+                      <select value={f.cxDriverId || ""} onChange={e => {
+                        const id = e.target.value;
+                        const miles = Math.round(parseFloat(f.miles) || 0);
+                        const dr = cxDrivers.find((d: any) => d.id === id);
+                        if (!id) { setF(p => ({ ...p, cxDriverId: "", cxDriverCost: "" })); return; }
+                        setF(p => ({ ...p, cxDriverId: id, cxDriverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.cxDriverCost }));
+                      }} className={inp}>
+                        <option value="">— Select CX Driver —</option>
+                        {cxDrivers.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
+                      </select>
+                      {has("bookings_financials") && <><span className="text-xs text-slate-400 shrink-0">£</span>
+                      <input type="number" step="0.01" min="0" value={f.cxDriverCost || ""} onChange={e => s("cxDriverCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* POD Details */}
               <div className={panel}>
                 <SHead color="bg-teal-700" icon="✅" label="POD Details" />
                 <div className="p-4 space-y-2">
@@ -1564,7 +1564,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                           <option value="Collection">📦 Collection</option>
                           <option value="Delivery">🏭 Delivery</option>
                         </select>
-                        <input type="date" value={via.viaDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaDate: e.target.value } : x))}
+                        <input type="date" value={via.viaDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaDate: e.target.value } : x))} onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
                           className="flex-1 min-w-0 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
                         <TimePicker value={via.viaTime || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, viaTime: v } : x))}
                           className="w-24 px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
@@ -1690,7 +1690,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                           <span className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${u.unitType === "chill" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>{u.unitType || "unit"}</span>
                           <span className={`px-1.5 py-0.5 rounded-full text-xs ${u.availability === "Yes" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>{u.availability === "Yes" ? "In Store" : "Out"}</span>
                         </div>
-                        {isAssignedElsewhere && <p className="text-slate-400">Driver: {u.currentDriver?.name || "other"}</p>}
+                        {isAssignedElsewhere && <p className="text-slate-400">{u.isDriverContact ? "Driver Contact" : "Driver"}: {u.assignedDriverName || u.currentDriver?.name || "other"}</p>}
                         {isActiveDriver && <p className="text-blue-600 font-medium">✓ Assigned to this driver</p>}
                       </div>
                       {activeDriverId && !isAssignedElsewhere && (

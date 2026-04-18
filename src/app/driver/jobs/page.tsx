@@ -114,12 +114,11 @@ export default function DriverJobsPage() {
                     <span className="text-gray-500">Collection</span>
                     <span className="font-bold text-white">{job.collectionPostcode || "—"}</span>
                   </div>
-                  {vias.map((v, i) => (
-                    <div key={v.id} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Via{vias.length > 1 ? ` ${i + 1}` : ""}</span>
-                      <span className="font-bold text-white">{v.postcode || "—"}</span>
+                  {vias.length > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">{vias.length === 1 ? "1 Via" : `${vias.length} Vias`}</span>
                     </div>
-                  ))}
+                  )}
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500">Delivery</span>
                     <span className="font-bold text-white">{job.deliveryPostcode || "—"}</span>
