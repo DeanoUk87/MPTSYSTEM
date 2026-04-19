@@ -135,7 +135,7 @@ export default function LegacyPage() {
             <p className="text-slate-500 mt-1">{b.customer_name}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <StatusBadge status={b.job_status ?? 0} />
+            <StatusBadge booking={b} />
             <span className="text-xs text-slate-400">{fmtDate(b.collection_date)}</span>
           </div>
         </div>
