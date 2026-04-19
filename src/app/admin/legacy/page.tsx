@@ -174,7 +174,6 @@ export default function LegacyPage() {
             <Row label="CX Driver"      value={b.cxdriver_name} />
             <Row label="Items"          value={b.number_of_items != null ? String(b.number_of_items) : null} />
             <Row label="Weight"         value={b.weight != null ? `${b.weight} kg` : null} />
-            <Row label="Description"    value={b.job_description} />
             <Row label="Job Notes"      value={b.job_notes} />
             <Row label="Office Notes"   value={b.office_notes} />
           </Section>

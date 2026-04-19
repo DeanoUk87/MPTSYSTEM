@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobR
               b.delivery_area, b.delivery_postcode, b.delivery_notes,
               b.delivery_contact, b.delivery_phone,
               DATE_FORMAT(b.delivery_date, '%Y-%m-%d') AS delivery_date,
-              b.delivery_time, b.job_description, b.weight, b.number_of_items,
+              b.delivery_time, b.weight, b.number_of_items,
               b.job_status, b.invoice_number, b.job_notes, b.office_notes,
               b.pod_signature, b.pod_upload, b.pod_relationship, b.pod_mobile,
               DATE_FORMAT(b.pod_date, '%Y-%m-%d') AS pod_date,
