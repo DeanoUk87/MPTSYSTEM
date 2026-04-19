@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     const countRows = await legacyQuery<{ total: number }>(
       `SELECT COUNT(*) as total FROM booking b
-       LEFT JOIN customers c ON c.id = b.customer
+       LEFT JOIN customers c ON c.customer_id = b.customer
        ${where}`,
       params
     );
