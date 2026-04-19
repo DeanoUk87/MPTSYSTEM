@@ -39,10 +39,10 @@ export async function GET(req: NextRequest) {
     const rows = await legacyQuery(
       `SELECT b.job_ref,
               DATE_FORMAT(b.collection_date, '%Y-%m-%d') AS collection_date,
-              b.collection_time, b.collection_name, b.collection_postcode,
-              b.delivery_name, b.delivery_postcode, b.job_status,
+              b.collection_time, b.collection_postcode,
+              b.delivery_postcode, b.job_status,
               b.pod_signature, DATE_FORMAT(b.pod_date, '%Y-%m-%d') AS pod_date,
-              b.purchase_order,
+              b.driver_price,
               c.customer AS customer,
               COALESCE(d.driver, d2.driver, d3.driver) AS driver,
               v.name AS vehicle
@@ -58,7 +58,27 @@ export async function GET(req: NextRequest) {
       params
     );
 
-    return NextResponse.json({ bookings: rows, total, page, pages: Math.ceil(total / limit) });
+    // Fetch via addresses for this page of results
+    const jobRefs = rows.map((r: any) => r.job_ref).filter(Boolean);
+    let viaMap: Record<string, string[]> = {};
+    if (jobRefs.length > 0) {
+      const placeholders = jobRefs.map(() => "?").join(",");
+      const vias = await legacyQuery<{ job_ref: string; postcode: string }>(
+        `SELECT job_ref, postcode FROM via_address WHERE job_ref IN (${placeholders}) AND deleted_at IS NULL ORDER BY via_id ASC`,
+        jobRefs
+      );
+      for (const v of vias) {
+        if (!viaMap[v.job_ref]) viaMap[v.job_ref] = [];
+        if (viaMap[v.job_ref].length < 6) viaMap[v.job_ref].push(v.postcode || "");
+      }
+    }
+
+    const bookings = rows.map((r: any) => ({
+      ...r,
+      vias: viaMap[r.job_ref] || [],
+    }));
+
+    return NextResponse.json({ bookings, total, page, pages: Math.ceil(total / limit) });
   } catch (e: any) {
     console.error("Legacy bookings error:", e.message);
     return NextResponse.json({ error: e.message || "Legacy DB connection failed", detail: { host: process.env.LEGACY_DB_HOST, user: process.env.LEGACY_DB_USER, database: process.env.LEGACY_DB_NAME, hasPass: !!process.env.LEGACY_DB_PASS } }, { status: 500 });

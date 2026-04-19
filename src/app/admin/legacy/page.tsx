@@ -327,39 +327,52 @@ export default function LegacyPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50 text-left">
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Job Ref</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Date / Time</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Customer</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Collection</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Delivery</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Driver</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Vehicle</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Status</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Job Ref</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Date</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Time</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Customer</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">From</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 1</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 2</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 3</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 4</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 5</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 6</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">To</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Driver</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Driver Cost</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Vehicle</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {results.map((b: any) => (
-                  <tr key={b.job_ref} onClick={() => openDetail(b.job_ref)}
-                    className="hover:bg-blue-50 cursor-pointer transition-colors">
-                    <td className="px-4 py-3 font-mono font-semibold text-blue-700 whitespace-nowrap">{b.job_ref}</td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      <div>{fmtDate(b.collection_date)}</div>
-                      {b.collection_time && <div className="text-xs text-slate-400">{b.collection_time}</div>}
-                    </td>
-                    <td className="px-4 py-3 text-slate-800">{b.customer}</td>
-                    <td className="px-4 py-3 text-slate-600">
-                      <div className="font-medium text-slate-800 truncate max-w-32">{b.collection_name}</div>
-                      <div className="text-xs text-slate-400 font-mono">{b.collection_postcode}</div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      <div className="font-medium text-slate-800 truncate max-w-32">{b.delivery_name}</div>
-                      <div className="text-xs text-slate-400 font-mono">{b.delivery_postcode}</div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">{b.driver || <span className="text-slate-300">—</span>}</td>
-                    <td className="px-4 py-3 text-slate-600">{b.vehicle || <span className="text-slate-300">—</span>}</td>
-                    <td className="px-4 py-3"><StatusBadge booking={b} /></td>
-                  </tr>
-                ))}
+                {results.map((b: any) => {
+                  const hasPod = b.pod_signature && b.pod_date;
+                  const hasDriver = !!b.driver;
+                  const rowCls = hasPod
+                    ? "bg-emerald-50 border-l-4 border-l-emerald-400"
+                    : hasDriver
+                    ? "bg-amber-50 border-l-4 border-l-amber-400"
+                    : "bg-rose-50 border-l-4 border-l-rose-400";
+                  return (
+                    <tr key={b.job_ref} onClick={() => openDetail(b.job_ref)}
+                      className={`${rowCls} hover:opacity-80 cursor-pointer transition-opacity`}>
+                      <td className="px-3 py-2 font-mono font-semibold text-blue-700 whitespace-nowrap text-xs">{b.job_ref}</td>
+                      <td className="px-3 py-2 text-slate-700 whitespace-nowrap text-xs">{fmtDate(b.collection_date)}</td>
+                      <td className="px-3 py-2 text-slate-600 whitespace-nowrap text-xs">{b.collection_time || "—"}</td>
+                      <td className="px-3 py-2 text-slate-800 text-xs font-medium max-w-[110px] truncate">{b.customer || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600 font-mono text-xs">{b.collection_postcode || "—"}</td>
+                      {[0,1,2,3,4,5].map(i => (
+                        <td key={i} className="px-3 py-2 text-slate-500 font-mono text-xs">{b.vias?.[i] || <span className="text-slate-200">—</span>}</td>
+                      ))}
+                      <td className="px-3 py-2 text-slate-600 font-mono text-xs">{b.delivery_postcode || "—"}</td>
+                      <td className="px-3 py-2 text-slate-700 text-xs whitespace-nowrap">{b.driver || <span className="text-rose-500">Unassigned</span>}</td>
+                      <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.driver_price ? `£${parseFloat(b.driver_price).toFixed(2)}` : "—"}</td>
+                      <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.vehicle || "—"}</td>
+                      <td className="px-3 py-2"><StatusBadge booking={b} /></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
