@@ -179,11 +179,10 @@ export default function LegacyPage() {
           </Section>
 
           <Section title="Financials">
-            <Row label="Customer Price"    value={b.customer_price != null ? `£${parseFloat(b.customer_price).toFixed(2)}` : null} />
+            <Row label="Customer Price"    value={(() => { const p = b.manual_amount ?? b.customer_price; return p != null ? `£${parseFloat(p).toFixed(2)}` : null; })()} />
             <Row label="Driver Cost"       value={b.driver_cost != null ? `£${parseFloat(b.driver_cost).toFixed(2)}` : null} />
-            <Row label="Extra Cost"        value={b.extra_cost != null ? `£${parseFloat(b.extra_cost).toFixed(2)}` : null} />
+            <Row label="SubCon Cost"       value={b.extra_cost != null ? `£${parseFloat(b.extra_cost).toFixed(2)}` : null} />
             <Row label="CX Driver Cost"    value={b.cxdriver_cost != null ? `£${parseFloat(b.cxdriver_cost).toFixed(2)}` : null} />
-            <Row label="Manual Amount"     value={b.manual_amount != null ? `£${parseFloat(b.manual_amount).toFixed(2)}` : null} />
             <Row label="Manual Desc"       value={b.manual_desc} />
             <Row label="Extra Cost 2"      value={b.extra_cost2 != null ? `£${parseFloat(b.extra_cost2).toFixed(2)}` : null} />
             <Row label="Fuel Surcharge %"  value={b.fuel_surcharge_percent != null ? `${b.fuel_surcharge_percent}%` : null} />
