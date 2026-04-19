@@ -8,9 +8,22 @@ interface Job {
   jobRef?: string;
   collectionName?: string;
   collectionPostcode?: string;
-  chillUnit?: { unitNumber: string } | null;
-  ambientUnit?: { unitNumber: string } | null;
+  chillUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
+  ambientUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
   driverConfirmCollectionAt?: string | null;
+}
+
+function UnitCard({ unit }: { unit: { unitNumber: string; unitType?: string; temperature?: string | null } }) {
+  const isChill = (unit.unitType || "").toLowerCase().startsWith("chill");
+  return (
+    <div className={`rounded-xl px-3 py-2 text-xs ${
+      isChill ? "bg-blue-900/50 border border-blue-500/30" : "bg-amber-900/50 border border-amber-500/30"
+    }`}>
+      <p className="font-bold text-white leading-tight">{unit.unitNumber}</p>
+      <p className={`mt-0.5 ${isChill ? "text-blue-300" : "text-amber-300"}`}>{isChill ? "Chill" : "Ambient"}</p>
+      <p className="text-gray-500 mt-0.5">{unit.temperature != null ? `${unit.temperature}°C` : "—°C"}</p>
+    </div>
+  );
 }
 
 function now() {
@@ -88,17 +101,9 @@ export default function CollectPage() {
               {job.jobRef ? job.jobRef.split("-").pop() : job.id.slice(-8).toUpperCase()}
             </p>
           </div>
-          <div className="flex flex-wrap gap-1.5 justify-end pt-1 shrink-0">
-            {job.chillUnit && (
-              <span className="px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-                MPT{job.chillUnit.unitNumber} Chill
-              </span>
-            )}
-            {job.ambientUnit && (
-              <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-full">
-                MPT{job.ambientUnit.unitNumber} Ambient
-              </span>
-            )}
+          <div className="flex flex-wrap gap-2 justify-end pt-1 shrink-0">
+            {job.chillUnit && <UnitCard unit={job.chillUnit} />}
+            {job.ambientUnit && <UnitCard unit={job.ambientUnit} />}
           </div>
         </div>
       </div>
