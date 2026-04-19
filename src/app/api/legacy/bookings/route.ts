@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
               b.collection_time, b.collection_postcode,
               b.delivery_postcode, b.job_status,
               b.pod_signature, DATE_FORMAT(b.pod_date, '%Y-%m-%d') AS pod_date,
-              b.driver_price,
+              COALESCE(b.driver_cost, 0) + COALESCE(b.extra_cost, 0) + COALESCE(b.cxdriver_cost, 0) AS driver_cost_total,
               c.customer AS customer,
               COALESCE(d.driver, d2.driver, d3.driver) AS driver,
               v.name AS vehicle

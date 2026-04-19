@@ -367,7 +367,7 @@ export default function LegacyPage() {
                       ))}
                       <td className="px-3 py-2 text-slate-600 font-mono text-xs">{b.delivery_postcode || "—"}</td>
                       <td className="px-3 py-2 text-slate-700 text-xs whitespace-nowrap">{b.driver || <span className="text-rose-500">Unassigned</span>}</td>
-                      <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.driver_price ? `£${parseFloat(b.driver_price).toFixed(2)}` : "—"}</td>
+                      <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.driver_cost_total > 0 ? `£${parseFloat(b.driver_cost_total).toFixed(2)}` : "—"}</td>
                       <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.vehicle || "—"}</td>
                       <td className="px-3 py-2"><StatusBadge booking={b} /></td>
                     </tr>

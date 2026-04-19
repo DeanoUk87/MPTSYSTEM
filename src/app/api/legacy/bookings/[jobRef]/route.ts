@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobR
               b.pod_signature, b.pod_upload,
               DATE_FORMAT(b.pod_date, '%Y-%m-%d') AS pod_date,
               b.driver, b.second_man, b.cxdriver, b.vehicle,
-              b.special_instructions, b.price, b.driver_price,
+              b.special_instructions, b.price, b.driver_cost, b.extra_cost, b.cxdriver_cost,
               c.customer AS customer_name,
               d.driver AS driver_name,
               d2.driver AS second_man_name,
