@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const params: any[] = [];
 
     if (search) {
-      conditions.push("(b.job_ref LIKE ? OR b.customer LIKE ? OR b.collection_postcode LIKE ? OR b.delivery_postcode LIKE ? OR b.purchase_order LIKE ?)");
+      conditions.push("(b.job_ref LIKE ? OR c.customer_name LIKE ? OR b.collection_postcode LIKE ? OR b.delivery_postcode LIKE ? OR b.purchase_order LIKE ?)");
       const like = `%${search}%`;
       params.push(like, like, like, like, like);
     }
@@ -29,16 +29,25 @@ export async function GET(req: NextRequest) {
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
     const countRows = await legacyQuery<{ total: number }>(
-      `SELECT COUNT(*) as total FROM booking b ${where}`,
+      `SELECT COUNT(*) as total FROM booking b
+       LEFT JOIN customers c ON c.id = b.customer
+       ${where}`,
       params
     );
     const total = countRows[0]?.total ?? 0;
 
     const rows = await legacyQuery(
-      `SELECT b.job_ref, b.customer, b.collection_date, b.collection_name, b.collection_postcode,
-              b.delivery_name, b.delivery_postcode, b.driver, b.vehicle, b.job_status,
-              b.pod_signature, b.pod_date, b.purchase_order, b.customer_price
+      `SELECT b.job_ref, b.collection_date, b.collection_time, b.collection_name, b.collection_postcode,
+              b.delivery_name, b.delivery_postcode, b.job_status,
+              b.pod_signature, b.pod_date, b.purchase_order, b.customer_price,
+              b.driver_cost, b.extra_cost, b.cxdriver_cost,
+              c.customer_name AS customer,
+              CONCAT(d.first_name, ' ', d.last_name) AS driver,
+              v.vehicle_name AS vehicle
        FROM booking b
+       LEFT JOIN customers c ON c.id = b.customer
+       LEFT JOIN drivers d ON d.id = b.driver
+       LEFT JOIN vehicles v ON v.id = b.vehicle
        ${where}
        ORDER BY b.collection_date DESC, b.job_ref DESC
        LIMIT ? OFFSET ?`,

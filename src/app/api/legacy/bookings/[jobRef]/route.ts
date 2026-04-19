@@ -10,13 +10,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobR
 
   try {
     const bookings = await legacyQuery(
-      `SELECT * FROM booking WHERE job_ref = ? AND deleted_at IS NULL LIMIT 1`,
+      `SELECT b.*,
+              c.customer_name AS customer_name,
+              CONCAT(d.first_name, ' ', d.last_name) AS driver_name,
+              CONCAT(d2.first_name, ' ', d2.last_name) AS second_man_name,
+              v.vehicle_name AS vehicle_name
+       FROM booking b
+       LEFT JOIN customers c ON c.id = b.customer
+       LEFT JOIN drivers d ON d.id = b.driver
+       LEFT JOIN drivers d2 ON d2.id = b.second_man
+       LEFT JOIN vehicles v ON v.id = b.vehicle
+       WHERE b.job_ref = ? LIMIT 1`,
       [jobRef]
     );
     if (!bookings.length) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const vias = await legacyQuery(
-      `SELECT * FROM via_address WHERE job_ref = ? AND deleted_at IS NULL ORDER BY via_id ASC`,
+      `SELECT * FROM via_address WHERE job_ref = ? ORDER BY id ASC`,
       [jobRef]
     );
 
