@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const units = await prisma.storageUnit.findMany({
     where: (useMock || !apiKey)
       ? { trackable: 1 }
-      : { imei: { not: null }, currentDriverId: { not: null }, ...activeBookingFilter },
+      : { trackable: 1, imei: { not: null } },
     include: { currentDriver: { select: { name: true } } },
   });
 

@@ -37,16 +37,21 @@ export async function GET(req: NextRequest) {
     const total = countRows[0]?.total ?? 0;
 
     const rows = await legacyQuery(
-      `SELECT b.job_ref, b.collection_date, b.collection_time, b.collection_name, b.collection_postcode,
+      `SELECT b.job_ref,
+              DATE_FORMAT(b.collection_date, '%Y-%m-%d') AS collection_date,
+              b.collection_time, b.collection_name, b.collection_postcode,
               b.delivery_name, b.delivery_postcode, b.job_status,
-              b.pod_signature, b.pod_date, b.purchase_order, b.customer_price,
+              b.pod_signature, DATE_FORMAT(b.pod_date, '%Y-%m-%d') AS pod_date,
+              b.purchase_order, b.customer_price,
               b.driver_cost, b.extra_cost, b.cxdriver_cost,
               c.customer AS customer,
-              d.driver AS driver,
+              COALESCE(d.driver, d2.driver, d3.driver) AS driver,
               v.name AS vehicle
        FROM booking b
        LEFT JOIN customers c ON c.customer_id = b.customer
-       LEFT JOIN drivers d ON d.driver_id = b.driver
+       LEFT JOIN drivers d ON d.driver_id = b.driver AND b.driver > 0
+       LEFT JOIN drivers d2 ON d2.driver_id = b.second_man AND b.second_man > 0
+       LEFT JOIN drivers d3 ON d3.driver_id = b.cxdriver AND b.cxdriver > 0
        LEFT JOIN vehicles v ON v.id = b.vehicle
        ${where}
        ORDER BY b.collection_date DESC, b.job_ref DESC

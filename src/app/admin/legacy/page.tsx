@@ -1,6 +1,13 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Search, ChevronLeft, ChevronRight, X, ArrowLeft, ExternalLink } from "lucide-react";
+
+function fmtDate(d: string | null | undefined) {
+  if (!d) return "—";
+  const s = String(d).slice(0, 10); // take YYYY-MM-DD part
+  const [y, m, day] = s.split("-");
+  return `${day}-${m}-${y}`;
+}
 
 const STATUS_LABELS: Record<number, { label: string; color: string }> = {
   0: { label: "Unassigned", color: "bg-red-100 text-red-700" },
@@ -9,9 +16,13 @@ const STATUS_LABELS: Record<number, { label: string; color: string }> = {
   3: { label: "Delivered",  color: "bg-emerald-100 text-emerald-700" },
 };
 
-function StatusBadge({ status }: { status: number }) {
-  const s = STATUS_LABELS[status] ?? { label: "Unknown", color: "bg-slate-100 text-slate-500" };
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.color}`}>{s.label}</span>;
+function StatusBadge({ booking }: { booking: any }) {
+  if (booking.pod_signature && booking.pod_date)
+    return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>;
+  const hasDriver = booking.driver;
+  if (!hasDriver)
+    return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>;
+  return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900">Driver Allocated</span>;
 }
 
 function Row({ label, value }: { label: string; value?: string | null }) {
@@ -48,7 +59,30 @@ export default function LegacyPage() {
   const [selected, setSelected] = useState<any | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  const fetchJobs = useCallback(async (pg = 1) => {
+  // Handle browser back button when in detail view
+  useEffect(() => {
+    function onPopState() { setSelected(null); }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  function openDetail(jobRef: string) {
+    window.history.pushState({ jobRef }, "", window.location.pathname + "?job=" + jobRef);
+    setDetailLoading(true);
+    setSelected(null);
+    fetch(`/api/legacy/bookings/${encodeURIComponent(jobRef)}`)
+      .then(r => r.json())
+      .then(data => { if (data.error) throw new Error(data.error); setSelected(data); })
+      .catch((e: any) => setError(e.message))
+      .finally(() => setDetailLoading(false));
+  }
+
+  function goBack() {
+    window.history.back();
+    setSelected(null);
+  }
+
+  async function fetchJobs(pg = 1) {
     setLoading(true);
     setError("");
     try {
@@ -69,24 +103,9 @@ export default function LegacyPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, dateFrom, dateTo]);
+  }
 
   useEffect(() => { fetchJobs(1); }, []);
-
-  async function openDetail(jobRef: string) {
-    setDetailLoading(true);
-    setSelected(null);
-    try {
-      const res = await fetch(`/api/legacy/bookings/${encodeURIComponent(jobRef)}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load");
-      setSelected(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setDetailLoading(false);
-    }
-  }
 
   // ── Detail view ─────────────────────────────────────────────────────
   if (detailLoading) {
@@ -104,7 +123,7 @@ export default function LegacyPage() {
 
     return (
       <div className="p-6 max-w-5xl mx-auto space-y-4">
-        <button onClick={() => setSelected(null)}
+        <button onClick={goBack}
           className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-medium mb-2">
           <ArrowLeft className="w-4 h-4" /> Back to search results
         </button>
@@ -117,7 +136,7 @@ export default function LegacyPage() {
           </div>
           <div className="flex flex-col items-end gap-2">
             <StatusBadge status={b.job_status ?? 0} />
-            <span className="text-xs text-slate-400">{b.collection_date}</span>
+            <span className="text-xs text-slate-400">{fmtDate(b.collection_date)}</span>
           </div>
         </div>
 
@@ -128,7 +147,7 @@ export default function LegacyPage() {
             <Row label="Postcode" value={b.collection_postcode} />
             <Row label="Contact"  value={b.collection_contact} />
             <Row label="Phone"    value={b.collection_phone} />
-            <Row label="Date"     value={b.collection_date} />
+            <Row label="Date"     value={fmtDate(b.collection_date)} />
             <Row label="Time"     value={b.collection_time} />
             <Row label="Notes"    value={b.collection_notes} />
           </Section>
@@ -139,7 +158,7 @@ export default function LegacyPage() {
             <Row label="Postcode" value={b.delivery_postcode} />
             <Row label="Contact"  value={b.delivery_contact} />
             <Row label="Phone"    value={b.delivery_phone} />
-            <Row label="Date"     value={b.delivery_date} />
+            <Row label="Date"     value={fmtDate(b.delivery_date)} />
             <Row label="Time"     value={b.delivery_time} />
             <Row label="Notes"    value={b.delivery_notes} />
           </Section>
@@ -180,7 +199,7 @@ export default function LegacyPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Row label="Signed By"    value={b.pod_signature} />
                 <Row label="Relationship" value={b.pod_relationship} />
-                <Row label="POD Date"     value={b.pod_date} />
+                <Row label="POD Date"     value={fmtDate(b.pod_date)} />
                 <Row label="POD Time"     value={b.pod_time} />
                 <Row label="Temperature"  value={b.delivered_temperature} />
                 <Row label="Driver Note"  value={b.driver_note} />
@@ -324,7 +343,7 @@ export default function LegacyPage() {
                     className="hover:bg-blue-50 cursor-pointer transition-colors">
                     <td className="px-4 py-3 font-mono font-semibold text-blue-700">{b.job_ref}</td>
                     <td className="px-4 py-3 text-slate-800">{b.customer}</td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{b.collection_date}</td>
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{fmtDate(b.collection_date)}</td>
                     <td className="px-4 py-3 text-slate-600">
                       <div className="font-medium text-slate-800 truncate max-w-32">{b.collection_name}</div>
                       <div className="text-xs text-slate-400 font-mono">{b.collection_postcode}</div>
@@ -334,7 +353,7 @@ export default function LegacyPage() {
                       <div className="text-xs text-slate-400 font-mono">{b.delivery_postcode}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{b.driver || <span className="text-slate-300">—</span>}</td>
-                    <td className="px-4 py-3"><StatusBadge status={b.job_status ?? 0} /></td>
+                    <td className="px-4 py-3"><StatusBadge booking={b} /></td>
                     <td className="px-4 py-3">
                       {b.pod_signature
                         ? <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">✓ POD</span>

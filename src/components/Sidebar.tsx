@@ -23,7 +23,7 @@ const navGroups = [
       { label: "Addresses", href: "/admin/addresses", icon: BookMarked, perm: "addresses_view" },
       { label: "Fuel Surcharges", href: "/admin/fuel-surcharges", icon: Fuel, perm: "fuel_view" },
       { label: "Map Routing", href: "/admin/map-routing", icon: Map, perm: "map_view" },
-      { label: "Legacy Records", href: "/admin/legacy", icon: Archive, perm: "bookings_view" },
+      { label: "Legacy Records", href: "/admin/legacy", icon: Archive, perm: "legacy_view" },
     ],
   },
 
