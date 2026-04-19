@@ -20,6 +20,12 @@ export function getLegacyPool(): mysql.Pool {
 
 export async function legacyQuery<T = any>(sql: string, values?: any[]): Promise<T[]> {
   const db = getLegacyPool();
-  const [rows] = await db.execute(sql, values);
-  return rows as T[];
+  try {
+    const [rows] = await db.execute(sql, values);
+    return rows as T[];
+  } catch (e) {
+    // Reset pool so next request tries a fresh connection
+    pool = null;
+    throw e;
+  }
 }

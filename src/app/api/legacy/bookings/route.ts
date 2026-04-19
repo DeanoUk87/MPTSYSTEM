@@ -48,6 +48,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ bookings: rows, total, page, pages: Math.ceil(total / limit) });
   } catch (e: any) {
     console.error("Legacy bookings error:", e.message);
-    return NextResponse.json({ error: "Failed to connect to legacy database. Check LEGACY_DB_* environment variables." }, { status: 500 });
+    return NextResponse.json({ error: e.message || "Legacy DB connection failed", detail: { host: process.env.LEGACY_DB_HOST, user: process.env.LEGACY_DB_USER, database: process.env.LEGACY_DB_NAME, hasPass: !!process.env.LEGACY_DB_PASS } }, { status: 500 });
   }
 }
