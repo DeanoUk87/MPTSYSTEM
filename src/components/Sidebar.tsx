@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Settings,
   UserCog, Shield, LogOut, Building2,
   Truck, Car, Thermometer, ClipboardList,
-  Fuel, BookMarked, Map, ChevronLeft, ChevronRight
+  Fuel, BookMarked, Map, ChevronLeft, ChevronRight, Archive
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -23,6 +23,7 @@ const navGroups = [
       { label: "Addresses", href: "/admin/addresses", icon: BookMarked, perm: "addresses_view" },
       { label: "Fuel Surcharges", href: "/admin/fuel-surcharges", icon: Fuel, perm: "fuel_view" },
       { label: "Map Routing", href: "/admin/map-routing", icon: Map, perm: "map_view" },
+      { label: "Legacy Records", href: "/admin/legacy", icon: Archive, perm: "bookings_view" },
     ],
   },
 
