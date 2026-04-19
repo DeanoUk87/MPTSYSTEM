@@ -205,7 +205,6 @@ model StorageUnit {
   calibrationDate  String?
   jobId            String?
   trackable        Int       @default(0)
-  temperature      String?   // set temperature for chill/ambient
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
