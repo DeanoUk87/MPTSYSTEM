@@ -20,9 +20,11 @@ const MODULE_LABELS: Record<string, string> = {
   addresses: "Addresses",
   fuel: "Fuel Surcharges",
   map: "Map Routing",
+  legacy: "Legacy Records",
   settings: "Settings",
   users: "Users",
   roles: "Roles & Permissions",
+  driver: "Driver Portal",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -42,9 +44,11 @@ const MODULE_COLORS: Record<string, string> = {
   addresses: "bg-orange-50 border-orange-200",
   fuel: "bg-yellow-50 border-yellow-200",
   map: "bg-teal-50 border-teal-200",
+  legacy: "bg-violet-50 border-violet-200",
   settings: "bg-slate-50 border-slate-200",
   users: "bg-indigo-50 border-indigo-200",
   roles: "bg-pink-50 border-pink-200",
+  driver: "bg-lime-50 border-lime-200",
 };
 
 export default function RolesPage() {

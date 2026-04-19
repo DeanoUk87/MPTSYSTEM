@@ -328,22 +328,25 @@ export default function LegacyPage() {
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50 text-left">
                   <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Job Ref</th>
+                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Date / Time</th>
                   <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Customer</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Date</th>
                   <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Collection</th>
                   <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Delivery</th>
                   <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Driver</th>
+                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Vehicle</th>
                   <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide">POD</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {results.map((b: any) => (
                   <tr key={b.job_ref} onClick={() => openDetail(b.job_ref)}
                     className="hover:bg-blue-50 cursor-pointer transition-colors">
-                    <td className="px-4 py-3 font-mono font-semibold text-blue-700">{b.job_ref}</td>
+                    <td className="px-4 py-3 font-mono font-semibold text-blue-700 whitespace-nowrap">{b.job_ref}</td>
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                      <div>{fmtDate(b.collection_date)}</div>
+                      {b.collection_time && <div className="text-xs text-slate-400">{b.collection_time}</div>}
+                    </td>
                     <td className="px-4 py-3 text-slate-800">{b.customer}</td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{fmtDate(b.collection_date)}</td>
                     <td className="px-4 py-3 text-slate-600">
                       <div className="font-medium text-slate-800 truncate max-w-32">{b.collection_name}</div>
                       <div className="text-xs text-slate-400 font-mono">{b.collection_postcode}</div>
@@ -353,12 +356,8 @@ export default function LegacyPage() {
                       <div className="text-xs text-slate-400 font-mono">{b.delivery_postcode}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-600">{b.driver || <span className="text-slate-300">—</span>}</td>
+                    <td className="px-4 py-3 text-slate-600">{b.vehicle || <span className="text-slate-300">—</span>}</td>
                     <td className="px-4 py-3"><StatusBadge booking={b} /></td>
-                    <td className="px-4 py-3">
-                      {b.pod_signature
-                        ? <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">✓ POD</span>
-                        : <span className="text-slate-300 text-xs">—</span>}
-                    </td>
                   </tr>
                 ))}
               </tbody>
