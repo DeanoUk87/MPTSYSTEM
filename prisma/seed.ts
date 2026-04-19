@@ -33,6 +33,8 @@ async function main() {
     "roles_view", "roles_create", "roles_edit", "roles_delete",
     // Driver Portal
     "driver_jobs_view",
+    // Legacy Records
+    "legacy_view",
   ];
 
   const permissions: Record<string, { id: string }> = {};
