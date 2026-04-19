@@ -76,6 +76,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     data: {
       ...rest,
       driverId: driverId || null,
+      secondManId: secondManId || null,
       chillUnitId: chillUnitId || null,
       ambientUnitId: ambientUnitId || null,
       updatedById: (session as any).id,
