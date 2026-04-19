@@ -113,7 +113,7 @@ export default function LegacyPage() {
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Legacy Job</p>
             <h1 className="text-3xl font-bold text-slate-900">{b.job_ref}</h1>
-            <p className="text-slate-500 mt-1">{b.customer}</p>
+            <p className="text-slate-500 mt-1">{b.customer_name}</p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <StatusBadge status={b.job_status ?? 0} />
@@ -149,10 +149,10 @@ export default function LegacyPage() {
           <Section title="Job Info">
             <Row label="Purchase Order" value={b.purchase_order} />
             <Row label="Booked By"      value={b.booked_by} />
-            <Row label="Vehicle"        value={b.vehicle} />
-            <Row label="Driver"         value={b.driver} />
-            <Row label="Second Man"     value={b.second_man} />
-            <Row label="CX Driver"      value={b.cxdriver} />
+            <Row label="Vehicle"        value={b.vehicle_name} />
+            <Row label="Driver"         value={b.driver_name} />
+            <Row label="Second Man"     value={b.second_man_name} />
+            <Row label="CX Driver"      value={b.cxdriver_name} />
             <Row label="Miles"          value={b.miles != null ? String(b.miles) : null} />
             <Row label="Items"          value={b.number_of_items != null ? String(b.number_of_items) : null} />
             <Row label="Weight"         value={b.weight != null ? `${b.weight} kg` : null} />
