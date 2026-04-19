@@ -50,8 +50,8 @@ export async function GET(req: NextRequest) {
        LEFT JOIN vehicles v ON v.id = b.vehicle
        ${where}
        ORDER BY b.collection_date DESC, b.job_ref DESC
-       LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+       LIMIT ${limit} OFFSET ${offset}`,
+      params
     );
 
     return NextResponse.json({ bookings: rows, total, page, pages: Math.ceil(total / limit) });
