@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
         driver: { select: { name: true } },
         cxDriver: { select: { name: true } },
         secondMan: { select: { name: true } },
+        driverContact: { select: { driverName: true } },
         vehicle: { select: { name: true } },
         bookingType: { select: { name: true } },
         viaAddresses: { where: { deletedAt: null }, orderBy: { createdAt: "asc" }, take: 6, select: { id: true, postcode: true, viaType: true, signedBy: true } },

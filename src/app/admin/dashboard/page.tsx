@@ -106,7 +106,7 @@ export default function DashboardPage() {
                         <td className="px-2 py-2 font-mono text-xs text-slate-600 whitespace-nowrap">{b.deliveryPostcode ?? "—"}</td>
                         <td className="px-2 py-2 text-xs text-slate-600 whitespace-nowrap">
                           {b.driver?.name || b.secondMan?.name || b.cxDriver?.name
-                            ? <span>{b.driver?.name || b.secondMan?.name || b.cxDriver?.name}</span>
+                            ? <span>{b.driver?.name || b.secondMan?.name || b.cxDriver?.name}{b.driverContact?.driverName && <span className="block text-xs text-slate-400">({b.driverContact.driverName})</span>}</span>
                             : <span className="text-rose-500 font-semibold">Unassigned</span>}
                         </td>
                         {has("bookings_financials") && <td className="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{(b.driverCost || b.extraCost || b.cxDriverCost) ? `£${Number(b.driverCost || b.extraCost || b.cxDriverCost).toFixed(2)}` : "—"}</td>}
@@ -116,7 +116,7 @@ export default function DashboardPage() {
                             : !(b.driver || b.secondMan || b.cxDriver) ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500 text-white">No Driver</span>
                             : b.podSignature && b.podDataVerify && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">Completed</span>
                             : b.podSignature && allViasPodded ? <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>
-                            : <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>}
+                            : <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900">Driver Allocated</span>}
                         </td>
                       </tr>
                     );
