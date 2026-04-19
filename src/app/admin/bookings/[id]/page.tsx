@@ -487,6 +487,27 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   <InfoRow label="POD Time" value={v.podTime} />
                   <InfoRow label="Temperature" value={v.deliveredTemp} />
                 </div>
+                {v.podUpload && (
+                  <div className="mt-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Attachments</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(v.podUpload.startsWith("[") ? (() => { try { return JSON.parse(v.podUpload); } catch { return [v.podUpload]; } })() : [v.podUpload])
+                        .map((file: string, i: number) => {
+                          const name = file.split("/").pop() || "file";
+                          const isPdf = name.endsWith(".pdf");
+                          return (
+                            <a key={i} href={file} target="_blank" rel="noreferrer" title={name}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                                isPdf ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100" : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                              }`}>
+                              <Paperclip className="w-3.5 h-3.5" />
+                              <span className="max-w-[120px] truncate">{name}</span>
+                            </a>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : null)}
           </div>

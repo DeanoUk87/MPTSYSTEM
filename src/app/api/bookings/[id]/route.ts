@@ -23,6 +23,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
     if (!booking) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // Enrich viaAddresses with podUpload (may not be in generated client yet)
+    if (booking.viaAddresses?.length) {
+      const viaIds = booking.viaAddresses.map((v: any) => v.id);
+      const placeholders = viaIds.map((_: any, i: number) => `?${i + 1}`).join(", ");
+      const rawVias = await prisma.$queryRawUnsafe<{ id: string; podUpload: string | null }[]>(
+        `SELECT id, podUpload FROM via_addresses WHERE id IN (${viaIds.map(() => "?").join(",")})`,
+        ...viaIds
+      );
+      const podMap: Record<string, string | null> = {};
+      for (const r of rawVias) podMap[r.id] = r.podUpload;
+      (booking as any).viaAddresses = booking.viaAddresses.map((v: any) => ({ ...v, podUpload: podMap[v.id] ?? null }));
+    }
+
     return NextResponse.json(booking);
   } catch (e: any) {
     console.error("Booking GET error:", e.message);
