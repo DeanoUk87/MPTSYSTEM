@@ -10,7 +10,7 @@ import { usePermissions } from "@/lib/use-permissions";
 
 interface DriverContact {
   id: string; driverName: string; vehicleMake?: string;
-  vehicleRegistration?: string; driverPhone?: string;
+  vehicleRegistration?: string; driverPhone?: string; email?: string;
   hasAccess?: boolean;
 }
 
@@ -28,7 +28,7 @@ const emptyDriverForm = {
 };
 
 const emptyContactForm = {
-  driverName: "", vehicleMake: "", vehicleRegistration: "", driverPhone: "",
+  driverName: "", vehicleMake: "", vehicleRegistration: "", driverPhone: "", email: "",
 };
 
 const typeVariant: Record<string, any> = { Driver: "success", SubContractor: "warning", CXDriver: "info" };
@@ -143,7 +143,7 @@ export default function DriversPage() {
     setEditContact(c);
     setContactForm({
       driverName: c.driverName, vehicleMake: c.vehicleMake || "",
-      vehicleRegistration: c.vehicleRegistration || "", driverPhone: c.driverPhone || "",
+      vehicleRegistration: c.vehicleRegistration || "", driverPhone: c.driverPhone || "", email: c.email || "",
     });
     setContactModal(true);
   }
@@ -388,6 +388,7 @@ export default function DriversPage() {
             { k: "vehicleMake", l: "Vehicle Make" },
             { k: "vehicleRegistration", l: "Vehicle Registration" },
             { k: "driverPhone", l: "Driver Phone" },
+            { k: "email", l: "Email" },
           ].map(({ k, l }) => (
             <div key={k}>
               <label className="block text-xs font-medium text-slate-600 mb-1">{l}</label>
@@ -415,6 +416,7 @@ export default function DriversPage() {
               ["Vehicle Make", viewContact.vehicleMake],
               ["Registration", viewContact.vehicleRegistration],
               ["Phone", viewContact.driverPhone],
+              ["Email", viewContact.email],
             ].filter(([, v]) => v).map(([label, value]) => (
               <div key={label} className="flex gap-3">
                 <span className="text-slate-400 w-32 shrink-0">{label}:</span>

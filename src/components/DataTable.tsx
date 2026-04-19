@@ -151,7 +151,7 @@ export default function DataTable<T extends Record<string, any>>({
                   className={clsx("border-b border-slate-100 hover:brightness-95 transition-colors", rowClassName ? rowClassName(row) : "hover:bg-slate-50")}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className={clsx(compact ? "px-2 py-1.5 text-slate-700" : "px-4 py-3 text-slate-700", col.className)}>
+                    <td key={col.key} className={clsx(compact ? "px-2 py-1.5 text-slate-800" : "px-4 py-3 text-slate-800", col.className)}>
                       {col.render ? col.render(row) : String(row[col.key] ?? "-")}
                     </td>
                   ))}

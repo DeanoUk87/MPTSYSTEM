@@ -37,6 +37,7 @@ interface Booking {
   driver?: { name: string; driverType: string };
   secondMan?: { name: string };
   cxDriver?: { name: string };
+  driverContact?: { driverName: string };
   bookingType?: { name: string };
   viaAddresses?: { id: string; postcode?: string; viaType?: string; name?: string; address1?: string; city?: string; signedBy?: string }[];
 }
@@ -49,7 +50,7 @@ function StatusBadge({ booking }: { booking: Booking }) {
   const allViasPodded = !booking.viaAddresses?.length || booking.viaAddresses.every(v => v.signedBy);
   if (booking.podSignature && booking.podDataVerify && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white">Completed</span>;
   if (booking.podSignature && allViasPodded) return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white">POD Received</span>;
-  return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-white">Driver Allocated</span>;
+  return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-400 text-amber-900">Driver Allocated</span>;
 }
 
 // Searchable dropdown for customers/drivers
@@ -279,7 +280,14 @@ export default function BookingsPage() {
     { key: "deliveryPostcode", label: "To", render: (r) => r.deliveryPostcode || "—" },
     { key: "driver", label: "Driver", render: (r) => {
       const name = r.driver?.name || r.secondMan?.name || r.cxDriver?.name;
-      return name ? <span className="whitespace-nowrap">{name}</span> : <span className="text-rose-500 text-xs">Unassigned</span>;
+      const contact = r.driverContact?.driverName;
+      if (!name) return <span className="text-rose-500 text-xs">Unassigned</span>;
+      return (
+        <span className="whitespace-nowrap">
+          {name}
+          {contact && <span className="block text-xs text-slate-500">({contact})</span>}
+        </span>
+      );
     }},
     { key: "driverCost", label: "Driver Cost", render: (r) => { const cost = r.driverCost || r.extraCost || r.cxDriverCost; return cost ? `£${cost.toFixed(2)}` : "—"; } },
     { key: "vehicle", label: "Vehicle", render: (r) => r.vehicle?.name || "—" },

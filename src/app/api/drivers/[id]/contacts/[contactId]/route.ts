@@ -6,10 +6,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { contactId } = await params;
-  const { driverName, vehicleMake, vehicleRegistration, driverPhone } = await req.json();
+  const { driverName, vehicleMake, vehicleRegistration, driverPhone, email } = await req.json();
   const contact = await prisma.driverContact.update({
     where: { id: contactId },
-    data: { driverName, vehicleMake: vehicleMake || null, vehicleRegistration: vehicleRegistration || null, driverPhone: driverPhone || null },
+    data: { driverName, vehicleMake: vehicleMake || null, vehicleRegistration: vehicleRegistration || null, driverPhone: driverPhone || null, email: email || null },
   });
   return NextResponse.json(contact);
 }

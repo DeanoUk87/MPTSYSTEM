@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import Topbar from "@/components/Topbar";
 import Modal from "@/components/Modal";
 import { ArrowLeft, Plus, Trash2, Pencil, Loader2, KeyRound, CheckCircle2, Copy } from "lucide-react";
@@ -8,6 +8,47 @@ import toast from "react-hot-toast";
 
 const inp = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
 const lbl = "block text-xs font-semibold text-slate-600 mb-1";
+
+function RichTextEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (ref.current && ref.current.innerHTML !== value) ref.current.innerHTML = value || "";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const exec = (cmd: string, val?: string) => {
+    ref.current?.focus();
+    document.execCommand(cmd, false, val);
+    if (ref.current) onChange(ref.current.innerHTML);
+  };
+  const COLORS = [
+    { c: "#ef4444", label: "Red" }, { c: "#f97316", label: "Orange" },
+    { c: "#eab308", label: "Yellow" }, { c: "#22c55e", label: "Green" },
+    { c: "#3b82f6", label: "Blue" }, { c: "#000000", label: "Black" },
+  ];
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <div className="flex items-center gap-1 px-2 py-1.5 bg-slate-50 border-b border-slate-200 flex-wrap">
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("bold"); }}
+          className="px-2 py-0.5 text-xs font-bold rounded hover:bg-slate-200 border border-slate-200">B</button>
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("italic"); }}
+          className="px-2 py-0.5 text-xs italic rounded hover:bg-slate-200 border border-slate-200">I</button>
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("underline"); }}
+          className="px-2 py-0.5 text-xs underline rounded hover:bg-slate-200 border border-slate-200">U</button>
+        <span className="w-px h-4 bg-slate-300 mx-0.5" />
+        {COLORS.map(({ c, label }) => (
+          <button key={c} type="button" title={label} onMouseDown={e => { e.preventDefault(); exec("foreColor", c); }}
+            className="w-4 h-4 rounded-full border border-slate-300 shadow-sm flex-shrink-0" style={{ background: c }} />
+        ))}
+        <span className="w-px h-4 bg-slate-300 mx-0.5" />
+        <button type="button" onMouseDown={e => { e.preventDefault(); exec("removeFormat"); }}
+          className="px-2 py-0.5 text-[10px] rounded hover:bg-slate-200 border border-slate-200 text-slate-500">Clear</button>
+      </div>
+      <div ref={ref} contentEditable suppressContentEditableWarning
+        onInput={() => { if (ref.current) onChange(ref.current.innerHTML); }}
+        className="px-3 py-2 min-h-[80px] text-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 bg-white" />
+    </div>
+  );
+}
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -164,7 +205,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             ["Email", customer.email], ["Phone", customer.phone],
             ["Contact", customer.contact], ["City", customer.city],
             ["Postcode", customer.postcode], ["PO Number", customer.poNumber],
-            ["Dead Mileage", customer.deadMileage ? `${customer.deadMileage} mi` : null],
           ].filter(([, v]) => v).map(([label, value]) => (
             <div key={label as string}>
               <p className="text-xs text-slate-400">{label}</p>
@@ -295,7 +335,6 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             { k: "address2", l: "Address 2" }, { k: "address3", l: "Address 3" },
             { k: "city", l: "City" }, { k: "postcode", l: "Postcode" },
             { k: "poNumber", l: "PO Number" }, { k: "poEmail", l: "PO Email" },
-            { k: "deadMileage", l: "Dead Mileage" },
           ].map(({ k, l }) => (
             <div key={k}>
               <label className={lbl}>{l}</label>
@@ -306,8 +345,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           ))}
           <div className="col-span-2">
             <label className={lbl}>Notes</label>
-            <textarea value={custForm.notes || ""} onChange={e => setCustForm((f: any) => ({ ...f, notes: e.target.value }))}
-              rows={3} className={inp + " resize-none"} />
+            <RichTextEditor key={customer?.id || "edit"} value={custForm.notes || ""} onChange={v => setCustForm((f: any) => ({ ...f, notes: v }))} />
           </div>
         </div>
         <div className="flex gap-3 mt-4">

@@ -149,11 +149,13 @@ model DriverContact {
   vehicleMake          String?
   vehicleRegistration  String?
   driverPhone          String?
+  email                String?
   deletedAt            DateTime?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
   driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  bookings Booking[] @relation("BookingContact")
 
   @@map("driver_contacts")
 }
@@ -348,6 +350,7 @@ model Booking {
   driver      Driver?      @relation("MainDriver", fields: [driverId], references: [id])
   secondMan   Driver?      @relation("SecondMan", fields: [secondManId], references: [id])
   cxDriver    Driver?      @relation("CxDriver", fields: [cxDriverId], references: [id])
+  driverContact DriverContact? @relation("BookingContact", fields: [driverContactId], references: [id])
   chillUnit   StorageUnit? @relation("ChillUnit", fields: [chillUnitId], references: [id])
   ambientUnit StorageUnit? @relation("AmbientUnit", fields: [ambientUnitId], references: [id])
   viaAddresses ViaAddress[]
