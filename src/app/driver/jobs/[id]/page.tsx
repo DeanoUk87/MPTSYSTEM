@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight, CheckCircle, Circle } from "lucide-react";
+import { BottomNav } from "@/app/driver/BottomNav";
 
 interface ViaAddress {
   id: string;
@@ -100,10 +101,10 @@ export default function JobDetailPage() {
   const isDelivered = !!job.podSignature;
 
   return (
-    <div className="min-h-screen bg-[#0a0a14] pb-10">
+    <div className="min-h-screen bg-[#0a0a14] pb-24">
       {/* Header */}
       <div className="px-5 pt-10 pb-5">
-        <button onClick={() => router.back()} className="flex items-center gap-1 text-gray-400 mb-4">
+        <button onClick={() => router.push("/driver/jobs")} className="flex items-center gap-1 text-gray-400 mb-4">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back</span>
         </button>
@@ -261,6 +262,7 @@ export default function JobDetailPage() {
         </div>
 
         {/* Notes sections */}
+        <BottomNav active="jobs" />
         {(() => {
           const collText = job.collectionNotes?.trim();
           const delivText = job.deliveryNotes?.split("---ORDERS---")[0].trim();
