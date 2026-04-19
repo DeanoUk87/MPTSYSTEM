@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const offset   = (page - 1) * limit;
 
   try {
-    const conditions: string[] = ["b.deleted_at IS NULL"];
+    const conditions: string[] = [];
     const params: any[] = [];
 
     if (search) {
