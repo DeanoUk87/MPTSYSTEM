@@ -6,7 +6,7 @@ import { ChevronRight, Package } from "lucide-react";
 import { BottomNav } from "../BottomNav";
 
 interface ViaAddress { id: string; postcode?: string; signedBy?: string | null; }
-interface Unit { unitNumber: string; unitType?: string; }
+interface Unit { unitNumber: string; unitType?: string; temperature?: string | null; }
 
 interface Job {
   id: string;
@@ -36,7 +36,7 @@ function UnitCard({ unit }: { unit: Unit }) {
     <div className={`rounded-xl px-3 py-2 text-xs ${isChill ? "bg-blue-900/50 border border-blue-500/30" : "bg-amber-900/50 border border-amber-500/30"}`}>
       <p className="font-bold text-white leading-tight">{unit.unitNumber}</p>
       <p className={`mt-0.5 ${isChill ? "text-blue-300" : "text-amber-300"}`}>{isChill ? "Chill" : "Ambient"}</p>
-      <p className="text-gray-500 mt-0.5">—°C</p>
+      <p className="text-gray-500 mt-0.5">{unit.temperature != null ? `${unit.temperature}°C` : "—°C"}</p>
     </div>
   );
 }

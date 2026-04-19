@@ -14,8 +14,8 @@ const BOOKING_SELECT = {
   miles: true,
   podSignature: true,
   driverConfirmCollectionAt: true,
-  chillUnit: { select: { unitNumber: true, unitType: true } },
-  ambientUnit: { select: { unitNumber: true, unitType: true } },
+  chillUnit: { select: { unitNumber: true, unitType: true, temperature: true } },
+  ambientUnit: { select: { unitNumber: true, unitType: true, temperature: true } },
   viaAddresses: {
     where: { deletedAt: null },
     orderBy: { createdAt: "asc" as const },
