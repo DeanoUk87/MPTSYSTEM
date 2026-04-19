@@ -20,13 +20,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobR
               b.delivery_area, b.delivery_postcode, b.delivery_notes,
               b.delivery_contact, b.delivery_phone,
               DATE_FORMAT(b.delivery_date, '%Y-%m-%d') AS delivery_date,
-              b.delivery_time, b.goods_description, b.weight, b.pallets,
-              b.temp_range, b.job_status, b.invoice_number,
-              b.pod_signature, b.pod_upload,
+              b.delivery_time, b.job_description, b.weight, b.number_of_items,
+              b.job_status, b.invoice_number, b.job_notes, b.office_notes,
+              b.pod_signature, b.pod_upload, b.pod_relationship, b.pod_mobile,
               DATE_FORMAT(b.pod_date, '%Y-%m-%d') AS pod_date,
+              b.pod_time, b.driver_note, b.delivered_temperature,
               b.driver, b.second_man, b.cxdriver, b.vehicle,
               b.special_instructions, b.cost, b.customer_price,
               b.driver_cost, b.extra_cost, b.cxdriver_cost,
+              b.manual_amount, b.manual_desc, b.extra_cost2, b.extra_cost2_label,
+              b.fuel_surcharge_percent, b.fuel_surcharge_cost,
               c.customer AS customer_name,
               d.driver AS driver_name,
               d2.driver AS second_man_name,
@@ -51,6 +54,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobR
     return NextResponse.json({ ...bookings[0], vias });
   } catch (e: any) {
     console.error("Legacy booking detail error:", e.message);
-    return NextResponse.json({ error: "Failed to connect to legacy database." }, { status: 500 });
+    return NextResponse.json({ error: e.message || "Failed to connect to legacy database." }, { status: 500 });
   }
 }
