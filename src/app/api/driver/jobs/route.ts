@@ -38,10 +38,13 @@ export async function GET(req: NextRequest) {
 
     const bookings = await prisma.booking.findMany({
       where: {
-        secondManId: contact.driverId,
-        driverContactId: contact.id,
         collectionDate: todayStr,
         deletedAt: null,
+        OR: [
+          { driverId: contact.driverId },
+          { secondManId: contact.driverId },
+          { cxDriverId: contact.driverId },
+        ],
       },
       select: BOOKING_SELECT,
       orderBy: { collectionTime: "asc" },
