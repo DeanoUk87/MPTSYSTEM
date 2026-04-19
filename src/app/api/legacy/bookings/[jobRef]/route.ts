@@ -10,7 +10,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ jobR
 
   try {
     const bookings = await legacyQuery(
-      `SELECT b.id, b.job_ref, b.purchase_order, b.booked_by, b.booking_type,
+      `SELECT b.job_ref, b.purchase_order, b.booked_by, b.booking_type,
               DATE_FORMAT(b.collection_date, '%Y-%m-%d') AS collection_date,
               b.collection_time,
               b.collection_name, b.collection_address1, b.collection_address2,
