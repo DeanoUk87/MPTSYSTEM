@@ -330,7 +330,7 @@ export default function LegacyPage() {
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Job Ref</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Date</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Time</th>
-                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Customer</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap" style={{width:"100px"}}>Customer</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">From</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 1</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 2</th>
@@ -339,9 +339,9 @@ export default function LegacyPage() {
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 5</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Via 6</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">To</th>
-                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Driver</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap" style={{width:"100px"}}>Driver</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Driver Cost</th>
-                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Vehicle</th>
+                  <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap" style={{width:"90px"}}>Vehicle</th>
                   <th className="px-3 py-2.5 font-semibold text-slate-600 text-xs uppercase tracking-wide whitespace-nowrap">Status</th>
                 </tr>
               </thead>
@@ -360,15 +360,15 @@ export default function LegacyPage() {
                       <td className="px-3 py-2 font-mono font-semibold text-blue-700 whitespace-nowrap text-xs">{b.job_ref}</td>
                       <td className="px-3 py-2 text-slate-700 whitespace-nowrap text-xs">{fmtDate(b.collection_date)}</td>
                       <td className="px-3 py-2 text-slate-600 whitespace-nowrap text-xs">{b.collection_time || "—"}</td>
-                      <td className="px-3 py-2 text-slate-800 text-xs font-medium max-w-[110px] truncate">{b.customer || "—"}</td>
+                      <td className="px-3 py-2 text-slate-800 text-xs font-medium" style={{maxWidth:"100px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.customer || "—"}</td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-xs">{b.collection_postcode || "—"}</td>
                       {[0,1,2,3,4,5].map(i => (
                         <td key={i} className="px-3 py-2 text-slate-500 font-mono text-xs">{b.vias?.[i] || <span className="text-slate-200">—</span>}</td>
                       ))}
                       <td className="px-3 py-2 text-slate-600 font-mono text-xs">{b.delivery_postcode || "—"}</td>
-                      <td className="px-3 py-2 text-slate-700 text-xs whitespace-nowrap">{b.driver || <span className="text-rose-500">Unassigned</span>}</td>
+                      <td className="px-3 py-2 text-slate-700 text-xs" style={{maxWidth:"100px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.driver || <span className="text-rose-500">Unassigned</span>}</td>
                       <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.driver_cost_total > 0 ? `£${parseFloat(b.driver_cost_total).toFixed(2)}` : "—"}</td>
-                      <td className="px-3 py-2 text-slate-600 text-xs whitespace-nowrap">{b.vehicle || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600 text-xs" style={{maxWidth:"90px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.vehicle || "—"}</td>
                       <td className="px-3 py-2"><StatusBadge booking={b} /></td>
                     </tr>
                   );
