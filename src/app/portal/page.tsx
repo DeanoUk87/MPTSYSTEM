@@ -124,11 +124,12 @@ function useTracking(imei?: string | null) {
 }
 
 // --- Map component ---
-function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chillUnit, ambUnit }: {
+function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chillUnit, ambUnit, sharedTimestamp }: {
   chillImei?: string | null; ambImei?: string | null;
   chillData: TrackData | null; ambData: TrackData | null;
   showTempLegend: boolean;
   chillUnit?: StorageUnit | null; ambUnit?: StorageUnit | null;
+  sharedTimestamp?: string;
 }) {
   const divRef = useRef<HTMLDivElement>(null);
   const map    = useRef<any>(null);
@@ -140,10 +141,12 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
   const lAmb   = useRef(ambData);
   const lChillUnit = useRef(chillUnit);
   const lAmbUnit   = useRef(ambUnit);
+  const lSharedTs  = useRef(sharedTimestamp);
   useEffect(() => { lChill.current = chillData; }, [chillData]);
   useEffect(() => { lAmb.current   = ambData;   }, [ambData]);
   useEffect(() => { lChillUnit.current = chillUnit; }, [chillUnit]);
   useEffect(() => { lAmbUnit.current   = ambUnit;   }, [ambUnit]);
+  useEffect(() => { lSharedTs.current  = sharedTimestamp; }, [sharedTimestamp]);
 
   function buildInfoContent(unit: StorageUnit | null | undefined, track: TrackData | null): string {
     const typeLabel = unit?.unitType
@@ -153,7 +156,9 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
     const tempLine = track?.temperature !== undefined && track.temperature !== null
       ? `<div style="margin:4px 0">🌡 <b>Temperature:</b> ${Number(track.temperature).toFixed(1)} °C</div>`
       : "";
-    const updated = track?.timestamp ? utcToLondon(track.timestamp) : "";
+    // Use the shared (most recent) timestamp across both units — both are on the same vehicle
+    const tsSource = lSharedTs.current ?? track?.timestamp;
+    const updated = tsSource ? utcToLondon(tsSource) : "";
     const updLine = updated ? `<div style="margin:4px 0;color:#6b7280;font-size:11px">Updated: ${updated}</div>` : "";
     return `<div style="font-size:13px;line-height:1.5;padding:2px 4px">
   <div style="font-weight:700;margin-bottom:4px">${typeLabel} (${unitNum})</div>
@@ -278,11 +283,12 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
 }
 
 // --- Temp Box ---
-function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: TrackData | null }) {
+function TempBox({ unit, trackData, sharedTimestamp }: { unit: StorageUnit; trackData: TrackData | null; sharedTimestamp?: string }) {
   const isAmb = unit.unitType?.toLowerCase().startsWith("amb") ?? false;
   const ambStyle = { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" };
   const chillStyle = { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" };
-  const updatedStr = trackData?.timestamp ? utcToLondon(trackData.timestamp) : null;
+  // Use the shared (most recent) timestamp across both units — both are on the same vehicle
+  const updatedStr = (sharedTimestamp ?? trackData?.timestamp) ? utcToLondon((sharedTimestamp ?? trackData?.timestamp)!) : null;
   return (
     <div className="flex-1 rounded-xl p-3 text-center" style={isAmb ? ambStyle : chillStyle}>
       <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
@@ -304,6 +310,16 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
 
   const chillTrack = useTracking(b.chillUnit?.imei);
   const ambTrack   = useTracking(b.ambientUnit?.imei);
+
+  // Both units travel on the same vehicle — use the most recent GPS timestamp for both
+  const latestTimestamp = (() => {
+    const ct = chillTrack?.timestamp;
+    const at = ambTrack?.timestamp;
+    if (!ct && !at) return undefined;
+    if (!ct) return at;
+    if (!at) return ct;
+    try { return new Date(ct) >= new Date(at) ? ct : at; } catch { return ct; }
+  })();
 
   const hasUnits = !!(b.chillUnit?.imei || b.ambientUnit?.imei);
   const showMap  = !st.green && !b.hideTrackingMap  && hasUnits && !!MAPS_API_KEY;
@@ -451,14 +467,15 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                       showTempLegend={showTemp}
                       chillUnit={b.chillUnit}
                       ambUnit={b.ambientUnit}
+                      sharedTimestamp={latestTimestamp}
                     />
                   </div>
                 )}
                 {showTemp && (
                   <div>
                     <div className="flex gap-3">
-                      {b.chillUnit?.imei && <TempBox unit={b.chillUnit} trackData={chillTrack} />}
-                      {b.ambientUnit?.imei && <TempBox unit={b.ambientUnit} trackData={ambTrack} />}
+                      {b.chillUnit?.imei && <TempBox unit={b.chillUnit} trackData={chillTrack} sharedTimestamp={latestTimestamp} />}
+                      {b.ambientUnit?.imei && <TempBox unit={b.ambientUnit} trackData={ambTrack} sharedTimestamp={latestTimestamp} />}
                     </div>
                   </div>
                 )}
