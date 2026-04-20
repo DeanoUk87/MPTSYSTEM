@@ -88,9 +88,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const newUnits = [chillUnitId, ambientUnitId].filter(Boolean) as string[];
   const removedUnits = oldUnits.filter(uid => !newUnits.includes(uid));
   for (const uid of removedUnits) {
+    // Reset booking-specific fields but keep currentDriverId so the unit still
+    // belongs to its driver and auto-populates correctly if re-selected later
     await prisma.storageUnit.update({
       where: { id: uid },
-      data: { trackable: 0, availability: "Yes", currentDriverId: null, jobId: null },
+      data: { trackable: 0, availability: "Yes", jobId: null },
     }).catch(() => {});
   }
 
@@ -142,7 +144,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   for (const uid of [bookingToDelete?.chillUnitId, bookingToDelete?.ambientUnitId].filter(Boolean) as string[]) {
     await prisma.storageUnit.update({
       where: { id: uid },
-      data: { trackable: 0, availability: "Yes", currentDriverId: null, jobId: null },
+      data: { trackable: 0, availability: "Yes", jobId: null },
     }).catch(() => {});
   }
 
