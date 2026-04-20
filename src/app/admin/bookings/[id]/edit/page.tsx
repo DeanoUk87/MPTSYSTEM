@@ -473,7 +473,8 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       setVias((booking.viaAddresses?.filter((v: any) => !v.deletedAt) ?? []).map((v: any) => {
         if (v.notes?.includes("---ORDERS---")) {
           const [text, ordJson] = v.notes.split("---ORDERS---");
-          return { ...v, notes: text, collectedOrders: JSON.parse(ordJson || "[]") || [] };
+          const rawOrders = JSON.parse(ordJson || "[]") || [];
+          return { ...v, notes: text, collectedOrders: rawOrders.map((o: any) => ({ ref: o.ref || "", types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [] })) };
         }
         return { ...v, collectedOrders: v.collectedOrders ?? [] };
       }));
@@ -556,6 +557,15 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       const raw = booking.podUpload;
       const parsed = !raw ? [] : raw.startsWith("[") ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [raw];
       setPodFiles(parsed);
+      // Silently fetch route duration so it shows on load without recalculating prices
+      if (booking.collectionPostcode && booking.deliveryPostcode) {
+        fetch("/api/bookings/miles", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ origin: booking.collectionPostcode, destination: booking.deliveryPostcode, avoidTolls: booking.avoidTolls || false }),
+        }).then(r => r.json()).then(data => {
+          if (data.duration) setRouteInfo({ miles: Math.round(data.miles || 0), duration: data.duration });
+        }).catch(() => {});
+      }
       setLoadingBooking(false);
     });
   }, [id]);
@@ -1484,7 +1494,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs font-medium text-slate-500 block mb-1">POD Date</label>
-                      <input type="date" value={f.podDate || ""} onChange={e => s("podDate", e.target.value)} className={inp} />
+                      <input type="date" value={f.podDate || ""} onChange={e => s("podDate", e.target.value)} onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }} className={inp} />
                     </div>
                     <div>
                       <label className="text-xs font-medium text-slate-500 block mb-1">POD Time</label>
@@ -1564,7 +1574,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
             <SHead color="bg-indigo-600" icon="📍" label="Via Stops" />
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [], signedBy: "", podRelationship: "", podDate: "", podTime: "", deliveredTemp: "" }])} disabled={vias.length >= 6}
+                <button type="button" onClick={() => setVias(prev => [...prev.slice(0, 5), { viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [], signedBy: "", podRelationship: "", podDate: today, podTime: "", deliveredTemp: "" }])} disabled={vias.length >= 6}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition-colors">
                   <Plus className="w-3 h-3" /> Add Via Stop
                 </button>
@@ -1616,7 +1626,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <div className="border-t border-slate-200 pt-2 space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
-                          <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: [...(x.collectedOrders || []), { ref: "", type: "" }] } : x))}
+                          <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: [...(x.collectedOrders || []), { ref: "", types: [] }] } : x))}
                             className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
                             <Plus className="w-3 h-3" /> Add
                           </button>
@@ -1626,12 +1636,15 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                             <input type="text" value={order.ref || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.map((o: any, oIdx: number) => oIdx === oi ? { ...o, ref: e.target.value } : o) } : x))}
                               placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
                             <div className="flex gap-0.5">
-                              {["Chill","Amb","Pump","Stores"].map(t => (
-                                <button key={t} type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.map((o: any, oIdx: number) => oIdx === oi ? { ...o, type: t } : o) } : x))}
-                                  className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
-                                  order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                  }`}>{t}</button>
-                              ))}
+                              {["Chill","Amb","Pump","Stores"].map(t => {
+                                const active = (order.types || []).includes(t);
+                                return (
+                                  <button key={t} type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.map((o: any, oIdx: number) => oIdx === oi ? { ...o, types: active ? o.types.filter((s: string) => s !== t) : [...(o.types||[]), t] } : o) } : x))}
+                                    className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
+                                    active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    }`}>{t}</button>
+                                );
+                              })}
                             </div>
                             <button type="button" onClick={() => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, collectedOrders: x.collectedOrders.filter((_: any, oIdx: number) => oIdx !== oi) } : x))}
                               className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
@@ -1646,7 +1659,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                           <input type="text" value={via.podRelationship || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podRelationship: e.target.value } : x))} placeholder="Relationship" className={inp} />
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
-                          <input type="date" value={via.podDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podDate: e.target.value } : x))} className={inp} />
+                          <input type="date" value={via.podDate || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podDate: e.target.value } : x))} onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }} className={inp} />
                           <TimePicker value={via.podTime || ""} onChange={v => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, podTime: v } : x))} className="w-full px-2 py-1 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
                         </div>
                         <input type="text" value={via.deliveredTemp || ""} onChange={e => setVias(prev => prev.map((x, idx) => idx === i ? { ...x, deliveredTemp: e.target.value } : x))} placeholder="Delivered Temp (e.g. 4°C)" className={inp} />

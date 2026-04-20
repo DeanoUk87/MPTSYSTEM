@@ -125,12 +125,13 @@ function useTracking(imei?: string | null) {
 }
 
 // --- Map component ---
-function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chillUnit, ambUnit, sharedTimestamp }: {
+function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chillUnit, ambUnit, sharedTimestamp, hideTemperature }: {
   chillImei?: string | null; ambImei?: string | null;
   chillData: TrackData | null; ambData: TrackData | null;
   showTempLegend: boolean;
   chillUnit?: StorageUnit | null; ambUnit?: StorageUnit | null;
   sharedTimestamp?: string;
+  hideTemperature?: boolean;
 }) {
   const divRef = useRef<HTMLDivElement>(null);
   const map    = useRef<any>(null);
@@ -143,18 +144,20 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
   const lChillUnit = useRef(chillUnit);
   const lAmbUnit   = useRef(ambUnit);
   const lSharedTs  = useRef(sharedTimestamp);
+  const lHideTemp  = useRef(hideTemperature);
   useEffect(() => { lChill.current = chillData; }, [chillData]);
   useEffect(() => { lAmb.current   = ambData;   }, [ambData]);
   useEffect(() => { lChillUnit.current = chillUnit; }, [chillUnit]);
   useEffect(() => { lAmbUnit.current   = ambUnit;   }, [ambUnit]);
   useEffect(() => { lSharedTs.current  = sharedTimestamp; }, [sharedTimestamp]);
+  useEffect(() => { lHideTemp.current  = hideTemperature; }, [hideTemperature]);
 
   function buildInfoContent(unit: StorageUnit | null | undefined, track: TrackData | null): string {
     const typeLabel = unit?.unitType
       ? unit.unitType.charAt(0).toUpperCase() + unit.unitType.slice(1).toLowerCase()
       : "Unit";
     const unitNum = unit?.unitNumber ?? "";
-    const tempLine = track?.temperature !== undefined && track.temperature !== null
+    const tempLine = !lHideTemp.current && track?.temperature !== undefined && track.temperature !== null
       ? `<div style="margin:4px 0">🌡 <b>Temperature:</b> ${Number(track.temperature).toFixed(1)} °C</div>`
       : "";
     // Use the shared (most recent) timestamp across both units — both are on the same vehicle
@@ -463,6 +466,7 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                       chillUnit={b.chillUnit}
                       ambUnit={b.ambientUnit}
                       sharedTimestamp={latestTimestamp}
+                      hideTemperature={b.hideTrackingTemperature}
                     />
                   </div>
                 )}

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ChevronLeft, ChevronRight, X, ArrowLeft, ExternalLink, LogOut, Loader2 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, ArrowLeft, ExternalLink, LogOut, Loader2, CheckCircle2 } from "lucide-react";
 
 function fmtDate(d: string | null | undefined) {
   if (!d) return "—";
@@ -72,7 +72,7 @@ export default function PortalLegacyPage() {
   }
 
   function goBack() {
-    window.history.back();
+    window.history.replaceState({}, "", window.location.pathname);
     setSelected(null);
   }
 
@@ -162,14 +162,34 @@ export default function PortalLegacyPage() {
               <Row label="Time"     value={b.collection_time} />
               <Row label="Notes"    value={b.collection_notes} />
             </Section>
-            <Section title="Delivery">
-              <Row label="Name"     value={b.delivery_name} />
-              <Row label="Address"  value={[b.delivery_address1, b.delivery_address2, b.delivery_area].filter(Boolean).join(", ")} />
-              <Row label="Postcode" value={b.delivery_postcode} />
-              <Row label="Date"     value={fmtDate(b.delivery_date)} />
-              <Row label="Time"     value={b.delivery_time} />
-              <Row label="Notes"    value={b.delivery_notes} />
-            </Section>
+            <div className={`bg-white rounded-xl border p-4 space-y-3 ${b.pod_signature ? "border-emerald-200" : "border-slate-200"}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Final Delivery</p>
+                  {b.delivery_postcode && <span className="font-mono text-sm text-slate-600">{b.delivery_postcode}</span>}
+                </div>
+                {b.pod_signature && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
+              </div>
+              {(b.delivery_name || b.delivery_address1) && (
+                <div className="text-sm text-slate-600">
+                  {[b.delivery_name, b.delivery_address1, b.delivery_address2, b.delivery_area].filter(Boolean).join(", ")}
+                </div>
+              )}
+              {b.delivery_notes && <p className="text-xs text-slate-400 italic">{b.delivery_notes}</p>}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border-t border-slate-100 pt-3">
+                {b.pod_signature ? (
+                  <>
+                    <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{b.pod_signature}</p></div>
+                    {b.pod_relationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-800">{b.pod_relationship}</p></div>}
+                    {b.pod_date && <div><p className="text-xs text-slate-400">Date</p><p className="font-medium text-slate-800">{fmtDate(b.pod_date)}</p></div>}
+                    {b.pod_time && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-800">{b.pod_time}</p></div>}
+                    {b.delivered_temperature && <div><p className="text-xs text-slate-400">Temperature</p><p className="font-medium text-slate-800">{b.delivered_temperature}</p></div>}
+                  </>
+                ) : (
+                  <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD…</div>
+                )}
+              </div>
+            </div>
           </div>
 
           <Section title="Job Info">
@@ -216,25 +236,43 @@ export default function PortalLegacyPage() {
           </Section>
 
           {selected.vias?.length > 0 && (
-            <Section title={`Via Stops (${selected.vias.length})`}>
-              <div className="space-y-4">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+              <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5">
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Via Stops ({selected.vias.length})</h3>
+              </div>
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {selected.vias.map((v: any, i: number) => (
-                  <div key={v.via_id} className="border border-slate-200 rounded-xl p-3 space-y-1.5">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Via {i + 1} — {v.via_type || "Stop"}</p>
-                    <Row label="Name"     value={v.name} />
-                    <Row label="Address"  value={[v.address1, v.address2, v.area].filter(Boolean).join(", ")} />
-                    <Row label="Postcode" value={v.postcode} />
-                    <Row label="Notes"    value={v.notes} />
-                    {v.signed_by && <>
-                      <hr className="border-slate-100" />
-                      <Row label="Signed By"    value={v.signed_by} />
-                      <Row label="Relationship" value={v.pod_relationship} />
-                      <Row label="Temperature"  value={v.delivered_temperature} />
-                    </>}
+                  <div key={v.via_id} className={`rounded-xl border p-4 space-y-3 ${v.signed_by ? "border-emerald-200 bg-emerald-50/30" : "border-slate-200 bg-white"}`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 text-xs font-bold rounded-full border ${v.signed_by ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                        {v.via_type || "Via"} {i + 1}
+                      </span>
+                      {v.postcode && <span className="font-mono text-sm text-slate-600">{v.postcode}</span>}
+                      {v.signed_by && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
+                    </div>
+                    {(v.name || v.address1) && (
+                      <div className="text-sm text-slate-600">
+                        {[v.name, v.address1, v.address2, v.area].filter(Boolean).join(", ")}
+                      </div>
+                    )}
+                    {v.notes && <p className="text-xs text-slate-400 italic">{v.notes}</p>}
+                    <div className="grid grid-cols-2 gap-3 text-sm border-t border-slate-100 pt-3">
+                      {v.signed_by ? (
+                        <>
+                          <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{v.signed_by}</p></div>
+                          {v.pod_relationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-800">{v.pod_relationship}</p></div>}
+                          {v.pod_date && <div><p className="text-xs text-slate-400">Date</p><p className="font-medium text-slate-800">{fmtDate(v.pod_date)}</p></div>}
+                          {v.pod_time && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-800">{v.pod_time}</p></div>}
+                          {v.delivered_temperature && <div><p className="text-xs text-slate-400">Temperature</p><p className="font-medium text-slate-800">{v.delivered_temperature}</p></div>}
+                        </>
+                      ) : (
+                        <div className="col-span-2 text-xs text-slate-400 italic">Awaiting POD…</div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-            </Section>
+            </div>
           )}
         </div>
       </div>
