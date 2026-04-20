@@ -27,6 +27,7 @@ interface Booking {
   podUpload?: string;
   hideTrackingTemperature: boolean; hideTrackingMap: boolean;
   driver?: { name: string };
+  secondMan?: { name: string };
   chillUnit?: StorageUnit; ambientUnit?: StorageUnit;
   viaAddresses?: ViaAddress[];
 }
@@ -72,7 +73,7 @@ function statusInfo(b: Booking) {
     return { label: "Completed",        cls: "bg-blue-500 text-white",    rowCls: "bg-blue-50 border-l-4 border-l-blue-400",       green: true  };
   if (b.podSignature && vp)
     return { label: "POD Received",     cls: "bg-emerald-500 text-white", rowCls: "bg-emerald-50 border-l-4 border-l-emerald-400", green: false };
-  if (b.driver)
+  if (b.driver || b.secondMan)
     return { label: "Driver Allocated", cls: "bg-amber-400 text-white",   rowCls: "bg-amber-50 border-l-4 border-l-amber-400",     green: false };
   return   { label: "Booked",           cls: "bg-rose-500 text-white",    rowCls: "bg-rose-50 border-l-4 border-l-rose-400",      green: false };
 }
