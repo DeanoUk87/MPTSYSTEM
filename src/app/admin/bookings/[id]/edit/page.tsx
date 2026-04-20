@@ -1385,11 +1385,8 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         const id = e.target.value;
                         const miles = Math.round(parseFloat(f.miles) || 0);
                         const dr = subcons.find((d: any) => d.id === id);
-                        if (!id) { setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "" })); return; }
-                        const subconUnits = allStorageUnits.filter((u: any) => u.currentDriverId === id);
-                        const chillU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? subconUnits[0] ?? null;
-                        const ambU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? subconUnits[1] ?? null;
-                        setF(p => ({ ...p, secondManId: id, secondManContactId: "", extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost, chillUnitId: chillU?.id ?? p.chillUnitId, ambientUnitId: ambU?.id ?? p.ambientUnitId }));
+                        if (!id) { setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "", chillUnitId: "", ambientUnitId: "" })); return; }
+                        setF(p => ({ ...p, secondManId: id, secondManContactId: "", extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost, chillUnitId: "", ambientUnitId: "" }));
                       }} className={inp}>
                         <option value="">— Select SubCon —</option>
                         {subcons.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}
@@ -1398,7 +1395,17 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       <input type="number" step="0.01" min="0" value={f.extraCost || ""} onChange={e => s("extraCost", e.target.value)} className={costInp} placeholder="0.00" /></>}
                     </div>
                     {subconContacts.length > 0 && (
-                      <select value={f.secondManContactId || ""} onChange={e => s("secondManContactId", e.target.value)} className={inp + " mt-1.5"}>
+                      <select value={f.secondManContactId || ""} onChange={e => {
+                        const contactId = e.target.value;
+                        const subconUnits = allStorageUnits.filter((u: any) => u.currentDriverId === f.secondManId);
+                        const chillU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? subconUnits[0] ?? null;
+                        const ambU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? subconUnits[1] ?? null;
+                        setF(p => ({
+                          ...p,
+                          secondManContactId: contactId,
+                          ...(contactId ? { chillUnitId: chillU?.id ?? p.chillUnitId, ambientUnitId: ambU?.id ?? p.ambientUnitId } : {}),
+                        }));
+                      }} className={inp + " mt-1.5"}>
                         <option value="">— Assign driver under SubCon —</option>
                         {subconContacts.map((c: any) => <option key={c.id} value={c.id}>{c.driverName}{c.vehicleRegistration ? ` · ${c.vehicleRegistration}` : ""}</option>)}
                       </select>

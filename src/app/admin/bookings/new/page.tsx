@@ -627,35 +627,37 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     }));
   }
 
-  // Handle subcon change — update cost or clear if deselected
+  // Handle subcon change — update cost or clear if deselected. Units populate when DriverContact is picked.
   function handleSubconChange(subconId: string) {
     if (!subconId) {
-      setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "" }));
+      setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "", chillUnitId: "", ambientUnitId: "" }));
       return;
     }
     const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = subcons.find((d: any) => d.id === subconId);
-    const subconUnits = allStorageUnits.filter((u: any) => u.currentDriverId === subconId);
-    const chillU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? subconUnits[0] ?? null;
-    const ambU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? subconUnits[1] ?? null;
     setF(p => ({
       ...p,
       secondManId: subconId,
       secondManContactId: "",
       extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost,
-      chillUnitId: chillU?.id ?? p.chillUnitId,
-      ambientUnitId: ambU?.id ?? p.ambientUnitId,
+      // Clear units when switching subcon — will repopulate when DriverContact is selected
+      chillUnitId: "",
+      ambientUnitId: "",
     }));
   }
 
-  // SubCon contact selection — recalc extraCost from parent subcon's rate
+  // SubCon contact selection — recalc extraCost and auto-populate units from SubCon's assigned units
   function handleSubconContactChange(contactId: string) {
     const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = subcons.find((d: any) => d.id === f.secondManId);
+    const subconUnits = allStorageUnits.filter((u: any) => u.currentDriverId === f.secondManId);
+    const chillU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? subconUnits[0] ?? null;
+    const ambU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? subconUnits[1] ?? null;
     setF(p => ({
       ...p,
       secondManContactId: contactId,
       extraCost: contactId && dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost,
+      ...(contactId ? { chillUnitId: chillU?.id ?? p.chillUnitId, ambientUnitId: ambU?.id ?? p.ambientUnitId } : {}),
     }));
   }
 

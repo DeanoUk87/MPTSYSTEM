@@ -90,9 +90,14 @@ function AddressBlock({ title, prefix, data, accent = "blue" }: { title: string;
             const orders = JSON.parse(ordersJson);
             return orders.length > 0 ? (
               <div className="flex flex-wrap gap-1 pt-1">
-                {orders.map((o: any, i: number) => (
-                  <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
-                ))}
+                {orders.map((o: any, i: number) => {
+                  const types: string[] = Array.isArray(o.types) ? o.types : o.type ? [o.type] : [];
+                  return (
+                    <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                      {o.ref}{types.length > 0 ? ` · ${types.join(" & ")}` : ""}
+                    </span>
+                  );
+                })}
               </div>
             ) : null;
           } catch { return null; }
@@ -379,9 +384,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                           const orders = JSON.parse(ordersJson);
                           return orders.length > 0 ? (
                             <div className="flex flex-wrap gap-1 pt-1">
-                              {orders.map((o: any, i: number) => (
-                                <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">{o.ref} · {o.type}</span>
-                              ))}
+                              {orders.map((o: any, i: number) => {
+                                const types: string[] = Array.isArray(o.types) ? o.types : o.type ? [o.type] : [];
+                                return (
+                                  <span key={i} className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                                    {o.ref}{types.length > 0 ? ` · ${types.join(" & ")}` : ""}
+                                  </span>
+                                );
+                              })}
                             </div>
                           ) : null;
                         } catch { return null; }
