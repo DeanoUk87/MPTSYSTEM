@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
         ],
       } : undefined,
       orderBy: { name: "asc" },
-      include: { _count: { select: { bookings: true } } },
+      include: { _count: { select: { bookings: { where: { deletedAt: null } } } } },
     });
     const usersWithCustomer = await prisma.user.findMany({
       where: { customerId: { not: null } },
