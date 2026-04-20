@@ -83,8 +83,25 @@ function fmt(dateStr?: string) {
 }
 
 // --- Live tracking hook ---
-interface TrackData { lat: number; lng: number; temperature?: number; }
+interface TrackData { lat: number; lng: number; temperature?: number; timestamp?: string; }
 declare global { interface Window { google?: any; } }
+
+// Convert a UTC timestamp string from the GPS API ("2026-04-20 13:35:38" or ISO) to Europe/London display time
+function utcToLondon(utcStr?: string): string {
+  if (!utcStr) return "";
+  try {
+    const d = new Date(utcStr.includes("T") ? utcStr : utcStr.replace(" ", "T") + "Z");
+    if (isNaN(d.getTime())) return utcStr;
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/London",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false,
+    }).formatToParts(d);
+    const get = (t: string) => parts.find(p => p.type === t)?.value ?? "";
+    return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
+  } catch { return utcStr; }
+}
 
 function useTracking(imei?: string | null) {
   const [data, setData] = useState<TrackData | null>(null);
@@ -106,20 +123,47 @@ function useTracking(imei?: string | null) {
 }
 
 // --- Map component ---
-function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend }: {
+function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chillUnit, ambUnit }: {
   chillImei?: string | null; ambImei?: string | null;
   chillData: TrackData | null; ambData: TrackData | null;
   showTempLegend: boolean;
+  chillUnit?: StorageUnit | null; ambUnit?: StorageUnit | null;
 }) {
   const divRef = useRef<HTMLDivElement>(null);
   const map    = useRef<any>(null);
   const cM     = useRef<any>(null);
   const aM     = useRef<any>(null);
+  const iW     = useRef<any>(null); // shared InfoWindow
   // Store latest data in refs so init() can read current values without stale closures
   const lChill = useRef(chillData);
   const lAmb   = useRef(ambData);
+  const lChillUnit = useRef(chillUnit);
+  const lAmbUnit   = useRef(ambUnit);
   useEffect(() => { lChill.current = chillData; }, [chillData]);
   useEffect(() => { lAmb.current   = ambData;   }, [ambData]);
+  useEffect(() => { lChillUnit.current = chillUnit; }, [chillUnit]);
+  useEffect(() => { lAmbUnit.current   = ambUnit;   }, [ambUnit]);
+
+  function buildInfoContent(unit: StorageUnit | null | undefined, track: TrackData | null): string {
+    const typeLabel = unit?.unitType
+      ? unit.unitType.charAt(0).toUpperCase() + unit.unitType.slice(1).toLowerCase()
+      : "Unit";
+    const unitNum = unit?.unitNumber ?? "";
+    const tempLine = track?.temperature !== undefined && track.temperature !== null
+      ? `<div style="margin:4px 0">🌡 <b>Temperature:</b> ${Number(track.temperature).toFixed(1)} °C</div>`
+      : "";
+    const updated = track?.timestamp ? utcToLondon(track.timestamp) : "";
+    const updLine = updated ? `<div style="margin:4px 0;color:#6b7280;font-size:11px">Updated: ${updated}</div>` : "";
+    return `<div style="font-size:13px;line-height:1.5;padding:2px 4px">
+  <div style="font-weight:700;margin-bottom:4px">${typeLabel} (${unitNum})</div>
+  ${tempLine}${updLine}
+</div>`;
+  }
+
+  function ensureInfoWindow() {
+    if (!iW.current) iW.current = new window.google.maps.InfoWindow();
+    return iW.current;
+  }
 
   function placeMarkers() {
     if (!map.current) return;
@@ -133,6 +177,11 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend }: {
           position: pos, map: map.current, title: "Chill Unit",
           icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
         });
+        cM.current.addListener("click", () => {
+          const iw = ensureInfoWindow();
+          iw.setContent(buildInfoContent(lChillUnit.current, lChill.current));
+          iw.open(map.current, cM.current);
+        });
         map.current.panTo(pos);
         map.current.setZoom(13);
       }
@@ -144,6 +193,11 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend }: {
         aM.current = new window.google.maps.Marker({
           position: pos, map: map.current, title: "Ambient Unit",
           icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+        });
+        aM.current.addListener("click", () => {
+          const iw = ensureInfoWindow();
+          iw.setContent(buildInfoContent(lAmbUnit.current, lAmb.current));
+          iw.open(map.current, aM.current);
         });
         if (!lChill.current) { map.current.panTo(pos); map.current.setZoom(13); }
       }
@@ -182,6 +236,11 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend }: {
         position: pos, map: map.current, title: "Chill Unit",
         icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
       });
+      cM.current.addListener("click", () => {
+        const iw = ensureInfoWindow();
+        iw.setContent(buildInfoContent(lChillUnit.current, lChill.current));
+        iw.open(map.current, cM.current);
+      });
       map.current.panTo(pos);
       map.current.setZoom(13);
     }
@@ -195,6 +254,11 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend }: {
       aM.current = new window.google.maps.Marker({
         position: pos, map: map.current, title: "Ambient Unit",
         icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+      });
+      aM.current.addListener("click", () => {
+        const iw = ensureInfoWindow();
+        iw.setContent(buildInfoContent(lAmbUnit.current, lAmb.current));
+        iw.open(map.current, aM.current);
       });
     }
   }, [ambData]);
@@ -217,6 +281,7 @@ function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: TrackData 
   const isAmb = unit.unitType?.toLowerCase().startsWith("amb") ?? false;
   const ambStyle = { background: "linear-gradient(160deg,#fffbeb 0%,#fef3c7 100%)", border: "2px solid #f59e0b", boxShadow: "0 2px 8px rgba(245,158,11,.18)" };
   const chillStyle = { background: "linear-gradient(160deg,#eff6ff 0%,#dbeafe 100%)", border: "2px solid #3b82f6", boxShadow: "0 2px 8px rgba(59,130,246,.18)" };
+  const updatedStr = trackData?.timestamp ? utcToLondon(trackData.timestamp) : null;
   return (
     <div className="flex-1 rounded-xl p-3 text-center" style={isAmb ? ambStyle : chillStyle}>
       <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: isAmb ? "#92400e" : "#1e3a8a" }}>
@@ -226,6 +291,7 @@ function TempBox({ unit, trackData }: { unit: StorageUnit; trackData: TrackData 
         ? <p className="text-3xl font-extrabold leading-none" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }}>{Number(trackData.temperature).toFixed(1)}°C</p>
         : <p className="flex items-center justify-center mt-1"><Loader2 className="w-4 h-4 animate-spin" style={{ color: isAmb ? "#b45309" : "#1d4ed8" }} /></p>}
       <p className="text-xs mt-1 opacity-70" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>{unit.unitNumber}</p>
+      {updatedStr && <p className="text-[10px] mt-1 opacity-60" style={{ color: isAmb ? "#a16207" : "#1e40af" }}>Updated: {updatedStr}</p>}
     </div>
   );
 }
@@ -382,6 +448,8 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                       chillData={chillTrack}
                       ambData={ambTrack}
                       showTempLegend={showTemp}
+                      chillUnit={b.chillUnit}
+                      ambUnit={b.ambientUnit}
                     />
                   </div>
                 )}
