@@ -84,6 +84,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         address3: c.address3 || "", city: c.city || "", postcode: c.postcode || "",
         contact: c.contact || "", poNumber: c.poNumber || "", poEmail: c.poEmail || "",
         deadMileage: String(c.deadMileage ?? 0), notes: c.notes || "",
+        legacyCustomerId: c.legacyCustomerId != null ? String(c.legacyCustomerId) : "",
       });
     }
     if (vRes.ok) setVehicles(await vRes.json());
@@ -343,6 +344,12 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 className={inp} />
             </div>
           ))}
+          <div>
+            <label className={lbl}>Legacy Customer ID <span className="text-slate-400 font-normal normal-case">(links portal to old system jobs)</span></label>
+            <input type="number" min="1" value={custForm.legacyCustomerId || ""}
+              onChange={e => setCustForm((f: any) => ({ ...f, legacyCustomerId: e.target.value }))}
+              className={inp + " font-mono"} placeholder="e.g. 42" />
+          </div>
           <div className="col-span-2">
             <label className={lbl}>Notes</label>
             <RichTextEditor key={customer?.id || "edit"} value={custForm.notes || ""} onChange={v => setCustForm((f: any) => ({ ...f, notes: v }))} />

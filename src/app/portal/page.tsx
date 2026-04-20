@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, Paperclip, ChevronLeft, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 
@@ -612,10 +613,16 @@ export default function CustomerPortalPage() {
             <p className="text-blue-200 text-xs mt-0.5">View and track your bookings</p>
           </div>
         </div>
-        <button onClick={handleLogout}
-          className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
-          <LogOut className="w-3.5 h-3.5" /> Sign Out
-        </button>
+        <div className="flex items-center gap-2">
+          <Link href="/portal/legacy"
+            className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
+            History
+          </Link>
+          <button onClick={handleLogout}
+            className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
+            <LogOut className="w-3.5 h-3.5" /> Sign Out
+          </button>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">

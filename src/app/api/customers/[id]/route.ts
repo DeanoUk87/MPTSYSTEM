@@ -49,6 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         customerAccount: data.customerAccount || null,
         termsOfPayment: data.termsOfPayment || null,
         jobRefStart: parseInt(data.jobRefStart) || 1,
+        legacyCustomerId: data.legacyCustomerId ? parseInt(data.legacyCustomerId) : null,
       } as any,
     });
     return NextResponse.json(customer);

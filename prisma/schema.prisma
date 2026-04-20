@@ -106,6 +106,8 @@ model Customer {
   termsOfPayment  String?
   messageType     String?
   userId          String?
+  // Legacy DB link
+  legacyCustomerId Int?
 
   bookings        Booking[]
   vehicleRates    CustomerVehicleRate[]
