@@ -188,6 +188,7 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
           icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
         });
         cM.current.addListener("click", () => {
+          if (lHideTemp.current) return;
           const iw = ensureInfoWindow();
           iw.setContent(buildInfoContent(lChillUnit.current, lChill.current));
           iw.open(map.current, cM.current);
@@ -205,6 +206,7 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
           icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
         });
         aM.current.addListener("click", () => {
+          if (lHideTemp.current) return;
           const iw = ensureInfoWindow();
           iw.setContent(buildInfoContent(lAmbUnit.current, lAmb.current));
           iw.open(map.current, aM.current);

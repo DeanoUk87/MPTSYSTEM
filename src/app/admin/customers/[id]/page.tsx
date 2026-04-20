@@ -212,12 +212,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <p className="font-medium text-slate-700">{value as string}</p>
             </div>
           ))}
-          {customer.notes && (
-            <div className="col-span-2 sm:col-span-3">
-              <p className="text-xs text-slate-400">Notes</p>
-              <p className="text-slate-600">{customer.notes}</p>
-            </div>
-          )}
+
         </div>
 
         {/* Vehicle Rates */}
@@ -254,9 +249,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 {rates.map((r: any) => (
                   <tr key={r.id} className="border-t border-slate-100 hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-slate-800">{r.vehicle?.name}</td>
-                    <td className="px-4 py-3 text-emerald-700 font-mono">£{r.ratePerMile.toFixed(4)}/mi</td>
-                    <td className="px-4 py-3 text-amber-700 font-mono">£{r.ratePerMileWeekends.toFixed(4)}/mi</td>
-                    <td className="px-4 py-3 text-purple-700 font-mono">£{r.ratePerMileOutOfHours.toFixed(4)}/mi</td>
+                    <td className="px-4 py-3 text-emerald-700 font-mono">£{r.ratePerMile.toFixed(2)}/mi</td>
+                    <td className="px-4 py-3 text-amber-700 font-mono">£{r.ratePerMileWeekends.toFixed(2)}/mi</td>
+                    <td className="px-4 py-3 text-purple-700 font-mono">£{r.ratePerMileOutOfHours.toFixed(2)}/mi</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <button onClick={() => openEditRate(r)} className="p-1.5 hover:bg-blue-50 rounded text-blue-600"><Pencil className="w-4 h-4" /></button>

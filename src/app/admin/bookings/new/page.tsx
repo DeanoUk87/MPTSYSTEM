@@ -1064,7 +1064,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                     )}
                     {f.vehicleId && currentRate && (
                       <div className="mt-1.5 text-xs text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg font-medium">
-                        {jtLabel} rate: £{currentRate.toFixed(4)}/mi
+                        {jtLabel} rate: £{currentRate.toFixed(2)}/mi
                       </div>
                     )}
                   </div>

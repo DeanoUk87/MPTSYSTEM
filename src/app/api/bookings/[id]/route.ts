@@ -88,11 +88,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const newUnits = [chillUnitId, ambientUnitId].filter(Boolean) as string[];
   const removedUnits = oldUnits.filter(uid => !newUnits.includes(uid));
   for (const uid of removedUnits) {
-    // Reset booking-specific fields but keep currentDriverId so the unit still
-    // belongs to its driver and auto-populates correctly if re-selected later
+    // Only clear the job link and disable tracking — leave availability and currentDriverId
+    // unchanged so the unit still shows as "Assigned" to its driver on the storage screen.
+    // Availability/currentDriver are only changed when explicitly unassigning on the storage page.
     await prisma.storageUnit.update({
       where: { id: uid },
-      data: { trackable: 0, availability: "Yes", jobId: null },
+      data: { trackable: 0, jobId: null },
     }).catch(() => {});
   }
 

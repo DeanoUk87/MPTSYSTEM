@@ -1118,7 +1118,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                       })}
                     </select>
                     {f.vehicleId && currentRate && (
-                      <div className="mt-1.5 text-xs text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg font-medium">{jtLabel} rate: £{currentRate.toFixed(4)}/mi</div>
+                      <div className="mt-1.5 text-xs text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg font-medium">{jtLabel} rate: £{currentRate.toFixed(2)}/mi</div>
                     )}
                   </div>
                   <div className="flex gap-2">

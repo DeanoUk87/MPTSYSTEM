@@ -129,13 +129,13 @@ export default function PortalLegacyPage() {
       <div className="min-h-screen bg-slate-50">
         <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push("/portal")}
+            <button onClick={goBack}
               className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
-              <ArrowLeft className="w-3.5 h-3.5" /> Portal
+              <ArrowLeft className="w-3.5 h-3.5" /> Back
             </button>
             <div>
-              <p className="text-sm font-bold">Legacy Job — {b.job_ref}</p>
-              <p className="text-blue-200 text-xs">{fmtDate(b.collection_date)}</p>
+              <h1 className="text-xl font-bold">{b.job_ref}</h1>
+              <p className="text-blue-200 text-xs">{fmtDate(b.collection_date)}{b.collection_time ? ` · ${b.collection_time}` : ""}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -147,133 +147,101 @@ export default function PortalLegacyPage() {
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto p-6 space-y-4">
-          <button onClick={goBack}
-            className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-medium">
-            <ArrowLeft className="w-4 h-4" /> Back to results
-          </button>
+        <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
 
-          <div className="grid grid-cols-2 gap-4">
-            <Section title="Collection">
-              <Row label="Name"     value={b.collection_name} />
-              <Row label="Address"  value={[b.collection_address1, b.collection_address2, b.collection_area].filter(Boolean).join(", ")} />
-              <Row label="Postcode" value={b.collection_postcode} />
-              <Row label="Date"     value={fmtDate(b.collection_date)} />
-              <Row label="Time"     value={b.collection_time} />
-              <Row label="Notes"    value={b.collection_notes} />
-            </Section>
-            <div className={`bg-white rounded-xl border p-4 space-y-3 ${b.pod_signature ? "border-emerald-200" : "border-slate-200"}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Final Delivery</p>
-                  {b.delivery_postcode && <span className="font-mono text-sm text-slate-600">{b.delivery_postcode}</span>}
-                </div>
-                {b.pod_signature && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
-              </div>
-              {(b.delivery_name || b.delivery_address1) && (
-                <div className="text-sm text-slate-600">
-                  {[b.delivery_name, b.delivery_address1, b.delivery_address2, b.delivery_area].filter(Boolean).join(", ")}
-                </div>
-              )}
-              {b.delivery_notes && <p className="text-xs text-slate-400 italic">{b.delivery_notes}</p>}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border-t border-slate-100 pt-3">
-                {b.pod_signature ? (
-                  <>
-                    <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{b.pod_signature}</p></div>
-                    {b.pod_relationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-800">{b.pod_relationship}</p></div>}
-                    {b.pod_date && <div><p className="text-xs text-slate-400">Date</p><p className="font-medium text-slate-800">{fmtDate(b.pod_date)}</p></div>}
-                    {b.pod_time && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-800">{b.pod_time}</p></div>}
-                    {b.delivered_temperature && <div><p className="text-xs text-slate-400">Temperature</p><p className="font-medium text-slate-800">{b.delivered_temperature}</p></div>}
-                  </>
-                ) : (
-                  <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD…</div>
-                )}
-              </div>
+          {/* Job meta bar */}
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500">
+            {b.purchase_order && <span>PO: <strong className="text-slate-700">{b.purchase_order}</strong></span>}
+            {b.vehicle_name  && <span>Vehicle: <strong className="text-slate-700">{b.vehicle_name}</strong></span>}
+            {b.driver_name   && <span>Driver: <strong className="text-slate-700">{b.driver_name}</strong></span>}
+            {b.number_of_items != null && <span>Items: <strong className="text-slate-700">{b.number_of_items}</strong></span>}
+            {b.weight        != null && <span>Weight: <strong className="text-slate-700">{b.weight} kg</strong></span>}
+            {b.job_notes     && <span>Notes: <strong className="text-slate-700">{b.job_notes}</strong></span>}
+          </div>
+
+          {/* Collection card */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-2 py-0.5 text-xs font-bold rounded-full border bg-blue-100 text-blue-700 border-blue-200">COLLECTION</span>
+              {b.collection_postcode && <span className="font-mono text-sm text-slate-600">{b.collection_postcode}</span>}
+            </div>
+            {(b.collection_name || b.collection_address1) && (
+              <p className="text-sm text-slate-600 mb-2">{[b.collection_name, b.collection_address1, b.collection_address2, b.collection_area].filter(Boolean).join(", ")}</p>
+            )}
+            {b.collection_notes && <p className="text-xs text-slate-400 italic mb-2">{b.collection_notes}</p>}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm border-t border-slate-100 pt-3">
+              {b.collection_date    && <div><p className="text-xs text-slate-400">Date</p><p className="font-medium text-slate-700">{fmtDate(b.collection_date)}</p></div>}
+              {b.collection_time    && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-700">{b.collection_time}</p></div>}
+              {b.collection_contact && <div><p className="text-xs text-slate-400">Contact</p><p className="font-medium text-slate-700">{b.collection_contact}</p></div>}
+              {b.collection_phone   && <div><p className="text-xs text-slate-400">Phone</p><p className="font-medium text-slate-700">{b.collection_phone}</p></div>}
             </div>
           </div>
 
-          <Section title="Job Info">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-              <Row label="Purchase Order" value={b.purchase_order} />
-              <Row label="Vehicle"        value={b.vehicle_name} />
-              <Row label="Driver"         value={b.driver_name} />
-              <Row label="Items"          value={b.number_of_items != null ? String(b.number_of_items) : null} />
-              <Row label="Weight"         value={b.weight != null ? `${b.weight} kg` : null} />
-              <Row label="Job Notes"      value={b.job_notes} />
-            </div>
-          </Section>
-
-          <Section title="Proof of Delivery">
-            {b.pod_signature ? (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <Row label="Signed By"    value={b.pod_signature} />
-                  <Row label="Relationship" value={b.pod_relationship} />
-                  <Row label="POD Date"     value={fmtDate(b.pod_date)} />
-                  <Row label="POD Time"     value={b.pod_time} />
-                  <Row label="Temperature"  value={b.delivered_temperature} />
-                </div>
-                {podFiles.length > 0 && (
-                  <div>
-                    <p className="text-xs text-slate-500 mb-2">Attachments</p>
-                    <div className="flex flex-wrap gap-2">
-                      {podFiles.map((f: string, i: number) => (
-                        <a key={i} href={f} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100">
-                          <ExternalLink className="w-3 h-3" /> Attachment {i + 1}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {b.pod_mobile && (
-                  <img src={b.pod_mobile} alt="POD signature" className="max-w-xs border border-slate-200 rounded-lg" />
-                )}
+          {/* Via stops */}
+          {(selected.vias ?? []).map((v: any, i: number) => (
+            <div key={v.via_id} className={`bg-white rounded-xl border p-4 space-y-3 ${v.signed_by ? "border-emerald-200" : "border-slate-200"}`}>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 text-xs font-bold rounded-full border ${v.signed_by ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                  VIA {i + 1}
+                </span>
+                {v.postcode && <span className="font-mono text-sm text-slate-600">{v.postcode}</span>}
+                {v.signed_by && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
               </div>
-            ) : (
-              <p className="text-sm text-slate-400 italic">No POD recorded</p>
+              {(v.name || v.address1) && (
+                <p className="text-sm text-slate-600">{[v.name, v.address1, v.address2, v.area].filter(Boolean).join(", ")}</p>
+              )}
+              {v.notes && <p className="text-xs text-slate-400 italic">{v.notes}</p>}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border-t border-slate-100 pt-3">
+                {v.signed_by        && <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{v.signed_by}</p></div>}
+                {v.pod_relationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-700">{v.pod_relationship}</p></div>}
+                {v.pod_date         && <div><p className="text-xs text-slate-400">POD Date</p><p className="font-medium text-slate-700">{fmtDate(v.pod_date)}</p></div>}
+                {v.pod_time         && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-700">{v.pod_time}</p></div>}
+                {v.delivered_temperature && <div><p className="text-xs text-slate-400">Temperature</p><p className="font-medium text-slate-700">{v.delivered_temperature}</p></div>}
+                {!v.signed_by && <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD…</div>}
+              </div>
+            </div>
+          ))}
+
+          {/* Final delivery */}
+          <div className={`bg-white rounded-xl border p-4 ${b.pod_signature ? "border-emerald-200" : "border-slate-200"}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`px-2 py-0.5 text-xs font-bold rounded-full border ${b.pod_signature ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}>
+                FINAL DEL
+              </span>
+              {b.delivery_postcode && <span className="font-mono text-sm text-slate-600">{b.delivery_postcode}</span>}
+              {b.pod_signature && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
+            </div>
+            {(b.delivery_name || b.delivery_address1) && (
+              <p className="text-sm text-slate-600 mb-2">{[b.delivery_name, b.delivery_address1, b.delivery_address2, b.delivery_area].filter(Boolean).join(", ")}</p>
             )}
-          </Section>
-
-          {selected.vias?.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-              <div className="bg-slate-50 border-b border-slate-200 px-4 py-2.5">
-                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Via Stops ({selected.vias.length})</h3>
-              </div>
-              <div className="p-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                {selected.vias.map((v: any, i: number) => (
-                  <div key={v.via_id} className={`rounded-xl border p-4 space-y-3 ${v.signed_by ? "border-emerald-200 bg-emerald-50/30" : "border-slate-200 bg-white"}`}>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 text-xs font-bold rounded-full border ${v.signed_by ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}>
-                        {v.via_type || "Via"} {i + 1}
-                      </span>
-                      {v.postcode && <span className="font-mono text-sm text-slate-600">{v.postcode}</span>}
-                      {v.signed_by && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
-                    </div>
-                    {(v.name || v.address1) && (
-                      <div className="text-sm text-slate-600">
-                        {[v.name, v.address1, v.address2, v.area].filter(Boolean).join(", ")}
-                      </div>
-                    )}
-                    {v.notes && <p className="text-xs text-slate-400 italic">{v.notes}</p>}
-                    <div className="grid grid-cols-2 gap-3 text-sm border-t border-slate-100 pt-3">
-                      {v.signed_by ? (
-                        <>
-                          <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{v.signed_by}</p></div>
-                          {v.pod_relationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-800">{v.pod_relationship}</p></div>}
-                          {v.pod_date && <div><p className="text-xs text-slate-400">Date</p><p className="font-medium text-slate-800">{fmtDate(v.pod_date)}</p></div>}
-                          {v.pod_time && <div><p className="text-xs text-slate-400">Time</p><p className="font-medium text-slate-800">{v.pod_time}</p></div>}
-                          {v.delivered_temperature && <div><p className="text-xs text-slate-400">Temperature</p><p className="font-medium text-slate-800">{v.delivered_temperature}</p></div>}
-                        </>
-                      ) : (
-                        <div className="col-span-2 text-xs text-slate-400 italic">Awaiting POD…</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {b.delivery_notes && <p className="text-xs text-slate-400 italic mb-2">{b.delivery_notes}</p>}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border-t border-slate-100 pt-3">
+              {b.delivery_time    && <div><p className="text-xs text-slate-400">Rough ETA</p><p className="font-medium text-slate-700">{b.delivery_time}</p></div>}
+              {b.pod_signature    && <div><p className="text-xs text-slate-400">Signed By</p><p className="font-medium text-slate-800">{b.pod_signature}</p></div>}
+              {b.pod_relationship && <div><p className="text-xs text-slate-400">Relationship</p><p className="font-medium text-slate-700">{b.pod_relationship}</p></div>}
+              {b.pod_signature && b.pod_date && <div><p className="text-xs text-slate-400">POD Date</p><p className="font-medium text-slate-700">{fmtDate(b.pod_date)}</p></div>}
+              {b.pod_signature && b.pod_time && <div><p className="text-xs text-slate-400">Delivered Time</p><p className="font-medium text-slate-700">{b.pod_time}</p></div>}
+              {b.delivered_temperature && <div><p className="text-xs text-slate-400">Delivered Temp</p><p className="font-medium text-slate-700">{b.delivered_temperature}</p></div>}
+              {!b.pod_signature && <div className="col-span-2 sm:col-span-3 text-xs text-slate-400 italic">Awaiting POD sign-off…</div>}
             </div>
-          )}
+            {podFiles.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-slate-100">
+                <p className="text-xs text-slate-400 mb-2">Attachments</p>
+                <div className="flex flex-wrap gap-2">
+                  {podFiles.map((f: string, i: number) => (
+                    <a key={i} href={f} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100">
+                      <ExternalLink className="w-3 h-3" /> Attachment {i + 1}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {b.pod_mobile && (
+              <img src={b.pod_mobile} alt="POD signature" className="mt-3 max-w-xs border border-slate-200 rounded-lg" />
+            )}
+          </div>
+
         </div>
       </div>
     );
