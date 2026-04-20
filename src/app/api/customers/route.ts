@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         termsOfPayment: body.termsOfPayment || null,
         userId: (session as any).id,
         jobRefStart: parseInt(body.jobRefStart) || 1,
+        legacyCustomerId: body.legacyCustomerId ? parseInt(body.legacyCustomerId) : null,
       } as any,
     });
     return NextResponse.json(customer, { status: 201 });

@@ -74,7 +74,7 @@ const emptyForm = {
   name: "", accountNumber: "", email: "", phone: "",
   address: "", address2: "", address3: "", city: "", postcode: "",
   notes: "", contact: "", poNumber: "", poEmail: "", deadMileage: "0",
-  jobRefStart: "1",
+  jobRefStart: "1", legacyCustomerId: "",
 };
 
 const inp = "w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -121,6 +121,7 @@ export default function CustomersPage() {
       poNumber: c.poNumber || "", poEmail: c.poEmail || "",
       deadMileage: String(c.deadMileage ?? 0),
       jobRefStart: String(c.jobRefStart ?? 1),
+      legacyCustomerId: (c as any).legacyCustomerId != null ? String((c as any).legacyCustomerId) : "",
     });
     setModalOpen(true);
   }
@@ -297,6 +298,10 @@ export default function CustomersPage() {
               <p className="text-xs text-slate-400 mt-0.5">First job ref number for this customer (e.g. 1 = ACC-00001)</p>
             </div>
             )}
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Legacy Customer ID <span className="text-slate-400 font-normal">(links portal to old system jobs)</span></label>
+              <input type="number" min="1" value={form.legacyCustomerId} onChange={e => set("legacyCustomerId", e.target.value)} className={inp + " font-mono"} placeholder="e.g. 42" />
+            </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">Internal Notes</label>
               <RichTextEditor key={editTarget?.id || "new"} value={form.notes} onChange={v => set("notes", v)} />
