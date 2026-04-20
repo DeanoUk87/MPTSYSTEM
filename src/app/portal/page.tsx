@@ -272,12 +272,6 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
   return (
     <>
       <div ref={divRef} className="w-full h-52 rounded-xl border border-slate-200 bg-slate-100" />
-      {showTempLegend && (
-        <div className="flex gap-4 mt-2 text-xs text-slate-500">
-          {chillImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Chill</span>}
-          {ambImei && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Ambient</span>}
-        </div>
-      )}
     </>
   );
 }
