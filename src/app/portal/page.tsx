@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, Paperclip } from "lucide-react";
+import { Package, Loader2, LogOut, CheckCircle2, ArrowLeft, MapPin, Paperclip, ChevronLeft, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
@@ -490,6 +490,15 @@ export default function CustomerPortalPage() {
   const [dateTo, setDateTo] = useState(today);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Booking | null>(null);
+  const [logo, setLogo] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("MP Transport");
+
+  useEffect(() => {
+    fetch("/api/branding")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) { setLogo(d.logo || null); setCompanyName(d.companyName || "MP Transport"); } })
+      .catch(() => {});
+  }, []);
 
   function selectBooking(b: Booking) {
     try { sessionStorage.setItem("portal_job", JSON.stringify({ id: b.id, date: b.collectionDate || today })); } catch {}
@@ -500,6 +509,25 @@ export default function CustomerPortalPage() {
     try { sessionStorage.removeItem("portal_job"); } catch {}
     setSelected(null);
     loadBookings();
+  }
+
+  function navigateDay(dir: 1 | -1) {
+    const base = dateFrom || today;
+    const d = new Date(base + "T00:00:00");
+    d.setDate(d.getDate() + dir);
+    const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    setDateFrom(next);
+    setDateTo(next);
+    // Trigger load with new date
+    setLoading(true);
+    fetch(`/api/portal/bookings?dateFrom=${next}&dateTo=${next}`)
+      .then(r => {
+        if (r.status === 403) { setError("This account does not have customer portal access."); setLoading(false); return null; }
+        if (r.status === 401) { router.push("/login"); return null; }
+        return r.json();
+      })
+      .then(d => { if (d) { setBookings(d); setLoading(false); } })
+      .catch(() => { setError("Failed to load bookings"); setLoading(false); });
   }
 
   function loadBookings() {
@@ -564,9 +592,14 @@ export default function CustomerPortalPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">MP Transport — Customer Portal</h1>
-          <p className="text-blue-200 text-xs mt-0.5">View and track your bookings</p>
+        <div className="flex items-center gap-3">
+          {logo
+            ? <img src={logo} alt={companyName} className="h-10 w-auto object-contain" />
+            : <span className="text-xl font-bold tracking-tight">{companyName}</span>}
+          <div>
+            <p className="text-sm font-bold tracking-tight leading-none">Customer Portal</p>
+            <p className="text-blue-200 text-xs mt-0.5">View and track your bookings</p>
+          </div>
         </div>
         <button onClick={handleLogout}
           className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
@@ -575,22 +608,33 @@ export default function CustomerPortalPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
-        {/* Date range filter */}
+        {/* Date navigation */}
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">From Date</label>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => navigateDay(-1)} title="Previous day"
+              className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+              <ChevronLeft className="w-4 h-4 text-slate-500" />
+            </button>
+            <div className="flex items-center gap-1.5">
+              <label className="text-xs text-slate-500 font-medium whitespace-nowrap">From</label>
               <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
+                className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">To Date</label>
+            <div className="flex items-center gap-1.5">
+              <label className="text-xs text-slate-500 font-medium whitespace-nowrap">to</label>
               <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                onClick={e => { try { (e.target as any).showPicker?.(); } catch {} }}
+                className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
             </div>
-            <button onClick={loadBookings} className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">View</button>
+            <button onClick={() => navigateDay(1)} title="Next day"
+              className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            </button>
+            <button onClick={loadBookings}
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">View</button>
             <button onClick={() => { setDateFrom(today); setDateTo(today); setTimeout(loadBookings, 0); }}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Today</button>
+              className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 transition-colors">Today</button>
           </div>
         </div>
 
