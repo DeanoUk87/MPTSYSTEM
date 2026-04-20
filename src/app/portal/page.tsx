@@ -33,11 +33,17 @@ interface Booking {
 
 // --- Helpers ---
 const ORDERS_SEP = "---ORDERS---";
-function parseOrders(notes?: string): { ref: string; type: string }[] {
+function parseOrders(notes?: string): { ref: string; types: string[] }[] {
   if (!notes) return [];
   const idx = notes.indexOf(ORDERS_SEP);
   if (idx < 0) return [];
-  try { return JSON.parse(notes.slice(idx + ORDERS_SEP.length)); } catch { return []; }
+  try {
+    const raw = JSON.parse(notes.slice(idx + ORDERS_SEP.length));
+    return Array.isArray(raw) ? raw.map((o: any) => ({
+      ref: o.ref || "",
+      types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [],
+    })) : [];
+  } catch { return []; }
 }
 
 function typeChipCls(type?: string) {
@@ -282,9 +288,13 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
                       <p className="text-xs text-slate-400 mb-1">Collected Orders</p>
                       <div className="flex flex-wrap gap-1.5">
                         {orders.map((o, oi) => (
-                          <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(o.type))}>
-                            {o.ref} · {o.type}
-                          </span>
+                          o.types.length > 0 ? (
+                            <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(o.types[0]))}>
+                              {o.ref} · {o.types.join(" & ")}
+                            </span>
+                          ) : (
+                            <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(""))}>{o.ref}</span>
+                          )
                         ))}
                       </div>
                     </div>
@@ -314,7 +324,11 @@ function DetailView({ booking: b, onBack, onLogout }: { booking: Booking; onBack
               {(() => { const orders = parseOrders(b.deliveryNotes); return orders.length > 0 ? (
                 <div className="mb-3"><p className="text-xs text-slate-400 mb-1">Collected Orders</p>
                   <div className="flex flex-wrap gap-1.5">{orders.map((o, oi) => (
-                    <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(o.type))}>{o.ref} · {o.type}</span>
+                    o.types.length > 0 ? (
+                      <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(o.types[0]))}>{o.ref} · {o.types.join(" & ")}</span>
+                    ) : (
+                      <span key={oi} className={clsx("px-2 py-0.5 rounded-full text-xs font-semibold border", typeChipCls(""))}>{o.ref}</span>
+                    )
                   ))}</div></div>
               ) : null; })()}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">

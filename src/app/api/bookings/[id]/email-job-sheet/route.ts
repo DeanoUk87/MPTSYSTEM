@@ -142,7 +142,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
 
     function locationSection(title: string, color: string, icon: "parcel" | "pin" | "factory", data: {
       date?: string | null; time?: string | null; name?: string | null; address?: string | null;
-      contact?: string | null; phone?: string | null; notes?: string | null; orders?: { ref: string; type: string }[];
+      contact?: string | null; phone?: string | null; notes?: string | null; orders?: { ref: string; types: string[] }[];
     }) {
       sectionHeader(title, color, icon);
       row("Date:", fmt(data.date) || "—");
@@ -153,7 +153,7 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
       if (data.phone) row("Telephone:", data.phone);
       if (data.notes?.trim()) row("Notes:", data.notes.trim(), C.amber);
       if (data.orders && data.orders.length > 0) {
-        const orderText = data.orders.map(o => `${o.ref || "—"}${o.type ? ` (${o.type})` : ""}`).join("  |  ");
+        const orderText = data.orders.map(o => `${o.ref || "—"}${o.types.length ? ` (${o.types.join("+")})` : ""}`).join("  |  ");
         row("Collected Orders:", orderText, C.indigo);
       }
     }
@@ -169,11 +169,14 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     // ─── Via stops ────────────────────────────────────────────────────────
     vias.forEach((v: any, i: number) => {
       let noteText = v.notes || "";
-      let orders: { ref: string; type: string }[] = [];
+      let orders: { ref: string; types: string[] }[] = [];
       if (noteText.includes("---ORDERS---")) {
         const [text, ordJson] = noteText.split("---ORDERS---");
         noteText = text;
-        try { orders = JSON.parse(ordJson || "[]"); } catch { orders = []; }
+        try {
+          const raw = JSON.parse(ordJson || "[]");
+          orders = raw.map((o: any) => ({ ref: o.ref || "", types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [] }));
+        } catch { orders = []; }
       }
       const label = `Via Stop ${i + 1}${v.viaType && v.viaType !== "Via" ? ` \u2014 ${v.viaType}` : ""}`;
       locationSection(label, "#f0f4ff", "pin", {
@@ -187,11 +190,14 @@ async function buildJobSheetPdf(booking: any, settings: any): Promise<Buffer> {
     {
       const rawDelivNotes = booking.deliveryNotes || "";
       let delivNoteText = rawDelivNotes;
-      let delivOrders: { ref: string; type: string }[] = [];
+      let delivOrders: { ref: string; types: string[] }[] = [];
       if (rawDelivNotes.includes("---ORDERS---")) {
         const [text, ordJson] = rawDelivNotes.split("---ORDERS---");
         delivNoteText = text;
-        try { delivOrders = JSON.parse(ordJson || "[]"); } catch { delivOrders = []; }
+        try {
+          const raw = JSON.parse(ordJson || "[]");
+          delivOrders = raw.map((o: any) => ({ ref: o.ref || "", types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [] }));
+        } catch { delivOrders = []; }
       }
       locationSection("Delivery", C.blue, "factory", {
         date: booking.deliveryDate || booking.collectionDate, time: booking.deliveryTime,

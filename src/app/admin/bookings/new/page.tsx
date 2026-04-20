@@ -487,7 +487,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   const [transferDriverSearch, setTransferDriverSearch] = useState("");
   // transferDriverId removed — Transfer section removed from create form
   const [vias, setVias] = useState<any[]>([]);
-  const [deliveryOrders, setDeliveryOrders] = useState<{ref: string, type: string}[]>([]);
+  const [deliveryOrders, setDeliveryOrders] = useState<{ref: string, types: string[]}[]>([]);
 
   const rateKey = jt === 0 ? "ratePerMile" : jt === 1 ? "ratePerMileWeekends" : "ratePerMileOutOfHours";
   const driverRateKey = jt === 0 ? "costPerMile" : jt === 1 ? "costPerMileWeekends" : "costPerMileOutOfHours";
@@ -615,14 +615,15 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     }
     const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = drivers.find((d: any) => d.id === driverId);
-    // Auto-fill units already assigned to this driver — fill positionally, first 2 units
     const driverUnits = allStorageUnits.filter((u: any) => u.currentDriverId === driverId);
+    const chillU = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? driverUnits[0] ?? null;
+    const ambU = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? driverUnits[1] ?? null;
     setF(p => ({
       ...p,
       driverId,
       driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost,
-      chillUnitId: driverUnits[0]?.id ?? "",
-      ambientUnitId: driverUnits[1]?.id ?? "",
+      chillUnitId: chillU?.id ?? "",
+      ambientUnitId: ambU?.id ?? "",
     }));
   }
 
@@ -634,11 +635,16 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
     }
     const miles = Math.round(parseFloat(f.miles) || 0);
     const dr = subcons.find((d: any) => d.id === subconId);
+    const subconUnits = allStorageUnits.filter((u: any) => u.currentDriverId === subconId);
+    const chillU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? subconUnits[0] ?? null;
+    const ambU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? subconUnits[1] ?? null;
     setF(p => ({
       ...p,
       secondManId: subconId,
       secondManContactId: "",
       extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost,
+      chillUnitId: chillU?.id ?? p.chillUnitId,
+      ambientUnitId: ambU?.id ?? p.ambientUnitId,
     }));
   }
 
@@ -730,12 +736,12 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
   }, []);
 
   // VIA / Collected Orders helpers
-  const viaEmpty = () => ({ viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [] as {ref: string, type: string}[] });
+  const viaEmpty = () => ({ viaType: "Via", name: "", postcode: "", address1: "", address2: "", area: "", contact: "", phone: "", notes: "", viaDate: today, viaTime: "", collectedOrders: [] as {ref: string, types: string[]}[] });
   function addVia(type = "Via") { setVias(prev => [...prev.slice(0, 5), { ...viaEmpty(), viaType: type }]); }
   function updateVia(i: number, k: string, v: any) { setVias(prev => prev.map((x, idx) => idx === i ? { ...x, [k]: v } : x)); }
   function removeVia(i: number) { setVias(prev => prev.filter((_, idx) => idx !== i)); }
-  function addViaOrder(i: number) { updateVia(i, "collectedOrders", [...(vias[i].collectedOrders || []), {ref: "", type: ""}]); }
-  function updateViaOrder(i: number, oi: number, k: string, v: string) { const orders = [...(vias[i].collectedOrders || [])]; orders[oi] = {...orders[oi], [k]: v}; updateVia(i, "collectedOrders", orders); }
+  function addViaOrder(i: number) { updateVia(i, "collectedOrders", [...(vias[i].collectedOrders || []), {ref: "", types: []}]); }
+  function updateViaOrder(i: number, oi: number, k: string, v: any) { const orders = [...(vias[i].collectedOrders || [])]; orders[oi] = {...orders[oi], [k]: v}; updateVia(i, "collectedOrders", orders); }
   function removeViaOrder(i: number, oi: number) { updateVia(i, "collectedOrders", (vias[i].collectedOrders || []).filter((_: any, idx: number) => idx !== oi)); }
 
   // Central price recalculation — takes final miles and current form state
@@ -852,12 +858,12 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
         body: JSON.stringify({
           ...payload,
           deliveryNotes: (() => {
-            const dOrders = deliveryOrders.filter(o => o.ref || o.type);
+            const dOrders = deliveryOrders.filter(o => o.ref || o.types?.length);
             return dOrders.length > 0 ? `${f.deliveryNotes || ""}---ORDERS---${JSON.stringify(dOrders)}` : f.deliveryNotes;
           })(),
           viaAddresses: vias.filter((v: any) => v.name || v.postcode).map((via: any) => {
             const { collectedOrders, ...rest } = via;
-            const orders = (collectedOrders || []).filter((o: any) => o.ref || o.type);
+            const orders = (collectedOrders || []).filter((o: any) => o.ref || o.types?.length);
             return { ...rest, notes: orders.length > 0 ? `${rest.notes || ""}---ORDERS---${JSON.stringify(orders)}` : (rest.notes || "") };
           }),
         }),
@@ -1347,7 +1353,7 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                   <div className="border-t border-slate-200 pt-2 space-y-1.5 mt-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
-                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: ""}])}
+                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", types: []}])}
                         className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
                         <Plus className="w-3 h-3" /> Add
                       </button>
@@ -1357,12 +1363,15 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                         <input type="text" value={order.ref} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, ref: e.target.value} : o))}
                           placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
                         <div className="flex gap-0.5">
-                          {["Chill","Amb","Pump","Stores"].map(t => (
-                            <button key={t} type="button" onClick={() => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, type: t} : o))}
-                              className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
-                                order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                              }`}>{t}</button>
-                          ))}
+                          {["Chill","Amb","Pump","Stores"].map(t => {
+                            const active = (order.types || []).includes(t);
+                            return (
+                              <button key={t} type="button" onClick={() => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, types: active ? o.types.filter(x => x !== t) : [...(o.types||[]), t]} : o))}
+                                className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
+                                  active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                }`}>{t}</button>
+                            );
+                          })}
                         </div>
                         <button type="button" onClick={() => setDeliveryOrders(prev => prev.filter((_, i) => i !== oi))}
                           className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
@@ -1555,12 +1564,15 @@ function BookingForm({ customer, jobType, onBack }: { customer: any; jobType: nu
                             <input type="text" value={order.ref || ""} onChange={e => updateViaOrder(i, oi, "ref", e.target.value)}
                               placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
                             <div className="flex gap-0.5">
-                              {["Chill","Amb","Pump","Stores"].map(t => (
-                                <button key={t} type="button" onClick={() => updateViaOrder(i, oi, "type", t)}
-                                  className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
-                                    order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                  }`}>{t}</button>
-                              ))}
+                              {["Chill","Amb","Pump","Stores"].map(t => {
+                                const active = (order.types || []).includes(t);
+                                return (
+                                  <button key={t} type="button" onClick={() => updateViaOrder(i, oi, "types", active ? (order.types||[]).filter((x: string) => x !== t) : [...(order.types||[]), t])}
+                                    className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
+                                      active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    }`}>{t}</button>
+                                );
+                              })}
                             </div>
                             <button type="button" onClick={() => removeViaOrder(i, oi)}
                               className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>

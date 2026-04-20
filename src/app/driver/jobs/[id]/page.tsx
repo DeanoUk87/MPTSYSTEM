@@ -164,12 +164,15 @@ export default function JobDetailPage() {
 
         {/* Collected orders */}
         {(() => {
-          const allOrders: { ref: string; type: string }[] = [];
+          const allOrders: { ref: string; types: string[] }[] = [];
           const parseSrc = (raw: string | undefined | null) => {
             if (!raw?.includes("---ORDERS---")) return;
             try {
-              const orders = JSON.parse(raw.split("---ORDERS---")[1] || "[]");
-              orders.forEach((o: any) => allOrders.push({ ref: o.ref, type: o.type }));
+              const parsed = JSON.parse(raw.split("---ORDERS---")[1] || "[]");
+              parsed.forEach((o: any) => allOrders.push({
+                ref: o.ref || "",
+                types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [],
+              }));
             } catch { /* ignore */ }
           };
           parseSrc(job.deliveryNotes);
@@ -181,7 +184,7 @@ export default function JobDetailPage() {
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {allOrders.map((o, i) => (
                   <span key={i} className="px-2 py-1 bg-orange-900/50 border border-orange-500/40 text-orange-300 rounded-full text-xs font-medium">
-                    {o.ref} · {o.type}
+                    {o.ref}{o.types.length > 0 ? ` · ${o.types.join(" & ")}` : ""}
                   </span>
                 ))}
               </div>

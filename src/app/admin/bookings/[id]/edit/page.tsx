@@ -399,7 +399,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
 
   // VIA state loaded from booking
   const [vias, setVias] = useState<any[]>([]);
-  const [deliveryOrders, setDeliveryOrders] = useState<{ref: string, type: string}[]>([]);
+  const [deliveryOrders, setDeliveryOrders] = useState<{ref: string, types: string[]}[]>([]);
 
   // Lock system — prevent concurrent edits
   useEffect(() => {
@@ -483,7 +483,10 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       if (rawDeliveryNotes.includes("---ORDERS---")) {
         const [text, ordJson] = rawDeliveryNotes.split("---ORDERS---");
         parsedDeliveryNotes = text;
-        setDeliveryOrders(JSON.parse(ordJson || "[]") || []);
+        setDeliveryOrders((() => {
+          const raw = JSON.parse(ordJson || "[]") || [];
+          return raw.map((o: any) => ({ ref: o.ref || "", types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [] }));
+        })());
       }
       // Flatten booking into form state
       setF({
@@ -892,7 +895,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
       });
       // Encode delivery orders into deliveryNotes
       const baseDeliveryNotes = payload.deliveryNotes || "";
-      if (deliveryOrders.length > 0) payload.deliveryNotes = `${baseDeliveryNotes}---ORDERS---${JSON.stringify(deliveryOrders)}`;
+      if (deliveryOrders.length > 0) payload.deliveryNotes = `${baseDeliveryNotes}---ORDERS---${JSON.stringify(deliveryOrders.filter(o => o.ref || o.types?.length))}`;
       const res = await fetch(`/api/bookings/${id}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, viaAddresses: encodedVias }),
@@ -1314,7 +1317,7 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                   <div className="border-t border-slate-200 pt-2 space-y-1.5 mt-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Collected Orders</span>
-                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", type: ""}])}
+                      <button type="button" onClick={() => setDeliveryOrders(prev => [...prev, {ref: "", types: []}])}
                         className="flex items-center gap-1 px-2 py-0.5 bg-orange-500 text-white rounded text-xs hover:bg-orange-600 transition-colors">
                         <Plus className="w-3 h-3" /> Add
                       </button>
@@ -1324,12 +1327,15 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         <input type="text" value={order.ref} onChange={e => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, ref: e.target.value} : o))}
                           placeholder="Order ref / no" className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-orange-400" />
                         <div className="flex gap-0.5">
-                          {["Chill","Amb","Pump","Stores"].map(t => (
-                            <button key={t} type="button" onClick={() => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, type: t} : o))}
-                              className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
-                                order.type === t ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                              }`}>{t}</button>
-                          ))}
+                          {["Chill","Amb","Pump","Stores"].map(t => {
+                            const active = (order.types || []).includes(t);
+                            return (
+                              <button key={t} type="button" onClick={() => setDeliveryOrders(prev => prev.map((o, i) => i === oi ? {...o, types: active ? o.types.filter(x => x !== t) : [...(o.types||[]), t]} : o))}
+                                className={`px-1.5 py-1 text-xs rounded font-medium transition-colors ${
+                                  active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                }`}>{t}</button>
+                            );
+                          })}
                         </div>
                         <button type="button" onClick={() => setDeliveryOrders(prev => prev.filter((_, i) => i !== oi))}
                           className="text-slate-400 hover:text-rose-600 font-bold leading-none">&times;</button>
@@ -1355,12 +1361,14 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                           return;
                         }
                         const driverUnits = allStorageUnits.filter((u: any) => u.currentDriverId === id);
+                        const chillU = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? driverUnits[0] ?? null;
+                        const ambU = driverUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? driverUnits[1] ?? null;
                         setF(p => ({
                           ...p,
                           driverId: id,
                           driverCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.driverCost,
-                          chillUnitId: driverUnits[0]?.id ?? p.chillUnitId,
-                          ambientUnitId: driverUnits[1]?.id ?? p.ambientUnitId,
+                          chillUnitId: chillU?.id ?? p.chillUnitId,
+                          ambientUnitId: ambU?.id ?? p.ambientUnitId,
                         }));
                       }} className={inp}>
                         <option value="">— Select Driver —</option>
@@ -1378,7 +1386,10 @@ export default function EditBookingPage({ params }: { params: Promise<{ id: stri
                         const miles = Math.round(parseFloat(f.miles) || 0);
                         const dr = subcons.find((d: any) => d.id === id);
                         if (!id) { setF(p => ({ ...p, secondManId: "", secondManContactId: "", extraCost: "" })); return; }
-                        setF(p => ({ ...p, secondManId: id, secondManContactId: "", extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost }));
+                        const subconUnits = allStorageUnits.filter((u: any) => u.currentDriverId === id);
+                        const chillU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("chill")) ?? subconUnits[0] ?? null;
+                        const ambU = subconUnits.find((u: any) => u.unitType?.toLowerCase().startsWith("amb")) ?? subconUnits[1] ?? null;
+                        setF(p => ({ ...p, secondManId: id, secondManContactId: "", extraCost: dr && miles ? (miles * dr[driverRateKey]).toFixed(2) : p.extraCost, chillUnitId: chillU?.id ?? p.chillUnitId, ambientUnitId: ambU?.id ?? p.ambientUnitId }));
                       }} className={inp}>
                         <option value="">— Select SubCon —</option>
                         {subcons.map((d: any) => <option key={d.id} value={d.id}>{d.name} · £{d[driverRateKey].toFixed(2)}/mi</option>)}

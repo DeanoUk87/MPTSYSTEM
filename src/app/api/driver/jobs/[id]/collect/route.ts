@@ -50,26 +50,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           { driverContactId: contact.id },
         ],
       },
-      select: { id: true, collectionPostcode: true, deliveryPostcode: true, collectionTime: true },
+      select: { id: true, collectionPostcode: true, deliveryPostcode: true },
     });
     if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-    // Use the office-set collectionTime as the base (not the driver's confirmed time)
-    const baseTime = booking.collectionTime && /^\d{2}:\d{2}$/.test(booking.collectionTime)
-      ? booking.collectionTime
-      : time;
-
-    // Calculate estimated delivery time: drive duration + 30 min buffer
+    // Calculate estimated delivery time: driver's confirmed time + drive duration + 30 min buffer
     let estimatedDeliveryTime: string | null = null;
     if (booking.collectionPostcode && booking.deliveryPostcode) {
       const driveSecs = await getDriveDurationSeconds(booking.collectionPostcode, booking.deliveryPostcode);
       if (driveSecs !== null) {
-        estimatedDeliveryTime = addSecondsToTime(baseTime, driveSecs + 30 * 60);
+        estimatedDeliveryTime = addSecondsToTime(time, driveSecs + 30 * 60);
       }
     }
 
-    // Only update driverConfirmCollectionAt — do NOT overwrite office-set collectionTime
+    // Update collectionTime to driver's confirmed time, set driverConfirmCollectionAt, and set delivery ETA
     const updateData: Record<string, any> = {
+      collectionTime: time,
       driverConfirmCollectionAt: new Date(),
     };
     if (estimatedDeliveryTime) {
