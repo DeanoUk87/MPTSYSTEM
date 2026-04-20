@@ -179,7 +179,7 @@ export default function LegacyPage() {
           </Section>
 
           <Section title="Financials">
-            <Row label="Customer Price"    value={(() => { const p = b.manual_amount ?? b.customer_price; return p != null ? `£${parseFloat(p).toFixed(2)}` : null; })()} />
+            <Row label="Customer Price"    value={(() => { const p = b.manual_amount ?? b.cost; return p != null ? `£${parseFloat(p).toFixed(2)}` : null; })()} />
             <Row label="Driver Cost"       value={b.driver_cost != null ? `£${parseFloat(b.driver_cost).toFixed(2)}` : null} />
             <Row label="SubCon Cost"       value={b.extra_cost != null ? `£${parseFloat(b.extra_cost).toFixed(2)}` : null} />
             <Row label="CX Driver Cost"    value={b.cxdriver_cost != null ? `£${parseFloat(b.cxdriver_cost).toFixed(2)}` : null} />

@@ -14,9 +14,9 @@ export async function GET(req: NextRequest) {
 
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
-  const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  const yest = new Date(now); yest.setDate(yest.getDate() - 1);
-  const yesterdayStr = `${yest.getFullYear()}-${pad(yest.getMonth() + 1)}-${pad(yest.getDate())}`;
+  const todayStr = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
+  const yest = new Date(now); yest.setUTCDate(yest.getUTCDate() - 1);
+  const yesterdayStr = `${yest.getUTCFullYear()}-${pad(yest.getUTCMonth() + 1)}-${pad(yest.getUTCDate())}`;
 
   // Find all bookings matching driver regardless of date, to see what's in DB
   const allBookings = contact ? await prisma.booking.findMany({
