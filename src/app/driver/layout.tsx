@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import DriverOfflineProvider from "./OfflineProvider";
 
 export const metadata: Metadata = {
   title: "MP Driver App",
@@ -18,6 +19,7 @@ export const viewport: Viewport = {
 export default function DriverLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#0a0a14] text-white">
+      <DriverOfflineProvider />
       {children}
     </div>
   );

@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Camera, FolderOpen, X, CheckCircle, AlertTriangle } from "lucide-react";
 
+import { queueSubmission, fileToBase64, registerBackgroundSync } from "@/lib/offline-queue";
+
 interface ViaAddress {
   id: string;
   name?: string;
@@ -108,6 +110,7 @@ export default function ViaDeliverPage() {
   const [relationship, setRelationship] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [offlineQueued, setOfflineQueued] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [pendingAutoTemp, setPendingAutoTemp] = useState("");
@@ -179,8 +182,47 @@ export default function ViaDeliverPage() {
       setShowModal(false);
       setDone(true);
     } catch (e: any) {
-      setError(e.message);
-      setShowModal(false);
+      // If offline, save to queue and show success to driver
+      if (!navigator.onLine || e?.message === "Failed to fetch" || e instanceof TypeError) {
+        try {
+          const fields: Record<string, string> = {
+            signedBy: signedBy.trim(),
+            time,
+            relationship,
+            temperature: pendingAutoTemp,
+            notes,
+          };
+          let photoBase64: string | undefined;
+          let photoName: string | undefined;
+          let photoType: string | undefined;
+          if (photo) {
+            photoBase64 = await fileToBase64(photo);
+            photoName = photo.name;
+            photoType = photo.type;
+          }
+          await queueSubmission({
+            id: `via-${params.viaId}-${Date.now()}`,
+            url: `/api/driver/jobs/${params.id}/via/${params.viaId}`,
+            jobId: params.id,
+            type: "via",
+            fields,
+            photoBase64,
+            photoName,
+            photoType,
+            queuedAt: Date.now(),
+          });
+          await registerBackgroundSync();
+          setShowModal(false);
+          setOfflineQueued(true);
+          setDone(true);
+        } catch {
+          setError("No signal. Could not save offline — please try again.");
+          setShowModal(false);
+        }
+      } else {
+        setError(e.message);
+        setShowModal(false);
+      }
     } finally {
       setSaving(false);
     }
@@ -199,11 +241,21 @@ export default function ViaDeliverPage() {
   if (done) {
     return (
       <div className="min-h-screen bg-[#0a0a14] flex flex-col items-center justify-center px-6 gap-6">
-        <div className="bg-emerald-900/40 border border-emerald-500/50 rounded-2xl p-6 text-center w-full max-w-sm">
-          <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-          <p className="font-bold text-white text-xl mb-1">Via Delivery Complete</p>
-          <p className="text-gray-400 text-sm">Delivery at {via.name || via.postcode} has been recorded.</p>
-        </div>
+        {offlineQueued ? (
+          <div className="bg-amber-900/40 border border-amber-500/50 rounded-2xl p-6 text-center w-full max-w-sm">
+            <div className="w-12 h-12 rounded-full bg-amber-900/60 border border-amber-500/40 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-6 h-6 text-amber-400" />
+            </div>
+            <p className="font-bold text-white text-xl mb-1">Saved Offline</p>
+            <p className="text-gray-400 text-sm">No signal detected. Your delivery confirmation has been saved and will be sent automatically when you have signal.</p>
+          </div>
+        ) : (
+          <div className="bg-emerald-900/40 border border-emerald-500/50 rounded-2xl p-6 text-center w-full max-w-sm">
+            <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+            <p className="font-bold text-white text-xl mb-1">Via Delivery Complete</p>
+            <p className="text-gray-400 text-sm">Delivery at {via.name || via.postcode} has been recorded.</p>
+          </div>
+        )}
         <button onClick={() => router.push(`/driver/jobs/${params.id}`)}
           className="w-full max-w-sm bg-blue-600 text-white font-semibold py-4 rounded-2xl text-base">
           Back to Job
