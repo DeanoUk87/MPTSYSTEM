@@ -1,3 +1,5 @@
+"use client";
+
 // Offline fallback page shown when navigation fails with no cache
 export default function OfflinePage() {
   return (
