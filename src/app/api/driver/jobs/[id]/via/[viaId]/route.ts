@@ -32,9 +32,14 @@ export async function POST(
 
     const via = await prisma.viaAddress.findFirst({
       where: { id: viaId, bookingId: id, deletedAt: null },
-      select: { id: true, notes: true },
+      select: { id: true, notes: true, viaPodMobile: true, signedBy: true, podTime: true },
     });
     if (!via) return NextResponse.json({ error: "Via stop not found" }, { status: 404 });
+
+    // Idempotency guard — already submitted via mobile, return success so offline queue clears
+    if (via.viaPodMobile) {
+      return NextResponse.json({ id: via.id, signedBy: via.signedBy, podTime: via.podTime, alreadySubmitted: true });
+    }
 
     // Read podUpload via raw query since the generated client may not have this field yet
     const rawVia = await prisma.$queryRaw<{ podUpload: string | null }[]>`

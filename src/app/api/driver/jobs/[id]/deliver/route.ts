@@ -29,9 +29,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const booking = await prisma.booking.findFirst({
       where: { id, deletedAt: null, OR: [{ driverId: contact.driverId }, { secondManId: contact.driverId }, { cxDriverId: contact.driverId }] },
-      select: { id: true, podUpload: true },
+      select: { id: true, podUpload: true, podMobile: true, podSignature: true, podTime: true },
     });
     if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+
+    // Idempotency guard — already submitted via mobile, return success so offline queue clears
+    if (booking.podMobile) {
+      return NextResponse.json({ id: booking.id, podSignature: booking.podSignature, podTime: booking.podTime, alreadySubmitted: true });
+    }
 
     const formData = await req.formData();
     const signedBy = (formData.get("signedBy") as string)?.trim();
