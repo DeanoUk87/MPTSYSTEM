@@ -36,12 +36,10 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
     const todayStr = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
-    const yest = new Date(now); yest.setUTCDate(yest.getUTCDate() - 1);
-    const yesterdayStr = `${yest.getUTCFullYear()}-${pad(yest.getUTCMonth() + 1)}-${pad(yest.getUTCDate())}`;
 
     const bookings = await prisma.booking.findMany({
       where: {
-        collectionDate: { in: [todayStr, yesterdayStr] },
+        collectionDate: todayStr,
         deletedAt: null,
         OR: [
           { driverId: contact.driverId },

@@ -50,16 +50,57 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           { driverContactId: contact.id },
         ],
       },
-      select: { id: true, collectionPostcode: true, deliveryPostcode: true },
+      select: {
+        id: true,
+        collectionPostcode: true,
+        deliveryPostcode: true,
+        viaAddresses: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: "asc" },
+          select: { id: true, postcode: true },
+        },
+      },
     });
     if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-    // Calculate estimated delivery time: driver's confirmed time + drive duration + 30 min buffer
+    // Build ordered waypoints: collection → via1 → via2 → ... → final delivery
+    const waypoints = [
+      booking.collectionPostcode,
+      ...booking.viaAddresses.filter(v => v.postcode).map(v => v.postcode!),
+      booking.deliveryPostcode,
+    ].filter(Boolean) as string[];
+
+    // Get drive duration for each leg sequentially
+    const legDurations: (number | null)[] = [];
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      legDurations.push(await getDriveDurationSeconds(waypoints[i], waypoints[i + 1]));
+    }
+
+    // Calculate cumulative ETAs: each stop = previous ETA + drive time + 30 min buffer
+    let runningTime = time;
+    const viaETAs: string[] = [];
+    for (let i = 0; i < booking.viaAddresses.length; i++) {
+      const legSecs = legDurations[i];
+      if (legSecs !== null) {
+        runningTime = addSecondsToTime(runningTime, legSecs + 30 * 60);
+      }
+      viaETAs.push(legSecs !== null ? runningTime : "");
+    }
+
+    // Final delivery ETA
+    const lastLegSecs = legDurations[legDurations.length - 1];
     let estimatedDeliveryTime: string | null = null;
-    if (booking.collectionPostcode && booking.deliveryPostcode) {
-      const driveSecs = await getDriveDurationSeconds(booking.collectionPostcode, booking.deliveryPostcode);
-      if (driveSecs !== null) {
-        estimatedDeliveryTime = addSecondsToTime(time, driveSecs + 30 * 60);
+    if (lastLegSecs !== null) {
+      estimatedDeliveryTime = addSecondsToTime(runningTime, lastLegSecs + 30 * 60);
+    }
+
+    // Update viaTime for each via address that has an ETA
+    for (let i = 0; i < booking.viaAddresses.length; i++) {
+      if (viaETAs[i]) {
+        await prisma.viaAddress.update({
+          where: { id: booking.viaAddresses[i].id },
+          data: { viaTime: viaETAs[i] },
+        });
       }
     }
 

@@ -59,6 +59,15 @@ function buildAutoTemp(
   const allTypes = orders.flatMap(o => o.types).map(t => t.toLowerCase());
   const needsChill = allTypes.some(t => t === "chill");
   const needsAmb   = allTypes.some(t => t === "amb");
+  const hasPump    = allTypes.some(t => t === "pump");
+  const hasStores  = allTypes.some(t => t === "stores");
+  // Pump/stores only — no temperature reading needed
+  if (!needsChill && !needsAmb) {
+    if (hasPump && hasStores) return "Pump & Stores";
+    if (hasPump)   return "Pump";
+    if (hasStores) return "Stores";
+    return "";
+  }
   // Match by unitType value, not field name, in case units are stored in the wrong field
   const units = [chillUnit, ambientUnit].filter(Boolean);
   const actualChill = units.find(u => (u?.unitType || "").toLowerCase().startsWith("chill"));
@@ -93,6 +102,7 @@ export default function ViaDeliverPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
+  const [recipientAnswer, setRecipientAnswer] = useState<"yes" | "no" | null>(null);
   const [signedBy, setSignedBy] = useState("");
   const [time, setTime] = useState(now);
   const [relationship, setRelationship] = useState("");
@@ -134,6 +144,10 @@ export default function ViaDeliverPage() {
   function handleSubmit() {
     if (!params?.id || !params?.viaId || !signedBy.trim()) {
       setError("Signed by name is required.");
+      return;
+    }
+    if (recipientAnswer === null) {
+      setError("Please confirm if this delivery is to the recipient.");
       return;
     }
     setError("");
@@ -287,29 +301,45 @@ export default function ViaDeliverPage() {
             className="hidden" onChange={e => handleFile(e.target.files?.[0] ?? null)} />
         </div>
 
-        {/* Recipient details */}
+        {/* Proof Of Delivery */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-4">
-          <h2 className="font-semibold text-white">Recipient details</h2>
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Recipient name <span className="text-red-400">*</span></label>
-            <input type="text" value={signedBy} onChange={e => setSignedBy(e.target.value)}
-              placeholder="Full name"
-              className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-600" />
+          <h2 className="font-semibold text-white">Proof Of Delivery</h2>
+          <p className="text-sm text-gray-400">Confirm this delivery is to the Recipient</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setRecipientAnswer("yes"); if (!signedBy.trim()) setSignedBy(via?.name || ""); }}
+              className={`flex-1 py-3 rounded-xl font-semibold text-base transition-colors ${recipientAnswer === "yes" ? "bg-emerald-600 text-white" : "bg-[#0a0a14] border border-white/10 text-gray-300"}`}>
+              Yes
+            </button>
+            <button
+              onClick={() => setRecipientAnswer("no")}
+              className={`flex-1 py-3 rounded-xl font-semibold text-base transition-colors ${recipientAnswer === "no" ? "bg-red-600 text-white" : "bg-[#0a0a14] border border-white/10 text-gray-300"}`}>
+              No
+            </button>
           </div>
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Delivery time</label>
-            <input type="time" value={time} onChange={e => setTime(e.target.value)}
-              className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Relationship to recipient</label>
-            <input type="text" value={relationship} onChange={e => setRelationship(e.target.value)}
-              placeholder="e.g. Manager, Staff member"
-              className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-600" />
-          </div>
+          {recipientAnswer !== null && (
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1.5">Recipient name <span className="text-red-400">*</span></label>
+                <input type="text" value={signedBy} onChange={e => setSignedBy(e.target.value)}
+                  placeholder="Full name"
+                  className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-600" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1.5">Delivery time</label>
+                <input type="time" value={time} onChange={e => setTime(e.target.value)}
+                  className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              {recipientAnswer === "no" && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1.5">Relationship to recipient</label>
+                  <input type="text" value={relationship} onChange={e => setRelationship(e.target.value)}
+                    placeholder="e.g. Manager, Staff member"
+                    className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-600" />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Notes */}
@@ -366,17 +396,39 @@ export default function ViaDeliverPage() {
               <p className="text-gray-300 text-sm">Please confirm you have completed this via delivery and all details are correct.</p>
             )}
 
-            {pendingAutoTemp ? (
-              <div className="bg-blue-900/30 border border-blue-500/30 rounded-xl p-4 space-y-1">
-                <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider">Auto Temperature Reading</p>
-                <p className="text-white font-bold text-lg">{pendingAutoTemp}</p>
-                <p className="text-xs text-gray-500">Automatically recorded from your unit sensor \u2014 no manual entry needed.</p>
+            {/* POD Summary */}
+            <div className="bg-[#0a0a14] border border-white/10 rounded-xl p-4 space-y-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">POD Details</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Recipient</span>
+                <span className="text-white font-medium">{signedBy}</span>
               </div>
-            ) : pendingOrders.some(o => o.types.some(t => ["pump","stores"].includes(t.toLowerCase()))) ? (
-              <div className="bg-slate-800/50 border border-white/10 rounded-xl p-4">
-                <p className="text-xs text-gray-400">No temperature reading required for this order type.</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Time</span>
+                <span className="text-white font-medium">{time}</span>
               </div>
-            ) : null}
+              {recipientAnswer === "no" && relationship && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Relationship</span>
+                  <span className="text-white font-medium">{relationship}</span>
+                </div>
+              )}
+            </div>
+
+            {pendingAutoTemp && (
+              ["pump", "stores", "pump & stores"].includes(pendingAutoTemp.toLowerCase()) ? (
+                <div className="bg-slate-800/50 border border-white/10 rounded-xl p-4 space-y-1">
+                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Delivery Type</p>
+                  <p className="text-white font-bold text-lg">{pendingAutoTemp}</p>
+                </div>
+              ) : (
+                <div className="bg-blue-900/30 border border-blue-500/30 rounded-xl p-4 space-y-1">
+                  <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider">Auto Temperature Reading</p>
+                  <p className="text-white font-bold text-lg">{pendingAutoTemp}</p>
+                  <p className="text-xs text-gray-500">Automatically recorded from your unit sensor — no manual entry needed.</p>
+                </div>
+              )
+            )}
 
             {error && (
               <div className="bg-red-900/40 border border-red-500/40 rounded-xl p-3">
