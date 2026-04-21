@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Camera, FolderOpen, X, CheckCircle } from "lucide-react";
+import { ArrowLeft, Camera, FolderOpen, X, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface Job {
   id: string;
@@ -32,6 +32,50 @@ function now() {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+type Order = { ref: string; types: string[] };
+
+function parseOrders(raw: string | undefined): Order[] {
+  if (!raw?.includes("---ORDERS---")) return [];
+  try {
+    const parsed = JSON.parse(raw.split("---ORDERS---")[1] || "[]");
+    return parsed.map((o: any) => ({
+      ref: o.ref || "",
+      types: Array.isArray(o.types) ? o.types : o.type ? [o.type] : [],
+    }));
+  } catch { return []; }
+}
+
+function buildAutoTemp(
+  orders: Order[],
+  chillUnit?: { temperature?: string | null } | null,
+  ambientUnit?: { temperature?: string | null } | null,
+): string {
+  if (orders.length === 0) return "";
+  const allTypes = orders.flatMap(o => o.types).map(t => t.toLowerCase());
+  const needsChill = allTypes.some(t => t === "chill");
+  const needsAmb   = allTypes.some(t => t === "amb");
+  const parts: string[] = [];
+  if (needsChill && chillUnit?.temperature != null)   parts.push(`Chill: ${chillUnit.temperature}\u00b0C`);
+  if (needsAmb   && ambientUnit?.temperature != null) parts.push(`Amb: ${ambientUnit.temperature}\u00b0C`);
+  return parts.join(" / ");
+}
+
+function orderTypeLabel(types: string[]): string {
+  if (types.length === 0) return "";
+  const allTypes = types.map(t => t.toLowerCase());
+  const hasChill = allTypes.includes("chill");
+  const hasAmb   = allTypes.includes("amb");
+  const hasPump  = allTypes.includes("pump");
+  const hasStores = allTypes.includes("stores");
+  if (hasChill && hasAmb)   return "Chill \u2744\ufe0f & Ambient \uD83C\uDF21";
+  if (hasChill)             return "Chill \u2744\ufe0f";
+  if (hasAmb)               return "Ambient \uD83C\uDF21";
+  if (hasPump && hasStores) return "Pump & Stores";
+  if (hasPump)              return "Pump";
+  if (hasStores)            return "Stores";
+  return types.join(" & ");
+}
+
 export default function DeliverPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,8 +86,11 @@ export default function DeliverPage() {
   const [signedBy, setSignedBy] = useState("");
   const [time, setTime] = useState(now);
   const [relationship, setRelationship] = useState("");
-  const [temperature, setTemperature] = useState("");
   const [notes, setNotes] = useState("");
+
+  const [showModal, setShowModal] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+  const [pendingAutoTemp, setPendingAutoTemp] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -67,11 +114,21 @@ export default function DeliverPage() {
     setPhotoPreview(url);
   }
 
-  async function handleSubmit() {
+  function handleSubmit() {
     if (!params?.id || !signedBy.trim()) {
       setError("Signed by name is required.");
       return;
     }
+    setError("");
+    const orders = parseOrders(job?.deliveryNotes);
+    const autoTemp = buildAutoTemp(orders, job?.chillUnit, job?.ambientUnit);
+    setPendingOrders(orders);
+    setPendingAutoTemp(autoTemp);
+    setShowModal(true);
+  }
+
+  async function doSubmit() {
+    if (!params?.id) return;
     setSaving(true);
     setError("");
     try {
@@ -79,7 +136,7 @@ export default function DeliverPage() {
       fd.append("signedBy", signedBy.trim());
       fd.append("time", time);
       fd.append("relationship", relationship);
-      fd.append("temperature", temperature);
+      fd.append("temperature", pendingAutoTemp);
       fd.append("notes", notes);
       if (photo) fd.append("photo", photo);
 
@@ -88,9 +145,11 @@ export default function DeliverPage() {
         const d = await res.json();
         throw new Error(d.error || "Failed to submit delivery");
       }
+      setShowModal(false);
       setDone(true);
     } catch (e: any) {
       setError(e.message);
+      setShowModal(false);
     } finally {
       setSaving(false);
     }
@@ -246,14 +305,6 @@ export default function DeliverPage() {
           </div>
         </div>
 
-        {/* Delivered temperature */}
-        <div className="bg-[#1c1c2e] rounded-2xl p-4">
-          <label className="block text-xs text-gray-500 mb-1.5">Delivered temperature</label>
-          <textarea value={temperature} onChange={e => setTemperature(e.target.value)}
-            rows={2} placeholder="e.g. 2°C / -18°C"
-            className="w-full bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-600 resize-none" />
-        </div>
-
         {/* Notes for office */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4">
           <label className="block text-xs text-gray-500 mb-1.5">Notes for office</label>
@@ -272,9 +323,75 @@ export default function DeliverPage() {
           onClick={handleSubmit}
           disabled={saving}
           className="w-full bg-blue-600 text-white font-semibold py-4 rounded-2xl text-base disabled:opacity-50 disabled:cursor-not-allowed">
-          {saving ? "Submitting..." : "Complete Final Delivery"}
+          Complete Final Delivery
         </button>
       </div>
+
+      {/* Confirmation modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center" onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}>
+          <div className="bg-[#1c1c2e] rounded-t-3xl w-full max-w-lg p-6 space-y-5 pb-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-900/50 border border-amber-500/40 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="font-bold text-white text-base">Confirm Delivery</p>
+                <p className="text-xs text-gray-400">Please review and confirm before submitting</p>
+              </div>
+            </div>
+
+            {pendingOrders.length > 0 ? (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500 uppercase tracking-wider">You are confirming delivery of:</p>
+                <div className="space-y-2">
+                  {pendingOrders.map((o, i) => (
+                    <div key={i} className="bg-[#0a0a14] border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between">
+                      <p className="text-white font-semibold">{o.ref}</p>
+                      {o.types.length > 0 && (
+                        <span className="text-xs text-orange-300 bg-orange-900/40 border border-orange-500/30 rounded-full px-2 py-0.5">
+                          {orderTypeLabel(o.types)}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-300 text-sm">Please confirm you have completed this final delivery and all details are correct.</p>
+            )}
+
+            {pendingAutoTemp ? (
+              <div className="bg-blue-900/30 border border-blue-500/30 rounded-xl p-4 space-y-1">
+                <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider">Auto Temperature Reading</p>
+                <p className="text-white font-bold text-lg">{pendingAutoTemp}</p>
+                <p className="text-xs text-gray-500">Automatically recorded from your unit sensor — no manual entry needed.</p>
+              </div>
+            ) : pendingOrders.some(o => o.types.some(t => ["pump","stores"].includes(t.toLowerCase()))) ? (
+              <div className="bg-slate-800/50 border border-white/10 rounded-xl p-4">
+                <p className="text-xs text-gray-400">No temperature reading required for this order type.</p>
+              </div>
+            ) : null}
+
+            {error && (
+              <div className="bg-red-900/40 border border-red-500/40 rounded-xl p-3">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-1">
+              <button onClick={() => setShowModal(false)}
+                className="flex-1 py-4 rounded-2xl border border-white/10 text-gray-300 font-semibold text-base">
+                Cancel
+              </button>
+              <button onClick={doSubmit} disabled={saving}
+                className="flex-1 py-4 rounded-2xl bg-blue-600 text-white font-semibold text-base disabled:opacity-50">
+                {saving ? "Submitting..." : "Confirm & Complete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
