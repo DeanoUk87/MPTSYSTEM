@@ -237,9 +237,7 @@ export default function ViaDeliverPage() {
 
         {/* Collected orders for this via */}
         {(() => {
-          if (!via.notes?.includes("---ORDERS---")) return null;
-          let orders: { ref: string; type: string }[] = [];
-          try { orders = JSON.parse(via.notes.split("---ORDERS---")[1] || "[]"); } catch { /* ignore */ }
+          const orders = parseOrders(via.notes);
           if (orders.length === 0) return null;
           return (
             <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-2">
@@ -247,7 +245,7 @@ export default function ViaDeliverPage() {
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {orders.map((o, i) => (
                   <span key={i} className="px-2 py-1 bg-orange-900/50 border border-orange-500/40 text-orange-300 rounded-full text-xs font-medium">
-                    {o.ref} · {o.type}
+                    {o.ref}{o.types.length > 0 ? ` · ${orderTypeLabel(o.types)}` : ""}
                   </span>
                 ))}
               </div>
