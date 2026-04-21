@@ -47,16 +47,20 @@ function parseOrders(raw: string | undefined): Order[] {
 
 function buildAutoTemp(
   orders: Order[],
-  chillUnit?: { temperature?: string | null } | null,
-  ambientUnit?: { temperature?: string | null } | null,
+  chillUnit?: { unitType?: string; temperature?: string | null } | null,
+  ambientUnit?: { unitType?: string; temperature?: string | null } | null,
 ): string {
   if (orders.length === 0) return "";
   const allTypes = orders.flatMap(o => o.types).map(t => t.toLowerCase());
   const needsChill = allTypes.some(t => t === "chill");
   const needsAmb   = allTypes.some(t => t === "amb");
+  // Match by unitType value, not field name, in case units are stored in the wrong field
+  const units = [chillUnit, ambientUnit].filter(Boolean);
+  const actualChill = units.find(u => (u?.unitType || "").toLowerCase().startsWith("chill"));
+  const actualAmb   = units.find(u => !(u?.unitType || "").toLowerCase().startsWith("chill"));
   const parts: string[] = [];
-  if (needsChill && chillUnit?.temperature != null)   parts.push(`Chill: ${chillUnit.temperature}\u00b0C`);
-  if (needsAmb   && ambientUnit?.temperature != null) parts.push(`Amb: ${ambientUnit.temperature}\u00b0C`);
+  if (needsChill && actualChill?.temperature != null) parts.push(`Chill: ${actualChill.temperature}\u00b0C`);
+  if (needsAmb   && actualAmb?.temperature  != null) parts.push(`Amb: ${actualAmb.temperature}\u00b0C`);
   return parts.join(" / ");
 }
 
@@ -67,9 +71,9 @@ function orderTypeLabel(types: string[]): string {
   const hasAmb   = allTypes.includes("amb");
   const hasPump  = allTypes.includes("pump");
   const hasStores = allTypes.includes("stores");
-  if (hasChill && hasAmb)   return "Chill \u2744\ufe0f & Ambient \uD83C\uDF21";
-  if (hasChill)             return "Chill \u2744\ufe0f";
-  if (hasAmb)               return "Ambient \uD83C\uDF21";
+  if (hasChill && hasAmb)   return "Chill & Ambient";
+  if (hasChill)             return "Chill";
+  if (hasAmb)               return "Ambient";
   if (hasPump && hasStores) return "Pump & Stores";
   if (hasPump)              return "Pump";
   if (hasStores)            return "Stores";
