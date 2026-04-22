@@ -8,7 +8,7 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-export async function requireAuth(req: NextRequest): Promise<{ id: string; roles: string[]; permissions: string[] } | null> {
+export async function requireAuth(req: NextRequest): Promise<{ id: string; roles: string[]; permissions: string[]; customerId?: string | null; driverId?: string | null; dcontactId?: string | null } | null> {
   const token = req.cookies.get("mp-session")?.value;
   if (!token) return null;
   try {
