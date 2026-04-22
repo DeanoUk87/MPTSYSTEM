@@ -22,6 +22,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         collectionName: true,
         collectionAddress1: true,
         collectionPostcode: true,
+        collectionContact: true,
+        collectionPhone: true,
         collectionNotes: true,
         deliveryName: true,
         deliveryAddress1: true,

@@ -8,6 +8,9 @@ interface Job {
   jobRef?: string;
   collectionName?: string;
   collectionPostcode?: string;
+  collectionContact?: string;
+  collectionPhone?: string;
+  collectionNotes?: string;
   chillUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
   ambientUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
   driverConfirmCollectionAt?: string | null;
@@ -119,7 +122,27 @@ export default function CollectPage() {
             <span className="text-gray-500">Postcode</span>
             <span className="text-white font-bold">{job.collectionPostcode || "—"}</span>
           </div>
+          {job.collectionContact && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Contact</span>
+              <span className="text-white font-medium text-right">{job.collectionContact}</span>
+            </div>
+          )}
+          {job.collectionPhone && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Telephone</span>
+              <a href={`tel:${job.collectionPhone}`} className="text-blue-400 font-medium">{job.collectionPhone}</a>
+            </div>
+          )}
         </div>
+
+        {/* Collection notes */}
+        {job.collectionNotes && (
+          <div className="bg-[#1c1c2e] rounded-2xl p-4">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Collection Notes</p>
+            <p className="text-sm text-gray-300 leading-relaxed">{job.collectionNotes}</p>
+          </div>
+        )}
 
         {/* Success state */}
         {confirmed ? (

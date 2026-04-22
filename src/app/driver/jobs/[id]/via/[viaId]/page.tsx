@@ -311,13 +311,15 @@ export default function ViaDeliverPage() {
               <a href={`tel:${via.phone}`} className="text-blue-400 font-medium">{via.phone}</a>
             </div>
           )}
-          {via.notes?.split("---ORDERS---")[0].trim() && (
-            <div className="pt-2 border-t border-white/5">
-              <p className="text-xs text-gray-500 mb-1">Notes</p>
-              <p className="text-sm text-gray-300">{via.notes.split("---ORDERS---")[0].trim()}</p>
-            </div>
-          )}
         </div>
+
+        {/* Via notes */}
+        {via.notes?.split("---ORDERS---")[0].trim() && (
+          <div className="bg-[#1c1c2e] rounded-2xl p-4">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Via Notes</p>
+            <p className="text-sm text-gray-300 leading-relaxed">{via.notes.split("---ORDERS---")[0].trim()}</p>
+          </div>
+        )}
 
         {/* Collected orders for this via */}
         {(() => {

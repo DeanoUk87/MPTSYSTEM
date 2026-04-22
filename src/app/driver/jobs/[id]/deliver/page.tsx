@@ -309,6 +309,14 @@ export default function DeliverPage() {
           )}
         </div>
 
+        {/* Delivery notes */}
+        {job.deliveryNotes?.split("---ORDERS---")[0].trim() && (
+          <div className="bg-[#1c1c2e] rounded-2xl p-4">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Delivery Notes</p>
+            <p className="text-sm text-gray-300 leading-relaxed">{job.deliveryNotes.split("---ORDERS---")[0].trim()}</p>
+          </div>
+        )}
+
         {/* Collected orders assigned to final delivery */}
         {(() => {
           const orders = parseOrders(job.deliveryNotes);
