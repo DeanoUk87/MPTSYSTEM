@@ -291,18 +291,19 @@ function LoginForm() {
           {branding?.companyName || "MP Transport Ltd"} &copy; {new Date().getFullYear()}
         </p>
       </div>
-    </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white animate-spin" />
-      </div>
-    }>
-      <LoginForm />
-    </Suspense>
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+      <Suspense fallback={
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>
+      }>
+        <LoginForm />
+      </Suspense>
+    </div>
   );
 }
