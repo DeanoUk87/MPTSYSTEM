@@ -301,12 +301,6 @@ export default function DeliverPage() {
               <a href={`tel:${job.deliveryPhone}`} className="text-blue-400 font-medium">{job.deliveryPhone}</a>
             </div>
           )}
-          {job.purchaseOrder && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Order ref</span>
-              <span className="text-white font-medium">{job.purchaseOrder}</span>
-            </div>
-          )}
         </div>
 
         {/* Delivery notes */}
