@@ -257,7 +257,7 @@ export default function PortalLegacyPage() {
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Portal
           </button>
           <div>
-            <p className="text-sm font-bold leading-none">Legacy Records</p>
+            <p className="text-sm font-bold leading-none">History Records</p>
             <p className="text-blue-200 text-xs mt-0.5">Historical jobs from the old system</p>
           </div>
         </div>

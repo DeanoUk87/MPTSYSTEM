@@ -20,7 +20,7 @@ const MODULE_LABELS: Record<string, string> = {
   addresses: "Addresses",
   fuel: "Fuel Surcharges",
   map: "Map Routing",
-  legacy: "Legacy Records",
+  legacy: "History Records",
   settings: "Settings",
   users: "Users",
   roles: "Roles & Permissions",
