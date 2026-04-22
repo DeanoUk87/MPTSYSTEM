@@ -53,7 +53,7 @@ export default function AuditLogPage() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50">
-      <Topbar />
+      <Topbar title="Audit Log" />
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
