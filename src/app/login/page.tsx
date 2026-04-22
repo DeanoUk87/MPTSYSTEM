@@ -1,13 +1,78 @@
 "use client";
-import { Suspense, useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, Eye, EyeOff, Loader2, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 
-function generateCaptcha() {
-  const a = Math.floor(Math.random() * 10) + 1;
-  const b = Math.floor(Math.random() * 10) + 1;
-  return { question: `${a} + ${b}`, answer: a + b };
+const CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generateCaptchaText(len = 5) {
+  return Array.from({ length: len }, () =>
+    CAPTCHA_CHARS[Math.floor(Math.random() * CAPTCHA_CHARS.length)]
+  ).join("");
+}
+
+function CaptchaCanvas({ text }: { text: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = "#f1f5f9";
+    ctx.fillRect(0, 0, W, H);
+
+    // Noise lines
+    for (let i = 0; i < 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * W, Math.random() * H);
+      ctx.lineTo(Math.random() * W, Math.random() * H);
+      ctx.strokeStyle = `hsl(${Math.random() * 360},40%,60%)`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Noise dots
+    for (let i = 0; i < 40; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random() * W, Math.random() * H, 1, 0, Math.PI * 2);
+      ctx.fillStyle = `hsl(${Math.random() * 360},40%,55%)`;
+      ctx.fill();
+    }
+
+    // Characters
+    const charW = W / text.length;
+    text.split("").forEach((ch, i) => {
+      ctx.save();
+      const cx = charW * i + charW / 2;
+      const cy = H / 2 + (Math.random() * 8 - 4);
+      ctx.translate(cx, cy);
+      ctx.rotate((Math.random() - 0.5) * 0.5);
+      ctx.font = `bold ${22 + Math.random() * 6}px monospace`;
+      ctx.fillStyle = `hsl(${Math.random() * 60 + 200},60%,30%)`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+    });
+  }, [text]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={160}
+      height={48}
+      className="rounded-xl border border-slate-200 select-none"
+      style={{ userSelect: "none", pointerEvents: "none" }}
+    />
+  );
 }
 
 function LoginForm() {
@@ -20,11 +85,11 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [branding, setBranding] = useState<{ logo: string | null; companyName: string } | null>(null);
-  const [captcha, setCaptcha] = useState(generateCaptcha);
+  const [captchaText, setCaptchaText] = useState(() => generateCaptchaText());
   const [captchaInput, setCaptchaInput] = useState("");
 
   const refreshCaptcha = useCallback(() => {
-    setCaptcha(generateCaptcha());
+    setCaptchaText(generateCaptchaText());
     setCaptchaInput("");
   }, []);
 
@@ -34,8 +99,8 @@ function LoginForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (parseInt(captchaInput, 10) !== captcha.answer) {
-      toast.error("Incorrect security answer, please try again");
+    if (captchaInput.trim().toUpperCase() !== captchaText) {
+      toast.error("Incorrect security code, please try again");
       refreshCaptcha();
       return;
     }
@@ -118,29 +183,28 @@ function LoginForm() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Security Check
+                  Security Code
                 </label>
-                <div className="flex items-center gap-3">
-                  <span className="bg-slate-100 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 border border-slate-200 select-none">
-                    {captcha.question} = ?
-                  </span>
-                  <input
-                    type="number"
-                    value={captchaInput}
-                    onChange={(e) => setCaptchaInput(e.target.value)}
-                    placeholder="Answer"
-                    required
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                <div className="flex items-center gap-3 mb-2">
+                  <CaptchaCanvas text={captchaText} />
                   <button
                     type="button"
                     onClick={refreshCaptcha}
-                    title="Refresh question"
+                    title="Refresh code"
                     className="text-slate-400 hover:text-slate-600 flex-shrink-0"
                   >
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 </div>
+                <input
+                  type="text"
+                  value={captchaInput}
+                  onChange={(e) => setCaptchaInput(e.target.value)}
+                  placeholder="Type the characters above"
+                  required
+                  autoComplete="off"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
               <button
                 type="submit"
