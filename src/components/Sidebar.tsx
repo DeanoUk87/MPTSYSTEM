@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Settings,
   UserCog, Shield, LogOut, Building2,
   Truck, Car, Thermometer, ClipboardList,
-  Fuel, BookMarked, Map, ChevronLeft, ChevronRight, Archive, ShieldCheck
+  Fuel, BookMarked, Map, ChevronLeft, ChevronRight, Archive, ShieldCheck, UserCircle
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -155,6 +155,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Footer */}
       <div className="px-2 py-3 border-t border-slate-700/60 shrink-0">
+        <Link
+          href="/admin/profile"
+          onMouseEnter={collapsed ? (e) => showTip(e as any, "My Profile") : undefined}
+          onMouseLeave={collapsed ? () => setTooltip(null) : undefined}
+          className={clsx(
+            "flex items-center rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white w-full transition-colors mb-1",
+            collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
+          )}
+        >
+          <UserCircle className="w-4 h-4 shrink-0" />
+          {!collapsed && "My Profile"}
+        </Link>
         <button
           onClick={handleSignOut}
           onMouseEnter={collapsed ? (e) => showTip(e as any, "Sign Out") : undefined}

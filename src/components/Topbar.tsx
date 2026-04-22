@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Bell, User } from "lucide-react";
+import Link from "next/link";
 
 interface TopbarProps {
   title: string;
@@ -31,7 +32,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
         <button className="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors">
           <Bell className="w-4 h-4 text-slate-600" />
         </button>
-        <div className="flex items-center gap-2">
+        <Link href="/admin/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
             <User className="w-4 h-4 text-blue-600" />
           </div>
@@ -43,7 +44,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
               {user?.roles?.[0] ?? ""}
             </p>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );
