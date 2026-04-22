@@ -9,6 +9,8 @@ interface ViaAddress {
   id: string;
   name?: string;
   postcode?: string;
+  contact?: string;
+  phone?: string;
   notes?: string;
   signedBy?: string | null;
 }
@@ -297,6 +299,18 @@ export default function ViaDeliverPage() {
             <span className="text-gray-500">Postcode</span>
             <span className="text-white font-bold">{via.postcode || "—"}</span>
           </div>
+          {via.contact && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Contact</span>
+              <span className="text-white font-medium text-right">{via.contact}</span>
+            </div>
+          )}
+          {via.phone && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Telephone</span>
+              <a href={`tel:${via.phone}`} className="text-blue-400 font-medium">{via.phone}</a>
+            </div>
+          )}
           {via.notes?.split("---ORDERS---")[0].trim() && (
             <div className="pt-2 border-t border-white/5">
               <p className="text-xs text-gray-500 mb-1">Notes</p>

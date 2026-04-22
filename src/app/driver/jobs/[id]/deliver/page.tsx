@@ -10,6 +10,8 @@ interface Job {
   jobRef?: string;
   deliveryName?: string;
   deliveryPostcode?: string;
+  deliveryContact?: string;
+  deliveryPhone?: string;
   deliveryNotes?: string;
   purchaseOrder?: string;
   chillUnit?: { unitNumber: string; unitType?: string; temperature?: string | null } | null;
@@ -287,6 +289,18 @@ export default function DeliverPage() {
             <span className="text-gray-500">Postcode</span>
             <span className="text-white font-bold">{job.deliveryPostcode || "—"}</span>
           </div>
+          {job.deliveryContact && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Contact</span>
+              <span className="text-white font-medium text-right">{job.deliveryContact}</span>
+            </div>
+          )}
+          {job.deliveryPhone && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Telephone</span>
+              <a href={`tel:${job.deliveryPhone}`} className="text-blue-400 font-medium">{job.deliveryPhone}</a>
+            </div>
+          )}
           {job.purchaseOrder && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Order ref</span>
