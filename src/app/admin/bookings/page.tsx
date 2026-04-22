@@ -551,7 +551,8 @@ export default function BookingsPage() {
       </Modal>
 
       <Modal open={showPostcodeModal} onClose={() => setShowPostcodeModal(false)} title="Postcode Export" size="xl">
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Date range + load */}
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Date From</label>
@@ -568,18 +569,6 @@ export default function BookingsPage() {
               {pcLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
               Load Data
             </button>
-            {pcRows && pcRows.length > 0 && (
-              <>
-                <button onClick={() => exportPostcodesCSV(pcRows)}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
-                  <Download className="w-4 h-4" /> Export Postcodes CSV
-                </button>
-                <button onClick={() => exportPostcodeTotalsCSV(pcRows)}
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium hover:bg-cyan-700 transition-colors">
-                  <Download className="w-4 h-4" /> Export PC Totals CSV
-                </button>
-              </>
-            )}
           </div>
 
           {pcRows === null && !pcLoading && (
@@ -588,55 +577,104 @@ export default function BookingsPage() {
           {pcRows !== null && pcRows.length === 0 && (
             <p className="text-sm text-slate-400 text-center py-8">No bookings found for this date range</p>
           )}
-          {pcRows && pcRows.length > 0 && (
-            <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase tracking-wide">
-                  <tr>
-                    <th className="px-3 py-2 text-left font-medium">Job Ref</th>
-                    <th className="px-3 py-2 text-left font-medium">Date</th>
-                    <th className="px-3 py-2 text-left font-medium">Customer</th>
-                    <th className="px-3 py-2 text-left font-medium">Postcodes</th>
-                    <th className="px-3 py-2 text-right font-medium">Miles</th>
-                    <th className="px-3 py-2 text-right font-medium">PC Count</th>
-                    <th className="px-3 py-2 text-left font-medium">Vehicle</th>
-                    <th className="px-3 py-2 text-right font-medium">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {pcRows.map(b => {
-                    const vias = b.viaAddresses?.map(v => v.postcode).filter(Boolean) ?? [];
-                    const allPcs = [b.collectionPostcode, ...vias, b.deliveryPostcode].filter(Boolean);
-                    const total = b.manualAmount ?? b.customerPrice ?? 0;
-                    return (
-                      <tr key={b.id} className="hover:bg-slate-50">
-                        <td className="px-3 py-2 font-mono font-semibold text-blue-600">
-                          <Link href={`/admin/bookings/${b.id}`} onClick={() => setShowPostcodeModal(false)} className="hover:underline">
-                            {b.jobRef || b.id.slice(-6).toUpperCase()}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">{b.collectionDate ? b.collectionDate.split("-").reverse().join("/") : "—"}</td>
-                        <td className="px-3 py-2 max-w-[120px] truncate">{b.customer?.name ?? "—"}</td>
-                        <td className="px-3 py-2 text-slate-600">{allPcs.join(" → ") || "—"}</td>
-                        <td className="px-3 py-2 text-right">{b.miles ? b.miles.toFixed(1) : "—"}</td>
-                        <td className="px-3 py-2 text-right font-semibold">{allPcs.length}</td>
-                        <td className="px-3 py-2">{b.vehicle?.name ?? "—"}</td>
-                        <td className="px-3 py-2 text-right font-semibold">{total ? `£${total.toFixed(2)}` : "—"}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot className="bg-slate-50 border-t-2 border-slate-200">
-                  <tr>
-                    <td colSpan={7} className="px-3 py-2 text-right font-semibold text-slate-600">Total</td>
-                    <td className="px-3 py-2 text-right font-bold text-slate-800">
-                      £{pcRows.reduce((s, b) => s + (b.manualAmount ?? b.customerPrice ?? 0), 0).toFixed(2)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+
+          {pcRows && pcRows.length > 0 && (<>
+
+            {/* ── Option 1: Full postcode breakdown ── */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-slate-700">Option 1 — Postcodes &amp; Totals</h3>
+                <button onClick={() => exportPostcodesCSV(pcRows)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-medium hover:bg-teal-700 transition-colors">
+                  <Download className="w-3.5 h-3.5" /> Export CSV
+                </button>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-xs">
+                  <thead className="bg-slate-50 text-slate-500 uppercase tracking-wide">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Job Ref</th>
+                      <th className="px-3 py-2 text-left font-medium">Postcodes</th>
+                      <th className="px-3 py-2 text-right font-medium">Mileage</th>
+                      <th className="px-3 py-2 text-left font-medium">Date</th>
+                      <th className="px-3 py-2 text-left font-medium">Vehicle</th>
+                      <th className="px-3 py-2 text-left font-medium">Extra Cost Information</th>
+                      <th className="px-3 py-2 text-right font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pcRows.map(b => {
+                      const vias = b.viaAddresses?.map(v => v.postcode).filter(Boolean) ?? [];
+                      const allPcs = [b.collectionPostcode, ...vias, b.deliveryPostcode].filter(Boolean);
+                      const total = b.manualAmount ?? b.customerPrice ?? 0;
+                      const extraInfo = b.manualAmount && b.manualDesc ? b.manualDesc : (b.manualAmount ? "Manual amount" : "");
+                      return (
+                        <tr key={b.id} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 font-mono font-semibold text-blue-600 whitespace-nowrap">
+                            <Link href={`/admin/bookings/${b.id}`} onClick={() => setShowPostcodeModal(false)} className="hover:underline">
+                              {b.jobRef || b.id.slice(-6).toUpperCase()}
+                            </Link>
+                          </td>
+                          <td className="px-3 py-2 text-slate-600">{allPcs.join(" / ") || "—"}</td>
+                          <td className="px-3 py-2 text-right">{b.miles ? b.miles.toFixed(1) : "—"}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{b.collectionDate ? b.collectionDate.split("-").reverse().join("/") : "—"}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{b.vehicle?.name ?? "—"}</td>
+                          <td className="px-3 py-2 text-slate-500">{extraInfo || "—"}</td>
+                          <td className="px-3 py-2 text-right font-semibold">{total ? `£${total.toFixed(2)}` : "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot className="bg-slate-50 border-t-2 border-slate-200">
+                    <tr>
+                      <td colSpan={6} className="px-3 py-2 text-right font-semibold text-slate-600">Total</td>
+                      <td className="px-3 py-2 text-right font-bold text-slate-800">
+                        £{pcRows.reduce((s, b) => s + (b.manualAmount ?? b.customerPrice ?? 0), 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
-          )}
+
+            {/* ── Option 2: Postcode counts ── */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold text-slate-700">Option 2 — Postcode Totals</h3>
+                <button onClick={() => exportPostcodeTotalsCSV(pcRows)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 text-white rounded-lg text-xs font-medium hover:bg-cyan-700 transition-colors">
+                  <Download className="w-3.5 h-3.5" /> Export CSV
+                </button>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-xs">
+                  <thead className="bg-slate-50 text-slate-500 uppercase tracking-wide">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Job Ref</th>
+                      <th className="px-3 py-2 text-right font-medium">Postcode Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pcRows.map(b => {
+                      const vias = b.viaAddresses?.map(v => v.postcode).filter(Boolean) ?? [];
+                      const allPcs = [b.collectionPostcode, ...vias, b.deliveryPostcode].filter(Boolean);
+                      return (
+                        <tr key={b.id} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 font-mono font-semibold text-blue-600">
+                            <Link href={`/admin/bookings/${b.id}`} onClick={() => setShowPostcodeModal(false)} className="hover:underline">
+                              {b.jobRef || b.id.slice(-6).toUpperCase()}
+                            </Link>
+                          </td>
+                          <td className="px-3 py-2 text-right font-semibold">{allPcs.length}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </>)}
         </div>
       </Modal>
 
