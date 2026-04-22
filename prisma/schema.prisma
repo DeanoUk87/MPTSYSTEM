@@ -23,6 +23,7 @@ model User {
   emailVerifiedAt DateTime?
   userStatus      Int       @default(1)
   twoFactorEnabled Boolean  @default(false)
+  totpSecret      String?
   // links to domain entities
   driverId        String?
   customerId      String?

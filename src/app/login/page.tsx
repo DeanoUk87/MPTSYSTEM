@@ -119,10 +119,9 @@ function LoginForm() {
       if (!res.ok) {
         toast.error(data.error || "Invalid email/username or password");
       } else if (data.twoFactor) {
-        // 2FA required — show OTP input
+        // 2FA required — show authenticator code input
         setTwoFactorPending(true);
         setTwoFactorUserId(data.userId);
-        toast.success("A verification code has been sent to your email.");
       } else {
         router.push(data.redirectTo || callbackUrl);
         router.refresh();
@@ -141,7 +140,7 @@ function LoginForm() {
       const res = await fetch("/api/login/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: twoFactorUserId, code: otpInput.trim() }),
+        body: JSON.stringify({ userId: twoFactorUserId, token: otpInput.trim() }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -187,9 +186,9 @@ function LoginForm() {
 
             {twoFactorPending ? (
               <form onSubmit={handleOtpSubmit} className="space-y-4">
-                <p className="text-sm text-slate-500">A 6-digit code has been sent to your email address. Enter it below to complete sign in.</p>
+              <p className="text-sm text-slate-500">Open your authenticator app (Google Authenticator, Authy, etc.) and enter the 6-digit code for this account.</p>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Verification Code</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Authenticator Code</label>
                   <input
                     type="text"
                     inputMode="numeric"

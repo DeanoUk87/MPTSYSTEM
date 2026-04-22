@@ -7,12 +7,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const { name, email, username, password, roleId, userStatus, twoFactorEnabled } = await req.json();
+  const { name, email, username, password, roleId, userStatus } = await req.json();
 
   const data: any = { name, email, userStatus };
   if (username !== undefined) data.username = username || null;
   if (password) data.password = await bcrypt.hash(password, 12);
-  if (twoFactorEnabled !== undefined) data.twoFactorEnabled = !!twoFactorEnabled;
 
   const user = await prisma.user.update({ where: { id }, data });
 

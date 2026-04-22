@@ -3,8 +3,6 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
-import { generateOtp, setOtp } from "@/lib/otp-store";
-import nodemailer from "nodemailer";
 
 const SECRET = process.env.NEXTAUTH_SECRET;
 
@@ -76,29 +74,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email/username or password" }, { status: 401 });
     }
 
-    // If 2FA is enabled, send OTP and return partial response
-    if (user.twoFactorEnabled) {
-      const otp = generateOtp();
-      setOtp(user.id, otp);
-      // Send OTP via email
-      try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST || "smtp.mailtrap.io",
-          port: parseInt(process.env.SMTP_PORT || "587"),
-          auth: { user: process.env.SMTP_USER || "", pass: process.env.SMTP_PASS || "" },
-        });
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER || "noreply@mptsystem.com",
-          to: user.email,
-          subject: "MP System — Your login code",
-          text: `Your one-time login code is: ${otp}\n\nThis code expires in 5 minutes.`,
-          html: `<p>Your one-time login code is:</p><h2 style="letter-spacing:4px">${otp}</h2><p>This code expires in 5 minutes.</p>`,
-        });
-      } catch (mailErr) {
-        console.error("2FA email send failed:", mailErr);
-        // Don't block login if email fails — clear OTP and fall through to normal login
-        // In production you may want to hard-fail here
-      }
+    // If 2FA is enabled, return challenge — client will prompt for authenticator code
+    if (user.twoFactorEnabled && user.totpSecret) {
       return NextResponse.json({ twoFactor: true, userId: user.id });
     }
 

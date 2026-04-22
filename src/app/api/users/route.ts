@@ -32,12 +32,12 @@ export async function POST(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { name, email, username, password, roleId, twoFactorEnabled } = await req.json();
+    const { name, email, username, password, roleId } = await req.json();
     if (!name || !email || !password) return NextResponse.json({ error: "name, email, password required" }, { status: 400 });
 
     const hashed = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { name, email, username: username || null, password: hashed, twoFactorEnabled: !!twoFactorEnabled },
+      data: { name, email, username: username || null, password: hashed },
     });
 
     if (roleId) {
