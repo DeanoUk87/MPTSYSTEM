@@ -9,11 +9,11 @@ import toast from "react-hot-toast";
 interface Role { id: string; name: string; }
 interface UserRecord {
   id: string; name: string; email: string; username?: string;
-  userStatus: number; createdAt: string;
+  userStatus: number; createdAt: string; twoFactorEnabled: boolean;
   roles: Role[];
 }
 
-const emptyForm = { name: "", email: "", username: "", password: "", roleId: "", userStatus: 1 };
+const emptyForm = { name: "", email: "", username: "", password: "", roleId: "", userStatus: 1, twoFactorEnabled: false };
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserRecord[]>([]);
@@ -43,7 +43,7 @@ export default function UsersPage() {
 
   function openEdit(user: UserRecord) {
     setEditTarget(user);
-    setForm({ name: user.name, email: user.email, username: user.username ?? "", password: "", roleId: user.roles[0]?.id ?? "", userStatus: user.userStatus });
+    setForm({ name: user.name, email: user.email, username: user.username ?? "", password: "", roleId: user.roles[0]?.id ?? "", userStatus: user.userStatus, twoFactorEnabled: user.twoFactorEnabled ?? false });
     setModalOpen(true);
   }
 
@@ -91,6 +91,10 @@ export default function UsersPage() {
     { key: "userStatus", label: "Status", render: (row) => row.userStatus === 1
       ? <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700"><UserCheck className="w-3 h-3" />Active</span>
       : <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-700"><UserX className="w-3 h-3" />Inactive</span>
+    },
+    { key: "twoFactorEnabled", label: "2FA", render: (row) => row.twoFactorEnabled
+      ? <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-700">✓ Enabled</span>
+      : <span className="text-xs text-slate-400">Off</span>
     },
     { key: "actions", label: "Actions", render: (row) => (
       <div className="flex items-center gap-1">
@@ -147,6 +151,14 @@ export default function UsersPage() {
               <option value={1}>Active</option>
               <option value={0}>Inactive</option>
             </select>
+          </div>
+          <div className="flex items-center gap-3 py-1">
+            <input type="checkbox" id="2fa-toggle" checked={form.twoFactorEnabled}
+              onChange={e => setForm(f => ({ ...f, twoFactorEnabled: e.target.checked }))}
+              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+            <label htmlFor="2fa-toggle" className="text-sm font-medium text-slate-700">
+              Enable Two-Factor Authentication (email OTP on login)
+            </label>
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={() => setModalOpen(false)} className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>

@@ -22,6 +22,7 @@ model User {
   providerId      String?
   emailVerifiedAt DateTime?
   userStatus      Int       @default(1)
+  twoFactorEnabled Boolean  @default(false)
   // links to domain entities
   driverId        String?
   customerId      String?

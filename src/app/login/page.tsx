@@ -87,6 +87,10 @@ function LoginForm() {
   const [branding, setBranding] = useState<{ logo: string | null; companyName: string } | null>(null);
   const [captchaText, setCaptchaText] = useState(() => generateCaptchaText());
   const [captchaInput, setCaptchaInput] = useState("");
+  // 2FA state
+  const [twoFactorPending, setTwoFactorPending] = useState(false);
+  const [twoFactorUserId, setTwoFactorUserId] = useState("");
+  const [otpInput, setOtpInput] = useState("");
 
   const refreshCaptcha = useCallback(() => {
     setCaptchaText(generateCaptchaText());
@@ -114,6 +118,40 @@ function LoginForm() {
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Invalid email/username or password");
+      } else if (data.twoFactor) {
+        // 2FA required — show OTP input
+        setTwoFactorPending(true);
+        setTwoFactorUserId(data.userId);
+        toast.success("A verification code has been sent to your email.");
+      } else {
+        router.push(data.redirectTo || callbackUrl);
+        router.refresh();
+      }
+    } catch {
+      toast.error("Network error, please try again");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleOtpSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch("/api/login/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: twoFactorUserId, code: otpInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Invalid code");
+        if (data.error?.includes("expired") || data.error?.includes("attempts")) {
+          setTwoFactorPending(false);
+          setTwoFactorUserId("");
+          setOtpInput("");
+          refreshCaptcha();
+        }
       } else {
         router.push(data.redirectTo || callbackUrl);
         router.refresh();
@@ -126,7 +164,6 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-center">
@@ -144,7 +181,39 @@ function LoginForm() {
           </div>
 
           <div className="p-8">
-            <h2 className="text-xl font-semibold text-slate-800 mb-6">Sign in to your account</h2>
+            <h2 className="text-xl font-semibold text-slate-800 mb-6">
+              {twoFactorPending ? "Two-Factor Verification" : "Sign in to your account"}
+            </h2>
+
+            {twoFactorPending ? (
+              <form onSubmit={handleOtpSubmit} className="space-y-4">
+                <p className="text-sm text-slate-500">A 6-digit code has been sent to your email address. Enter it below to complete sign in.</p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Verification Code</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="\d{6}"
+                    maxLength={6}
+                    value={otpInput}
+                    onChange={e => setOtpInput(e.target.value)}
+                    placeholder="000000"
+                    required
+                    autoFocus
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-center tracking-widest font-mono text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <button type="submit" disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white font-semibold py-2.5 px-4 rounded-xl transition-colors flex items-center justify-center gap-2">
+                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {loading ? "Verifying..." : "Verify"}
+                </button>
+                <button type="button" onClick={() => { setTwoFactorPending(false); setTwoFactorUserId(""); setOtpInput(""); refreshCaptcha(); }}
+                  className="w-full text-sm text-slate-500 hover:text-slate-700 py-1">
+                  ← Back to login
+                </button>
+              </form>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -215,6 +284,7 @@ function LoginForm() {
                 {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
+            )}
           </div>
         </div>
 

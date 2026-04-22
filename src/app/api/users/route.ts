@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
         email: u.email,
         username: u.username,
         userStatus: u.userStatus,
+        twoFactorEnabled: u.twoFactorEnabled,
         createdAt: u.createdAt,
         roles: u.roles.map((ur) => ({ id: ur.role.id, name: ur.role.name })),
       }))
@@ -31,12 +32,12 @@ export async function POST(req: NextRequest) {
   const session = await requireAuth(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { name, email, username, password, roleId } = await req.json();
+    const { name, email, username, password, roleId, twoFactorEnabled } = await req.json();
     if (!name || !email || !password) return NextResponse.json({ error: "name, email, password required" }, { status: 400 });
 
     const hashed = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { name, email, username: username || null, password: hashed },
+      data: { name, email, username: username || null, password: hashed, twoFactorEnabled: !!twoFactorEnabled },
     });
 
     if (roleId) {

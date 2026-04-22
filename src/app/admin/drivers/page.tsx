@@ -218,15 +218,14 @@ export default function DriversPage() {
           <button
             onClick={() => handleGrantAccess(r.id, r.name)}
             disabled={accessLoading === r.id}
-            title={r.hasAccess ? "Access already granted — click to reset password" : "Grant login access"}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+            title={r.hasAccess ? "Reset driver login credentials" : "Grant driver login access"}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
               r.hasAccess
-                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 ring-1 ring-emerald-400"
-                : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
             }`}
           >
-            {r.hasAccess ? <CheckCircle2 className="w-3 h-3" /> : <Smartphone className="w-3 h-3" />}
-            {accessLoading === r.id ? "..." : r.hasAccess ? "Access Granted" : "Allow Access"}
+            {accessLoading === r.id ? "..." : r.hasAccess ? "🔓 Login" : "🔒 Login"}
           </button>
           )}
           {has("drivers_edit") && (

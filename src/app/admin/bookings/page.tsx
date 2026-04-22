@@ -4,7 +4,7 @@ import Topbar from "@/components/Topbar";
 import DataTable, { Column } from "@/components/DataTable";
 import Modal from "@/components/Modal";
 import Link from "next/link";
-import { Plus, Eye, Pencil, Trash2, Loader2, CheckCircle, Clock, AlertCircle, FileText, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Loader2, CheckCircle, Clock, AlertCircle, FileText, TrendingUp, ChevronLeft, ChevronRight, Download, Bell } from "lucide-react";
 import toast from "react-hot-toast";
 import clsx from "clsx";
 import { usePermissions } from "@/lib/use-permissions";
@@ -27,6 +27,8 @@ interface Booking {
   cxDriverCost?: number;
   miles?: number;
   weight?: number;
+  manualAmount?: number;
+  manualDesc?: string;
   jobStatus: number;
   podDataVerify: boolean;
   podSignature?: string;
@@ -128,6 +130,8 @@ export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Booking | null>(null);
+  const [tomorrowJobs, setTomorrowJobs] = useState<Booking[]>([]);
+  const [showTomorrowModal, setShowTomorrowModal] = useState(false);
 
   function todayStr() {
     const d = new Date();
@@ -161,6 +165,20 @@ export default function BookingsPage() {
   }, [appliedFilters]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
+
+  // Fetch tomorrow's jobs without a driver
+  useEffect(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    const tomorrow = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    fetch(`/api/bookings?dateFrom=${tomorrow}&dateTo=${tomorrow}`)
+      .then(r => r.ok ? r.json() : [])
+      .then((data: Booking[]) => {
+        const unassigned = data.filter(b => !b.driver && !b.secondMan && !b.cxDriver && b.bookingType?.name?.toLowerCase() !== "quote");
+        setTomorrowJobs(unassigned);
+      })
+      .catch(() => {});
+  }, []);
 
   // Load refresh interval from settings
   useEffect(() => {
@@ -246,6 +264,51 @@ export default function BookingsPage() {
     if (pickedCustomer) params.set("customerName", pickedCustomer.label);
     if (pickedDriver) params.set("driverName", pickedDriver.label);
     window.open(`/admin/bookings/report-${type}?${params}`, "_blank");
+  }
+
+  function exportPostcodesCSV() {
+    if (!bookings.length) return;
+    const rows = bookings.map(b => {
+      const vias = b.viaAddresses?.map(v => v.postcode).filter(Boolean) ?? [];
+      const allPostcodes = [b.collectionPostcode, ...vias, b.deliveryPostcode].filter(Boolean).join(" / ");
+      const total = b.manualAmount ?? b.customerPrice ?? 0;
+      const extraInfo = b.manualAmount && b.manualDesc ? b.manualDesc : (b.manualAmount ? "Manual amount" : "");
+      return [
+        b.jobRef || b.id.slice(-6).toUpperCase(),
+        allPostcodes,
+        b.miles ? b.miles.toFixed(1) : "",
+        b.collectionDate ? b.collectionDate.split("-").reverse().join("/") : "",
+        b.vehicle?.name ?? "",
+        extraInfo,
+        total ? total.toFixed(2) : "",
+      ];
+    });
+    const headers = ["Job Ref", "Postcodes", "Mileage", "Date", "Vehicle", "Extra Cost Information", "Total"];
+    const totalSum = bookings.reduce((sum, b) => sum + (b.manualAmount ?? b.customerPrice ?? 0), 0);
+    const totalRow = ["", "", "", "", "", "Total", totalSum.toFixed(2)];
+    const csv = [headers, ...rows, totalRow].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `postcodes-export-${appliedFilters.dateFrom || "all"}.csv`;
+    a.click();
+  }
+
+  function exportPostcodeTotalsCSV() {
+    if (!bookings.length) return;
+    const rows = bookings.map(b => {
+      const viaCount = b.viaAddresses?.length ?? 0;
+      const postcodeTotal = viaCount + 1; // vias + final delivery
+      return [
+        b.jobRef || b.id.slice(-6).toUpperCase(),
+        postcodeTotal,
+      ];
+    });
+    const headers = ["Job Ref", "Postcode Total"];
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `postcode-totals-${appliedFilters.dateFrom || "all"}.csv`;
+    a.click();
   }
 
   async function handleDelete(b: Booking) {
@@ -362,8 +425,27 @@ export default function BookingsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               <FileText className="w-4 h-4" /> Driver Statement
             </button>
+            {bookings.length > 0 && (
+              <>
+                <button onClick={exportPostcodesCSV}
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                  <Download className="w-4 h-4" /> Export Postcodes
+                </button>
+                <button onClick={exportPostcodeTotalsCSV}
+                  className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium hover:bg-cyan-700 transition-colors">
+                  <Download className="w-4 h-4" /> Export PC Totals
+                </button>
+              </>
+            )}
             {hasFilters && (
               <button onClick={clearFilters} className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg">Clear</button>
+            )}
+            {tomorrowJobs.length > 0 && (
+              <button onClick={() => setShowTomorrowModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors animate-pulse">
+                <Bell className="w-4 h-4" />
+                {tomorrowJobs.length} job{tomorrowJobs.length !== 1 ? "s" : ""} tomorrow — No Driver!
+              </button>
             )}
             <div className="ml-auto flex items-center gap-3">
               {refreshInterval > 0 && (
@@ -428,6 +510,41 @@ export default function BookingsPage() {
           />
         </div>
       </div>
+
+      <Modal open={showTomorrowModal} onClose={() => setShowTomorrowModal(false)} title="Tomorrow's Jobs — No Driver Assigned" size="lg">
+        <p className="text-sm text-slate-500 mb-4">{tomorrowJobs.length} booking{tomorrowJobs.length !== 1 ? "s" : ""} tomorrow without a driver assigned.</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {["Job Ref", "Date", "Time", "Customer", "From", "Via", "To"].map(h => (
+                  <th key={h} className="px-3 py-2 text-left font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tomorrowJobs.map(b => (
+                <tr key={b.id} className="border-b border-slate-100 hover:bg-rose-50">
+                  <td className="px-3 py-2 font-mono font-semibold text-blue-600">
+                    <Link href={`/admin/bookings/${b.id}`} onClick={() => setShowTomorrowModal(false)} className="hover:underline">
+                      {b.jobRef || b.id.slice(-6).toUpperCase()}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">{b.collectionDate ? b.collectionDate.split("-").reverse().join("-") : "—"}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">{b.collectionTime ?? "—"}</td>
+                  <td className="px-3 py-2 font-medium whitespace-nowrap max-w-[120px] truncate">{b.customer?.name ?? "—"}</td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">{b.collectionPostcode ?? "—"}</td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">{b.viaAddresses?.map(v => v.postcode).filter(Boolean).join(", ") || "—"}</td>
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">{b.deliveryPostcode ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button onClick={() => setShowTomorrowModal(false)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm hover:bg-slate-200">Close</button>
+        </div>
+      </Modal>
 
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirm Delete" size="sm">
         <p className="text-slate-600 text-sm mb-6">Delete booking for <strong>{deleteTarget?.customer?.name}</strong>?</p>

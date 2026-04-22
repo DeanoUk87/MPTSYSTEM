@@ -12,6 +12,7 @@ interface RoleRecord { id: string; name: string; permissions: { permission: Perm
 // Display names for permission modules
 const MODULE_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
+  kpi: "KPI Reports",
   bookings: "Bookings",
   drivers: "Drivers",
   vehicles: "Vehicles",
@@ -36,6 +37,7 @@ const ACTION_LABELS: Record<string, string> = {
 
 const MODULE_COLORS: Record<string, string> = {
   dashboard: "bg-blue-50 border-blue-200",
+  kpi: "bg-indigo-50 border-indigo-200",
   bookings: "bg-emerald-50 border-emerald-200",
   drivers: "bg-amber-50 border-amber-200",
   vehicles: "bg-purple-50 border-purple-200",

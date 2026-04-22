@@ -9,6 +9,7 @@ async function main() {
   const permissionNames = [
     // Dashboard
     "dashboard_view",
+    "kpi_view",
     // Bookings
     "bookings_view", "bookings_create", "bookings_edit", "bookings_delete",
     // Drivers
