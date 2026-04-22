@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Settings,
   UserCog, Shield, LogOut, Building2,
   Truck, Car, Thermometer, ClipboardList,
-  Fuel, BookMarked, Map, ChevronLeft, ChevronRight, Archive
+  Fuel, BookMarked, Map, ChevronLeft, ChevronRight, Archive, ShieldCheck
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -33,6 +33,7 @@ const navGroups = [
       { label: "Settings", href: "/admin/settings", icon: Settings, perm: "settings_view" },
       { label: "Users", href: "/admin/users", icon: UserCog, perm: "users_view" },
       { label: "Roles", href: "/admin/roles", icon: Shield, perm: "roles_view" },
+      { label: "Audit Log", href: "/admin/audit-log", icon: ShieldCheck, perm: "settings_view" },
     ],
   },
 ];

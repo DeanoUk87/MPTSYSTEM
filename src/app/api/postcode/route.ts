@@ -31,6 +31,12 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const postcode = searchParams.get("postcode");
   const debug = searchParams.get("debug") === "1";
+
+  // Auth check — postcode lookup uses a paid API key
+  const { requireAuth } = await import("@/lib/api-auth");
+  const session = await requireAuth(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   if (!postcode) return NextResponse.json({ error: "postcode required" }, { status: 400 });
 
   // Use env key or fall back to hardcoded key

@@ -31,8 +31,23 @@ model User {
 
   roles            UserRole[]
   composedMessages AdminComposer[]
+  auditLogs        AuditLog[]
 
   @@map("users")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  userId      String?
+  ipAddress   String?
+  userAgent   String?
+  detail      String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
 }
 
 model Role {
