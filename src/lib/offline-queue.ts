@@ -5,12 +5,21 @@ const DB_NAME = "mpt-offline-queue";
 const DB_STORE = "submissions";
 const DB_VERSION = 1;
 
+export interface PhotoEntry {
+  base64: string;
+  name: string;
+  type: string;
+}
+
 export interface QueueEntry {
   id: string;
   url: string;
   jobId: string;
   type: "deliver" | "via";
   fields: Record<string, string>;
+  // Multi-photo (new)
+  photos?: PhotoEntry[];
+  // Legacy single-photo fields (kept for backward-compat with already-queued entries)
   photoBase64?: string;
   photoName?: string;
   photoType?: string;
@@ -76,6 +85,17 @@ export function fileToBase64(file: File): Promise<string> {
   });
 }
 
+// Convert an array of Files to PhotoEntry[] for IndexedDB storage
+export async function filesToPhotoEntries(files: File[]): Promise<PhotoEntry[]> {
+  return Promise.all(
+    files.map(async (file) => ({
+      base64: await fileToBase64(file),
+      name: file.name,
+      type: file.type,
+    }))
+  );
+}
+
 // Replay a single queued entry — returns true if successful
 export async function replayEntry(entry: QueueEntry): Promise<boolean> {
   try {
@@ -83,13 +103,25 @@ export async function replayEntry(entry: QueueEntry): Promise<boolean> {
     for (const [key, value] of Object.entries(entry.fields)) {
       fd.append(key, value);
     }
-    if (entry.photoBase64 && entry.photoName && entry.photoType) {
+
+    // Multi-photo (new format)
+    if (entry.photos && entry.photos.length > 0) {
+      for (const p of entry.photos) {
+        const bytes = atob(p.base64);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        const blob = new Blob([arr], { type: p.type });
+        fd.append("photo", blob, p.name);
+      }
+    } else if (entry.photoBase64 && entry.photoName && entry.photoType) {
+      // Legacy single-photo fallback
       const bytes = atob(entry.photoBase64);
       const arr = new Uint8Array(bytes.length);
       for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
       const blob = new Blob([arr], { type: entry.photoType });
       fd.append("photo", blob, entry.photoName);
     }
+
     const res = await fetch(entry.url, { method: "POST", body: fd });
     if (res.ok) {
       await deleteSubmission(entry.id);

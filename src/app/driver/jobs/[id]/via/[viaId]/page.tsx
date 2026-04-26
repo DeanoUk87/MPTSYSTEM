@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Camera, FolderOpen, X, CheckCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Camera, X, CheckCircle, AlertTriangle } from "lucide-react";
 
-import { queueSubmission, fileToBase64, registerBackgroundSync } from "@/lib/offline-queue";
+import { queueSubmission, filesToPhotoEntries, registerBackgroundSync } from "@/lib/offline-queue";
 
 interface ViaAddress {
   id: string;
@@ -116,11 +116,12 @@ export default function ViaDeliverPage() {
   const [showModal, setShowModal] = useState(false);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [pendingAutoTemp, setPendingAutoTemp] = useState("");
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  // Multiple photos
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
   const cameraRef = useRef<HTMLInputElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const params = useParams<{ id: string; viaId: string }>();
 
@@ -140,10 +141,20 @@ export default function ViaDeliverPage() {
       .catch(() => router.back());
   }, [params?.id, params?.viaId, router]);
 
-  function handleFile(file: File | null) {
-    if (!file) return;
-    setPhoto(file);
-    setPhotoPreview(URL.createObjectURL(file));
+  function handleCameraCapture(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const newFiles = Array.from(files);
+    const newPreviews = newFiles.map(f => URL.createObjectURL(f));
+    setPhotos(prev => [...prev, ...newFiles]);
+    setPhotoPreviews(prev => [...prev, ...newPreviews]);
+    // Reset input so the same photo can be added again if needed
+    if (cameraRef.current) cameraRef.current.value = "";
+  }
+
+  function removePhoto(index: number) {
+    URL.revokeObjectURL(photoPreviews[index]);
+    setPhotos(prev => prev.filter((_, i) => i !== index));
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
   }
 
   function handleSubmit() {
@@ -174,7 +185,9 @@ export default function ViaDeliverPage() {
       fd.append("relationship", relationship);
       fd.append("temperature", pendingAutoTemp);
       fd.append("notes", notes);
-      if (photo) fd.append("photo", photo);
+      for (const photo of photos) {
+        fd.append("photo", photo);
+      }
 
       const res = await fetch(`/api/driver/jobs/${params.id}/via/${params.viaId}`, { method: "POST", body: fd });
       if (!res.ok) {
@@ -194,23 +207,14 @@ export default function ViaDeliverPage() {
             temperature: pendingAutoTemp,
             notes,
           };
-          let photoBase64: string | undefined;
-          let photoName: string | undefined;
-          let photoType: string | undefined;
-          if (photo) {
-            photoBase64 = await fileToBase64(photo);
-            photoName = photo.name;
-            photoType = photo.type;
-          }
+          const photoEntries = photos.length > 0 ? await filesToPhotoEntries(photos) : undefined;
           await queueSubmission({
             id: `via-${params.viaId}-${Date.now()}`,
             url: `/api/driver/jobs/${params.id}/via/${params.viaId}`,
             jobId: params.id,
             type: "via",
             fields,
-            photoBase64,
-            photoName,
-            photoType,
+            photos: photoEntries,
             queuedAt: Date.now(),
           });
           await registerBackgroundSync();
@@ -342,31 +346,40 @@ export default function ViaDeliverPage() {
         {/* POD photo */}
         <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-3">
           <h2 className="font-semibold text-white">Proof of delivery</h2>
-          {photoPreview ? (
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoPreview} alt="POD preview" className="w-full rounded-xl object-cover max-h-52" />
-              <button onClick={() => { setPhoto(null); setPhotoPreview(null); }}
-                className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
-                <X className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <button onClick={() => cameraRef.current?.click()}
-                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium">
-                <Camera className="w-4 h-4" /> Use camera
-              </button>
-              <button onClick={() => fileRef.current?.click()}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#0a0a14] border border-white/10 text-gray-300 py-3 rounded-xl text-sm font-medium">
-                <FolderOpen className="w-4 h-4" /> Choose files
-              </button>
+
+          {/* Photo thumbnails grid */}
+          {photoPreviews.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {photoPreviews.map((src, i) => (
+                <div key={i} className="relative aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`POD photo ${i + 1}`} className="w-full h-full rounded-xl object-cover" />
+                  <button
+                    onClick={() => removePhoto(i)}
+                    className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5">
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
-          <input ref={cameraRef} type="file" accept="image/*" capture="environment"
-            className="hidden" onChange={e => handleFile(e.target.files?.[0] ?? null)} />
-          <input ref={fileRef} type="file" accept="image/*,application/pdf"
-            className="hidden" onChange={e => handleFile(e.target.files?.[0] ?? null)} />
+
+          {/* Take photo button — always visible so driver can keep adding photos */}
+          <button
+            onClick={() => cameraRef.current?.click()}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium">
+            <Camera className="w-4 h-4" />
+            {photoPreviews.length === 0 ? "Take Photo" : "Take Another Photo"}
+          </button>
+
+          <input
+            ref={cameraRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={e => handleCameraCapture(e.target.files)}
+          />
         </div>
 
         {/* Proof Of Delivery */}
@@ -475,6 +488,12 @@ export default function ViaDeliverPage() {
                 <span className="text-gray-400">Time</span>
                 <span className="text-white font-medium">{time}</span>
               </div>
+              {photos.length > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Photos</span>
+                  <span className="text-white font-medium">{photos.length} attached</span>
+                </div>
+              )}
               {recipientAnswer === "no" && relationship && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Relationship</span>

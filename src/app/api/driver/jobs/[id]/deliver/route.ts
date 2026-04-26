@@ -44,7 +44,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const relationship = (formData.get("relationship") as string)?.trim() || null;
     const temperature = (formData.get("temperature") as string)?.trim() || null;
     const notes = (formData.get("notes") as string)?.trim() || null;
-    const photo = formData.get("photo") as File | null;
+
+    // Accept multiple photos — formData.getAll returns all values for the "photo" key
+    const photoFiles = (formData.getAll("photo") as File[]).filter(f => f && f.size > 0);
 
     if (!signedBy) return NextResponse.json({ error: "Signed by is required" }, { status: 400 });
     if (!time || !/^\d{2}:\d{2}$/.test(time)) {
@@ -55,19 +57,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const podDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
     let podUploadValue: string | undefined;
-    if (photo && photo.size > 0) {
+    if (photoFiles.length > 0) {
       const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
-      if (!allowed.includes(photo.type)) return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
-      if (photo.size > 15 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 15 MB)" }, { status: 400 });
-
       await ensureDir();
-      const ext = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const filename = `${id}-${Date.now()}.${ext}`;
-      const filepath = path.join(UPLOAD_DIR, filename);
-      await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
-
       const existing = parsePodFiles(booking.podUpload);
-      existing.push(`/uploads/pod/${filename}`);
+
+      for (const photo of photoFiles) {
+        if (!allowed.includes(photo.type)) return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
+        if (photo.size > 15 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 15 MB)" }, { status: 400 });
+
+        const ext = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
+        const filename = `${id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+        const filepath = path.join(UPLOAD_DIR, filename);
+        await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
+        existing.push(`/uploads/pod/${filename}`);
+      }
+
       podUploadValue = JSON.stringify(existing);
     }
 

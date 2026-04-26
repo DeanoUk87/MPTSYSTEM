@@ -116,8 +116,17 @@ async function replayQueue() {
       for (const [key, value] of Object.entries(entry.fields)) {
         fd.append(key, value);
       }
-      // Re-attach photo if stored as base64
-      if (entry.photoBase64 && entry.photoName && entry.photoType) {
+      // Re-attach photos — multi-photo (new format) takes priority, legacy single-photo as fallback
+      if (entry.photos && entry.photos.length > 0) {
+        for (const p of entry.photos) {
+          const bytes = atob(p.base64);
+          const arr = new Uint8Array(bytes.length);
+          for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+          const blob = new Blob([arr], { type: p.type });
+          fd.append("photo", blob, p.name);
+        }
+      } else if (entry.photoBase64 && entry.photoName && entry.photoType) {
+        // Legacy single-photo fallback
         const bytes = atob(entry.photoBase64);
         const arr = new Uint8Array(bytes.length);
         for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
