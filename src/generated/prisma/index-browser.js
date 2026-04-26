@@ -129,11 +129,23 @@ exports.Prisma.UserScalarFieldEnum = {
   providerId: 'providerId',
   emailVerifiedAt: 'emailVerifiedAt',
   userStatus: 'userStatus',
+  twoFactorEnabled: 'twoFactorEnabled',
+  totpSecret: 'totpSecret',
   driverId: 'driverId',
   customerId: 'customerId',
   dcontactId: 'dcontactId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  userId: 'userId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  detail: 'detail',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.RoleScalarFieldEnum = {
@@ -600,6 +612,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  AuditLog: 'AuditLog',
   Role: 'Role',
   Permission: 'Permission',
   UserRole: 'UserRole',
