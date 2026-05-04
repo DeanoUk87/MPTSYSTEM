@@ -203,7 +203,7 @@ export default function CustomersPage() {
           {has("customers_rates") && (
           <Link href={`/admin/customers/${r.id}`}
             className="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium">
-            Rates
+            View
           </Link>
           )}
           {has("customers_edit") && (
