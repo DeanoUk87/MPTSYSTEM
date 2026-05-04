@@ -36,6 +36,14 @@ async function main() {
     "driver_jobs_view",
     // Legacy Records
     "legacy_view",
+    // POD Manager
+    "pod_manager_view",
+    "pod_manager_upload",
+    "pod_manager_move",
+    "pod_manager_rename",
+    "pod_manager_delete",
+    "pod_manager_share",
+    "pod_manager_manage",
   ];
 
   const permissions: Record<string, { id: string }> = {};

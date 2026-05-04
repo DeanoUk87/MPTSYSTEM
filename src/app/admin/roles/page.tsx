@@ -26,6 +26,7 @@ const MODULE_LABELS: Record<string, string> = {
   users: "Users",
   roles: "Roles & Permissions",
   driver: "Driver Portal",
+  pod: "POD Manager",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -51,6 +52,7 @@ const MODULE_COLORS: Record<string, string> = {
   users: "bg-indigo-50 border-indigo-200",
   roles: "bg-pink-50 border-pink-200",
   driver: "bg-lime-50 border-lime-200",
+  pod: "bg-sky-50 border-sky-200",
 };
 
 export default function RolesPage() {
