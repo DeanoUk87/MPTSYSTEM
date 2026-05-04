@@ -59,9 +59,32 @@ export default function PortalPodFilesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [previewFile, setPreviewFile] = useState<PodFile | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [logo, setLogo] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState("MP Transport");
   const [error, setError] = useState("");
+
+  async function downloadFile(filePath: string, filename: string) {
+    const url = filePath.includes("?") ? `${filePath}&download=1` : `${filePath}?download=1`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl; a.download = filename; a.click();
+    URL.revokeObjectURL(objectUrl);
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  }
+
+  async function downloadSelected() {
+    for (const file of files.filter(f => selectedIds.has(f.id))) {
+      await downloadFile(file.filePath, file.filename);
+      await new Promise(r => setTimeout(r, 250));
+    }
+  }
 
   // Load branding
   useEffect(() => {
@@ -276,23 +299,47 @@ export default function PortalPodFilesPage() {
             {/* Files */}
             {files.length > 0 ? (
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Files ({files.length}{search ? ` matching "${search}"` : ""})
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Files ({files.length}{search ? ` matching "${search}"` : ""})
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {selectedIds.size > 0 && (
+                      <button onClick={downloadSelected}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700">
+                        <Download className="w-3.5 h-3.5" /> Download ({selectedIds.size})
+                      </button>
+                    )}
+                    <button onClick={() => setSelectedIds(selectedIds.size === files.length ? new Set() : new Set(files.map(f => f.id)))}
+                      className="text-xs text-blue-600 hover:underline">
+                      {selectedIds.size === files.length ? "Deselect all" : "Select all"}
+                    </button>
+                  </div>
+                </div>
                 <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                   {files.map((file, i) => {
                     const isImage = file.mimeType?.startsWith("image/");
+                    const isPdf = file.mimeType === "application/pdf";
+                    const selected = selectedIds.has(file.id);
                     return (
                       <div key={file.id}
                         className={clsx(
                           "flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors",
-                          i > 0 && "border-t border-slate-100"
+                          i > 0 && "border-t border-slate-100",
+                          selected && "bg-blue-50"
                         )}
                       >
+                        {/* Checkbox */}
+                        <button onClick={() => toggleSelect(file.id)} className="shrink-0 p-0.5">
+                          {selected
+                            ? <div className="w-4 h-4 rounded bg-blue-600 border border-blue-600 flex items-center justify-center"><svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg></div>
+                            : <div className="w-4 h-4 rounded border border-slate-300 bg-white" />}
+                        </button>
+
                         {/* Thumbnail or icon */}
                         <div
                           className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center shrink-0 cursor-pointer"
-                          onClick={() => isImage ? setPreviewFile(file) : window.open(file.filePath, "_blank")}
+                          onClick={() => (isImage || isPdf) ? setPreviewFile(file) : downloadFile(file.filePath, file.filename)}
                         >
                           {isImage ? (
                             /* eslint-disable-next-line @next/next/no-img-element */
@@ -304,7 +351,7 @@ export default function PortalPodFilesPage() {
 
                         {/* Name & meta */}
                         <button
-                          onClick={() => isImage ? setPreviewFile(file) : window.open(file.filePath, "_blank")}
+                          onClick={() => (isImage || isPdf) ? setPreviewFile(file) : downloadFile(file.filePath, file.filename)}
                           className="flex-1 text-left min-w-0"
                         >
                           <p className="text-sm font-medium text-slate-700 truncate hover:text-blue-600">{file.filename}</p>
@@ -312,13 +359,12 @@ export default function PortalPodFilesPage() {
                         </button>
 
                         {/* Download */}
-                        <a
-                          href={file.filePath}
-                          download={file.filename}
+                        <button
+                          onClick={() => downloadFile(file.filePath, file.filename)}
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition shrink-0"
                         >
                           <Download className="w-3.5 h-3.5" /> Download
-                        </a>
+                        </button>
                       </div>
                     );
                   })}
@@ -335,30 +381,36 @@ export default function PortalPodFilesPage() {
         )}
       </div>
 
-      {/* Image preview lightbox */}
+      {/* File preview lightbox (image + PDF) */}
       {previewFile && (
         <div
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
           onClick={() => setPreviewFile(null)}
         >
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 shrink-0">
               <p className="font-semibold text-slate-800 truncate">{previewFile.filename}</p>
               <div className="flex items-center gap-2">
-                <a href={previewFile.filePath} download={previewFile.filename}
+                <button onClick={() => downloadFile(previewFile.filePath, previewFile.filename)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700">
                   <Download className="w-3.5 h-3.5" /> Download
-                </a>
+                </button>
                 <button onClick={() => setPreviewFile(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
-            <div className="overflow-auto max-h-[calc(90vh-56px)] flex items-center justify-center bg-slate-50 p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={previewFile.filePath} alt={previewFile.filename} className="max-w-full max-h-full object-contain rounded-lg" />
+            <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-50 p-4 min-h-0">
+              {previewFile.mimeType === "application/pdf" ? (
+                <iframe src={previewFile.filePath} title={previewFile.filename}
+                  className="w-full rounded-lg border border-slate-200"
+                  style={{ height: "calc(92vh - 120px)" }} />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={previewFile.filePath} alt={previewFile.filename} className="max-w-full max-h-full object-contain rounded-lg" />
+              )}
             </div>
-            <div className="px-4 py-2 border-t border-slate-100 text-xs text-slate-500 flex gap-4">
+            <div className="px-4 py-2 border-t border-slate-100 text-xs text-slate-500 flex gap-4 shrink-0">
               <span>{formatBytes(previewFile.fileSize)}</span>
               <span>{formatDate(previewFile.createdAt)}</span>
             </div>

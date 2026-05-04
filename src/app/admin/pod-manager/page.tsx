@@ -107,8 +107,8 @@ function PodManagerInner() {
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
-
-  const pageSize = 50;
+  const [pageSize, setPageSize] = useState(25);
+  const PAGE_SIZE_OPTIONS = [25, 50, 100, 0]; // 0 = All
 
   // ── Permissions shortcuts
   const canUpload = has("pod_manager_upload") || has("admin");
@@ -138,7 +138,7 @@ function PodManagerInner() {
           sort: sort === "filename" ? "filename" : sort,
           dir: sortDir,
           page: String(page),
-          pageSize: String(pageSize),
+          pageSize: String(pageSize === 0 ? 10000 : pageSize),
         })}`),
       ]);
       if (fRes.ok) setFolders(await fRes.json());
@@ -160,7 +160,7 @@ function PodManagerInner() {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { loadFolderTree(); }, [loadFolderTree]);
-  useEffect(() => { setPage(1); }, [currentFolderId, search, sort, sortDir]);
+  useEffect(() => { setPage(1); }, [currentFolderId, search, sort, sortDir, pageSize]);
 
   // ── Navigation
   function navigateTo(folderId: string | null, name: string, fromBreadcrumb = false) {
@@ -293,6 +293,20 @@ function PodManagerInner() {
     else toast.error("Failed to move files");
   }
 
+  // ── Download helper — uses ?download=1 so server sends Content-Disposition with original filename
+  async function downloadFile(filePath: string, filename: string) {
+    try {
+      const url = filePath.includes("?") ? `${filePath}&download=1` : `${filePath}?download=1`;
+      const res = await fetch(url);
+      if (!res.ok) { toast.error("File not found on server"); return; }
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl; a.download = filename; a.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch { toast.error("Download failed"); }
+  }
+
   // ── Upload
   async function handleUpload(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
@@ -321,11 +335,7 @@ function PodManagerInner() {
     const { files: fileList } = await res.json();
 
     if (fileList.length === 1) {
-      // Single file — direct download
-      const a = document.createElement("a");
-      a.href = fileList[0].filePath;
-      a.download = fileList[0].filename;
-      a.click();
+      await downloadFile(fileList[0].filePath, fileList[0].filename);
       return;
     }
 
@@ -334,7 +344,8 @@ function PodManagerInner() {
     if (w.JSZip) {
       const zip = new w.JSZip();
       for (const f of fileList) {
-        const blob = await fetch(f.filePath).then(r => r.blob());
+        const url = f.filePath.includes("?") ? `${f.filePath}&download=1` : `${f.filePath}?download=1`;
+        const blob = await fetch(url).then(r => r.blob());
         zip.file(f.filename, blob);
       }
       const content = await zip.generateAsync({ type: "blob" });
@@ -666,17 +677,7 @@ function PodManagerInner() {
                             <span className="text-xs text-slate-500">{formatDate(file.createdAt)}</span>
                             <div className="flex items-center gap-0.5">
                               <button
-                                onClick={async () => {
-                                  try {
-                                    const res = await fetch(file.filePath);
-                                    if (!res.ok) { toast.error("File not found on server"); return; }
-                                    const blob = await res.blob();
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement("a");
-                                    a.href = url; a.download = file.filename; a.click();
-                                    URL.revokeObjectURL(url);
-                                  } catch { toast.error("Download failed"); }
-                                }}
+                                onClick={() => downloadFile(file.filePath, file.filename)}
                                 className="p-1 text-slate-400 hover:text-emerald-600 rounded hover:bg-emerald-50" title="Download">
                                 <Download className="w-3.5 h-3.5" />
                               </button>
@@ -704,18 +705,30 @@ function PodManagerInner() {
                       })}
                     </div>
 
-                    {/* Pagination */}
-                    {pages > 1 && (
-                      <div className="flex items-center justify-between mt-3 text-sm text-slate-500">
-                        <span>Page {page} of {pages} ({totalFiles} files)</span>
+                    {/* Pagination + page size picker */}
+                    <div className="flex items-center justify-between mt-3 text-sm text-slate-500">
+                      <div className="flex items-center gap-2">
+                        <span>{totalFiles} file{totalFiles !== 1 ? "s" : ""}{pageSize > 0 && pages > 1 ? ` — page ${page} of ${pages}` : ""}</span>
+                        <span className="text-slate-300">|</span>
+                        <span className="text-xs text-slate-400">Show:</span>
+                        {PAGE_SIZE_OPTIONS.map(s => (
+                          <button key={s} onClick={() => setPageSize(s)}
+                            className={clsx("px-2 py-0.5 rounded text-xs border transition-colors",
+                              pageSize === s ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 hover:bg-slate-50"
+                            )}>
+                            {s === 0 ? "All" : s}
+                          </button>
+                        ))}
+                      </div>
+                      {pageSize > 0 && pages > 1 && (
                         <div className="flex items-center gap-2">
                           <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
                             className="px-3 py-1 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 text-xs">Prev</button>
                           <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page >= pages}
                             className="px-3 py-1 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 text-xs">Next</button>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ) : (
                   folders.length === 0 && (
@@ -799,17 +812,27 @@ function PodManagerInner() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 space-y-4 max-h-[80vh] overflow-y-auto">
             <h2 className="font-bold text-slate-800 flex items-center gap-2"><Move className="w-5 h-5 text-amber-500" /> Move to folder</h2>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <button onClick={() => setMoveFolderId(null)}
                 className={clsx("w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left", moveFolderId === null ? "bg-blue-100 text-blue-700 font-semibold" : "hover:bg-slate-50")}>
                 <Home className="w-4 h-4" /> Root
               </button>
-              {folderTree.map(f => (
-                <button key={f.id} onClick={() => setMoveFolderId(f.id)}
-                  className={clsx("w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left", moveFolderId === f.id ? "bg-blue-100 text-blue-700 font-semibold" : "hover:bg-slate-50")}>
-                  <Folder className="w-4 h-4 text-amber-500" /> {f.name}
-                </button>
-              ))}
+              {/* Render full folder tree with indentation */}
+              {(function renderTree(parentId: string | null, depth: number): React.ReactNode {
+                return folderTree
+                  .filter(f => f.parentId === parentId)
+                  .map(f => (
+                    <div key={f.id}>
+                      <button onClick={() => setMoveFolderId(f.id)}
+                        style={{ paddingLeft: `${12 + depth * 16}px` }}
+                        className={clsx("w-full flex items-center gap-2 pr-3 py-2 rounded-lg text-sm text-left", moveFolderId === f.id ? "bg-blue-100 text-blue-700 font-semibold" : "hover:bg-slate-50")}>
+                        <Folder className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="truncate">{f.name}</span>
+                      </button>
+                      {renderTree(f.id, depth + 1)}
+                    </div>
+                  ));
+              })(null, 0)}
             </div>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setMoveTarget(null)} className="px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
@@ -827,20 +850,7 @@ function PodManagerInner() {
               <p className="font-semibold text-slate-800 truncate">{previewFile.filename}</p>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch(previewFile.filePath);
-                      const blob = await res.blob();
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download = previewFile.filename;
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    } catch {
-                      toast.error("Download failed — file may not exist on server yet");
-                    }
-                  }}
+                  onClick={() => downloadFile(previewFile.filePath, previewFile.filename)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700">
                   <Download className="w-3.5 h-3.5" /> Download
                 </button>

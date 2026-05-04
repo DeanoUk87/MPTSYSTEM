@@ -5,7 +5,7 @@ import path from "path";
 
 // Serve uploaded files (runtime uploads not served by Next.js static file handler)
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   const { path: segments } = await params;
@@ -23,7 +23,8 @@ export async function GET(
 
   try {
     const buffer = await readFile(filePath);
-    const ext = segments[segments.length - 1]?.split(".").pop()?.toLowerCase() ?? "";
+    const storedName = segments[segments.length - 1] ?? "";
+    const ext = storedName.split(".").pop()?.toLowerCase() ?? "";
 
     const mimeTypes: Record<string, string> = {
       pdf: "application/pdf",
@@ -38,13 +39,31 @@ export async function GET(
 
     const contentType = mimeTypes[ext] ?? "application/octet-stream";
 
+    // Look up the display filename from the database via the filePath
+    // so downloads use the original filename (e.g. B23 5XX.pdf) not the stored name
+    let displayName = storedName;
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const record = await prisma.podFile.findFirst({
+        where: { filePath: { endsWith: storedName }, deletedAt: null },
+        select: { filename: true },
+      });
+      if (record?.filename) displayName = record.filename;
+    } catch { /* fall back to storedName */ }
+
+    // Use inline for display (images/PDFs in browser) unless ?download=1
+    const forceDownload = new URL(req.url).searchParams.get("download") === "1";
+    const disposition = forceDownload
+      ? `attachment; filename="${displayName}"`
+      : `inline; filename="${displayName}"`;
+
     return new NextResponse(buffer, {
       status: 200,
       headers: {
         "Content-Type": contentType,
         "Content-Length": String(buffer.length),
+        "Content-Disposition": disposition,
         "Cache-Control": "private, max-age=3600",
-        // Allow PDF display in iframe
         "X-Frame-Options": "SAMEORIGIN",
         "Content-Security-Policy": "default-src 'self'",
       },
