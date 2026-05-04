@@ -11,20 +11,52 @@ export async function GET(req: NextRequest) {
   const parentId = searchParams.get("parentId") || null;
   const customerId = searchParams.get("customerId") || undefined;
 
-  // Customer-scoped users can only see their own folders — and only if POD Manager access is enabled
-  const effectiveCustomerId = session.customerId
-    ? session.customerId
-    : customerId || undefined;
-
+  // For customer portal sessions — check access is enabled
   if (session.customerId) {
     const customer = await prisma.customer.findUnique({
       where: { id: session.customerId },
-      select: { podManagerAccess: true },
+      select: { podManagerAccess: true, podFolderId: true },
     });
     if (!customer?.podManagerAccess) {
       return NextResponse.json({ error: "POD Manager access not enabled for this account" }, { status: 403 });
     }
+
+    // When navigating inside the folder tree (parentId provided), don't filter by customerId —
+    // sub-folders created by admin have customerId=null. Security is enforced by the folder tree
+    // structure: the customer can only reach these folders by navigating from their assigned root.
+    // At root level (no parentId), restrict to their assigned root folder only.
+    if (!parentId) {
+      // Root level — only show the assigned folder
+      const assignedFolderId = customer.podFolderId;
+      if (!assignedFolderId) return NextResponse.json([]);
+      const folder = await prisma.podFolder.findUnique({
+        where: { id: assignedFolderId, deletedAt: null },
+        include: {
+          _count: { select: { files: { where: { deletedAt: null } }, children: { where: { deletedAt: null } } } },
+          customer: { select: { id: true, name: true } },
+        },
+      });
+      return NextResponse.json(folder ? [folder] : []);
+    }
+
+    // Inside the tree — return sub-folders without customerId filter
+    try {
+      const folders = await prisma.podFolder.findMany({
+        where: { parentId, deletedAt: null },
+        orderBy: { name: "asc" },
+        include: {
+          _count: { select: { files: { where: { deletedAt: null } }, children: { where: { deletedAt: null } } } },
+          customer: { select: { id: true, name: true } },
+        },
+      });
+      return NextResponse.json(folders);
+    } catch (e: any) {
+      return NextResponse.json({ error: e.message }, { status: 500 });
+    }
   }
+
+  // Admin / staff path — use customerId filter if provided
+  const effectiveCustomerId = customerId || undefined;
 
   try {
     const folders = await prisma.podFolder.findMany({

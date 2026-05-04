@@ -165,10 +165,16 @@ function PodManagerInner() {
   // ── Navigation
   function navigateTo(folderId: string | null, name: string, fromBreadcrumb = false) {
     if (fromBreadcrumb) {
+      // Clicking a breadcrumb — trim back to that point
       const idx = breadcrumbs.findIndex(b => b.id === folderId);
       setBreadcrumbs(idx >= 0 ? breadcrumbs.slice(0, idx + 1) : [{ id: null, name: "Root" }]);
     } else if (folderId !== null) {
-      setBreadcrumbs(prev => [...prev, { id: folderId, name }]);
+      // Clicking a folder card or sidebar item — only append if not already in trail
+      setBreadcrumbs(prev => {
+        const alreadyAt = prev.findIndex(b => b.id === folderId);
+        if (alreadyAt >= 0) return prev.slice(0, alreadyAt + 1); // trim to that point
+        return [...prev, { id: folderId, name }];
+      });
     }
     setCurrentFolderId(folderId);
     setSelectedIds(new Set());
@@ -244,8 +250,20 @@ function PodManagerInner() {
     if (!deleteTarget) return;
     if (deleteTarget.type === "folder") {
       const res = await fetch(`/api/pod-manager/folders/${deleteTarget.ids[0]}`, { method: "DELETE" });
-      if (res.ok) { toast.success("Folder deleted"); load(); loadFolderTree(); }
-      else toast.error("Failed to delete folder");
+      if (res.ok) {
+        toast.success("Folder deleted");
+        // If we're currently inside the deleted folder, navigate to its parent
+        if (currentFolderId === deleteTarget.ids[0]) {
+          const parentCrumb = breadcrumbs[breadcrumbs.length - 2] ?? { id: null, name: "Root" };
+          setBreadcrumbs(prev => prev.slice(0, -1).length > 0 ? prev.slice(0, -1) : [{ id: null, name: "Root" }]);
+          setCurrentFolderId(parentCrumb.id);
+        }
+        load();
+        loadFolderTree();
+      } else {
+        const d = await res.json();
+        toast.error(d.error || "Failed to delete folder");
+      }
     } else if (deleteTarget.type === "file") {
       const res = await fetch(`/api/pod-manager/files/${deleteTarget.ids[0]}`, { method: "DELETE" });
       if (res.ok) { toast.success("File deleted"); load(); }
@@ -352,10 +370,19 @@ function PodManagerInner() {
   function FolderTreeItem({ folder, depth = 0 }: { folder: PodFolder; depth?: number }) {
     const children = folderTree.filter(f => f.parentId === folder.id);
     const isActive = currentFolderId === folder.id;
+    // Check if this folder is already in the breadcrumb trail
+    const alreadyInTrail = breadcrumbs.some(b => b.id === folder.id);
     return (
       <div>
         <button
-          onClick={() => navigateTo(folder.id, folder.name)}
+          onClick={() => {
+            if (alreadyInTrail) {
+              // Navigate via breadcrumb logic to avoid duplicates
+              navigateTo(folder.id, folder.name, true);
+            } else {
+              navigateTo(folder.id, folder.name, false);
+            }
+          }}
           className={clsx(
             "w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm text-left transition-colors",
             isActive ? "bg-blue-100 text-blue-700 font-semibold" : "text-slate-600 hover:bg-slate-100",

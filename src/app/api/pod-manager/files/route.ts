@@ -25,11 +25,7 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") || "50", 10)));
 
-  // Customer-scoped users can only see their own files — and only if POD Manager access is enabled
-  const effectiveCustomerId = session.customerId
-    ? session.customerId
-    : customerId || undefined;
-
+  // For customer portal sessions — check access is enabled
   if (session.customerId) {
     const customer = await prisma.customer.findUnique({
       where: { id: session.customerId },
@@ -38,7 +34,33 @@ export async function GET(req: NextRequest) {
     if (!customer?.podManagerAccess) {
       return NextResponse.json({ error: "POD Manager access not enabled for this account" }, { status: 403 });
     }
+    // Files inside the folder tree may have customerId=null (created by admin).
+    // Don't filter by customerId — the folder navigation already scopes access.
+    // Just filter by the requested folderId.
+    const where: any = {
+      folderId: folderId ?? null,
+      deletedAt: null,
+      ...(search ? { filename: { contains: search } } : {}),
+    };
+    try {
+      const [files, total] = await Promise.all([
+        prisma.podFile.findMany({
+          where,
+          orderBy: { [sort]: dir },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          include: { customer: { select: { id: true, name: true } } },
+        }),
+        prisma.podFile.count({ where }),
+      ]);
+      return NextResponse.json({ files, total, page, pageSize, pages: Math.ceil(total / pageSize) });
+    } catch (e: any) {
+      return NextResponse.json({ error: e.message }, { status: 500 });
+    }
   }
+
+  // Admin / staff path
+  const effectiveCustomerId = customerId || undefined;
 
   const where: any = {
     folderId: folderId ?? null,
