@@ -2,7 +2,7 @@
 import { useState, useEffect, use, useRef } from "react";
 import Topbar from "@/components/Topbar";
 import Modal from "@/components/Modal";
-import { ArrowLeft, Plus, Trash2, Pencil, Loader2, KeyRound, CheckCircle2, Copy } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Pencil, Loader2, KeyRound, CheckCircle2, Copy, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -193,6 +193,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
               <KeyRound className="w-3 h-3" /> {accessStatus?.hasAccess ? "Reset Portal Access" : "Allow Login Access"}
             </button>
+            <Link
+              href={`/admin/pod-manager?customerId=${id}`}
+              className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+              <FolderOpen className="w-3 h-3" /> POD Manager
+            </Link>
             <button onClick={() => setEditModal(true)}
               className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
               <Pencil className="w-3 h-3" /> Edit Customer

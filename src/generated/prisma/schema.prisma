@@ -131,6 +131,8 @@ model Customer {
   sales          Sale[]
   invoices       Invoice[]
   messagesStatus MessageStatus[]
+  podFolders     PodFolder[]
+  podFiles       PodFile[]
 
   @@map("customers")
 }
@@ -657,4 +659,64 @@ model JobBatch {
   createdAt DateTime @default(now())
 
   @@map("job_batches")
+}
+
+// ─── POD Manager ────────────────────────────────────────────────────────────
+
+model PodFolder {
+  id          String    @id @default(cuid())
+  name        String
+  parentId    String? // null = root folder
+  customerId  String? // if set, this folder belongs to a customer
+  createdById String?
+  storageUsed Int       @default(0) // bytes used (sum of file sizes in this folder tree)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  parent   PodFolder?  @relation("FolderTree", fields: [parentId], references: [id])
+  children PodFolder[] @relation("FolderTree")
+  files    PodFile[]
+  customer Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@map("pod_folders")
+}
+
+model PodFile {
+  id           String    @id @default(cuid())
+  folderId     String? // null = root (unorganised)
+  bookingId    String? // linked booking (if moved from a POD upload)
+  filename     String // display name (can be renamed)
+  storedName   String // actual filename on disk
+  filePath     String // full public path e.g. /uploads/pod/SW1A1AA.jpg
+  mimeType     String?
+  fileSize     Int       @default(0) // bytes
+  customerId   String? // if the file belongs to a customer's storage space
+  uploadedById String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  folder   PodFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  customer Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@map("pod_files")
+}
+
+// POD Manager access control — which users/roles can access which customer folders
+model PodPermission {
+  id         String   @id @default(cuid())
+  userId     String? // specific user (if null, applies to all users of the role)
+  roleId     String? // specific role
+  customerId String? // which customer's folder they can access (null = all)
+  canUpload  Boolean  @default(false)
+  canMove    Boolean  @default(false)
+  canRename  Boolean  @default(false)
+  canDelete  Boolean  @default(false)
+  canShare   Boolean  @default(false)
+  canManage  Boolean  @default(false) // create/delete folders, group actions
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("pod_permissions")
 }

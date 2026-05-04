@@ -44,6 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const relationship = (formData.get("relationship") as string)?.trim() || null;
     const temperature = (formData.get("temperature") as string)?.trim() || null;
     const notes = (formData.get("notes") as string)?.trim() || null;
+    const postcodeRaw = (formData.get("postcode") as string)?.trim() || null;
 
     // Accept multiple photos — formData.getAll returns all values for the "photo" key
     const photoFiles = (formData.getAll("photo") as File[]).filter(f => f && f.size > 0);
@@ -62,15 +63,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       await ensureDir();
       const existing = parsePodFiles(booking.podUpload);
 
+      // Build postcode-based prefix (sanitise for filesystem)
+      const postcodePrefix = postcodeRaw
+        ? postcodeRaw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
+        : id.slice(-6).toUpperCase();
+
+      // Determine starting index for #N suffix (based on existing files for this booking)
+      let photoIndex = existing.filter(f => f.includes(`/${postcodePrefix}`)).length + 1;
+
       for (const photo of photoFiles) {
         if (!allowed.includes(photo.type)) return NextResponse.json({ error: "File type not allowed" }, { status: 400 });
         if (photo.size > 15 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 15 MB)" }, { status: 400 });
 
         const ext = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
-        const filename = `${id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+        // Name: POSTCODE#1.jpg, POSTCODE#2.jpg etc.
+        const filename = photoFiles.length === 1 && photoIndex === 1
+          ? `${postcodePrefix}.${ext}`
+          : `${postcodePrefix}#${photoIndex}.${ext}`;
         const filepath = path.join(UPLOAD_DIR, filename);
         await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
         existing.push(`/uploads/pod/${filename}`);
+        photoIndex++;
       }
 
       podUploadValue = JSON.stringify(existing);

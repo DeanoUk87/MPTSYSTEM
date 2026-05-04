@@ -85,3 +85,32 @@ export async function GET() {
 | Date | Changes |
 |------|---------|
 | Initial | Template created with base setup |
+| 2026-05-04 | POD Manager system + driver PWA photo requirement + postcode-based file naming |
+
+## Recently Completed
+
+- [x] Driver PWA (deliver + via): photo of paperwork now **required** before submission; UI shows red border, required label, red camera button until photo is taken
+- [x] POD photos renamed to **postcode format** on upload: `SW1A1AA.jpg`, `SW1A1AA#2.jpg`, etc. Postcode sent from frontend via FormData
+- [x] **POD Manager** — full file manager system added at `/admin/pod-manager`:
+  - Folder tree navigation (sidebar)
+  - Drag & drop file upload
+  - Image inline thumbnails + preview lightbox
+  - Sortable file list (name, date, size)
+  - Pagination (50 per page)
+  - Rename files/folders
+  - Move/Copy files through folders (bulk & single)
+  - Delete files/folders (soft delete)
+  - Download single files + multi-file download
+  - Quick search
+  - Group/bulk actions (move, delete)
+  - Customer-scoped storage space
+  - Permission system (Upload, Move, Rename, Delete, Share, Manage) tied to roles/users/customers
+- [x] **POD Manager modal** on booking detail page — "POD Manager" button appears alongside "POD Verified"; opens inline modal showing files for that booking with import, move, delete, preview, download
+- [x] **Sidebar** — "POD Manager" added under Transport group (permission: `pod_manager_view`)
+- [x] **Customer detail page** — "POD Manager" button opens POD Manager filtered to that customer's files
+- [x] **Prisma schema** — `PodFolder`, `PodFile`, `PodPermission` models added + migration applied
+- [x] **API routes**: `/api/pod-manager/folders`, `/api/pod-manager/files`, `/api/pod-manager/bulk`, `/api/pod-manager/permissions`, `/api/pod-manager/import-booking`, `/api/pod-manager/download-zip`
+
+## Current State
+
+**Production-ready build** ✅ — all TypeScript checks pass, build succeeds, zero lint errors.

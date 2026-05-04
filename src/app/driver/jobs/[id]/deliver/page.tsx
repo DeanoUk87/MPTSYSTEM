@@ -152,6 +152,10 @@ export default function DeliverPage() {
       setError("Please confirm if this delivery is to the recipient.");
       return;
     }
+    if (photos.length === 0) {
+      setError("A photo of the paperwork is required before completing delivery.");
+      return;
+    }
     setError("");
     const orders = parseOrders(job?.deliveryNotes);
     const autoTemp = buildAutoTemp(orders, job?.chillUnit, job?.ambientUnit);
@@ -171,6 +175,7 @@ export default function DeliverPage() {
       fd.append("relationship", relationship);
       fd.append("temperature", pendingAutoTemp);
       fd.append("notes", notes);
+      if (job?.deliveryPostcode) fd.append("postcode", job.deliveryPostcode);
       for (const photo of photos) {
         fd.append("photo", photo);
       }
@@ -192,6 +197,7 @@ export default function DeliverPage() {
             relationship,
             temperature: pendingAutoTemp,
             notes,
+            ...(job?.deliveryPostcode ? { postcode: job.deliveryPostcode } : {}),
           };
           const photoEntries = photos.length > 0 ? await filesToPhotoEntries(photos) : undefined;
           await queueSubmission({
@@ -332,9 +338,20 @@ export default function DeliverPage() {
           );
         })()}
 
-        {/* POD photo */}
-        <div className="bg-[#1c1c2e] rounded-2xl p-4 space-y-3">
-          <h2 className="font-semibold text-white">Proof of delivery</h2>
+        {/* POD photo — required */}
+        <div className={`rounded-2xl p-4 space-y-3 ${photos.length === 0 ? "bg-[#1c1c2e] border border-red-500/40" : "bg-[#1c1c2e]"}`}>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-white">Paperwork Photo <span className="text-red-400">*</span></h2>
+            {photos.length === 0 && (
+              <span className="text-xs text-red-400 font-medium">Required</span>
+            )}
+            {photos.length > 0 && (
+              <span className="text-xs text-emerald-400 font-medium">{photos.length} photo{photos.length > 1 ? "s" : ""} added</span>
+            )}
+          </div>
+          {photos.length === 0 && (
+            <p className="text-xs text-red-300/80">You must take a photo of the delivery paperwork before completing.</p>
+          )}
 
           {/* Photo thumbnails grid */}
           {photoPreviews.length > 0 && (
@@ -356,9 +373,11 @@ export default function DeliverPage() {
           {/* Take photo button — always visible so driver can keep adding photos */}
           <button
             onClick={() => cameraRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl text-sm font-medium">
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium ${
+              photos.length === 0 ? "bg-red-600 text-white" : "bg-blue-600 text-white"
+            }`}>
             <Camera className="w-4 h-4" />
-            {photoPreviews.length === 0 ? "Take Photo" : "Take Another Photo"}
+            {photoPreviews.length === 0 ? "Take Photo of Paperwork" : "Take Another Photo"}
           </button>
 
           <input

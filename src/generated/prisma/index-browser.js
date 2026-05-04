@@ -599,6 +599,49 @@ exports.Prisma.JobBatchScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PodFolderScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  parentId: 'parentId',
+  customerId: 'customerId',
+  createdById: 'createdById',
+  storageUsed: 'storageUsed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.PodFileScalarFieldEnum = {
+  id: 'id',
+  folderId: 'folderId',
+  bookingId: 'bookingId',
+  filename: 'filename',
+  storedName: 'storedName',
+  filePath: 'filePath',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  customerId: 'customerId',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.PodPermissionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  roleId: 'roleId',
+  customerId: 'customerId',
+  canUpload: 'canUpload',
+  canMove: 'canMove',
+  canRename: 'canRename',
+  canDelete: 'canDelete',
+  canShare: 'canShare',
+  canManage: 'canManage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -637,7 +680,10 @@ exports.Prisma.ModelName = {
   AdminComposer: 'AdminComposer',
   MessageStatus: 'MessageStatus',
   Upload: 'Upload',
-  JobBatch: 'JobBatch'
+  JobBatch: 'JobBatch',
+  PodFolder: 'PodFolder',
+  PodFile: 'PodFile',
+  PodPermission: 'PodPermission'
 };
 
 /**

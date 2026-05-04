@@ -148,6 +148,21 @@ export type Upload = $Result.DefaultSelection<Prisma.$UploadPayload>
  * 
  */
 export type JobBatch = $Result.DefaultSelection<Prisma.$JobBatchPayload>
+/**
+ * Model PodFolder
+ * 
+ */
+export type PodFolder = $Result.DefaultSelection<Prisma.$PodFolderPayload>
+/**
+ * Model PodFile
+ * 
+ */
+export type PodFile = $Result.DefaultSelection<Prisma.$PodFilePayload>
+/**
+ * Model PodPermission
+ * 
+ */
+export type PodPermission = $Result.DefaultSelection<Prisma.$PodPermissionPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -536,6 +551,36 @@ export class PrismaClient<
     * ```
     */
   get jobBatch(): Prisma.JobBatchDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.podFolder`: Exposes CRUD operations for the **PodFolder** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PodFolders
+    * const podFolders = await prisma.podFolder.findMany()
+    * ```
+    */
+  get podFolder(): Prisma.PodFolderDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.podFile`: Exposes CRUD operations for the **PodFile** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PodFiles
+    * const podFiles = await prisma.podFile.findMany()
+    * ```
+    */
+  get podFile(): Prisma.PodFileDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.podPermission`: Exposes CRUD operations for the **PodPermission** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PodPermissions
+    * const podPermissions = await prisma.podPermission.findMany()
+    * ```
+    */
+  get podPermission(): Prisma.PodPermissionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1003,7 +1048,10 @@ export namespace Prisma {
     AdminComposer: 'AdminComposer',
     MessageStatus: 'MessageStatus',
     Upload: 'Upload',
-    JobBatch: 'JobBatch'
+    JobBatch: 'JobBatch',
+    PodFolder: 'PodFolder',
+    PodFile: 'PodFile',
+    PodPermission: 'PodPermission'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1022,7 +1070,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "auditLog" | "role" | "permission" | "userRole" | "rolePermission" | "customer" | "driver" | "driverContact" | "vehicle" | "customerVehicleRate" | "storageUnit" | "storageUsage" | "bookingType" | "fuelSurcharge" | "booking" | "viaAddress" | "geoTracking" | "sale" | "invoice" | "saleArchive" | "invoiceArchive" | "settings" | "adminComposer" | "messageStatus" | "upload" | "jobBatch"
+      modelProps: "user" | "auditLog" | "role" | "permission" | "userRole" | "rolePermission" | "customer" | "driver" | "driverContact" | "vehicle" | "customerVehicleRate" | "storageUnit" | "storageUsage" | "bookingType" | "fuelSurcharge" | "booking" | "viaAddress" | "geoTracking" | "sale" | "invoice" | "saleArchive" | "invoiceArchive" | "settings" | "adminComposer" | "messageStatus" | "upload" | "jobBatch" | "podFolder" | "podFile" | "podPermission"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3024,6 +3072,228 @@ export namespace Prisma {
           }
         }
       }
+      PodFolder: {
+        payload: Prisma.$PodFolderPayload<ExtArgs>
+        fields: Prisma.PodFolderFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PodFolderFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PodFolderFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>
+          }
+          findFirst: {
+            args: Prisma.PodFolderFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PodFolderFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>
+          }
+          findMany: {
+            args: Prisma.PodFolderFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>[]
+          }
+          create: {
+            args: Prisma.PodFolderCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>
+          }
+          createMany: {
+            args: Prisma.PodFolderCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PodFolderCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>[]
+          }
+          delete: {
+            args: Prisma.PodFolderDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>
+          }
+          update: {
+            args: Prisma.PodFolderUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>
+          }
+          deleteMany: {
+            args: Prisma.PodFolderDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PodFolderUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PodFolderUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>[]
+          }
+          upsert: {
+            args: Prisma.PodFolderUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFolderPayload>
+          }
+          aggregate: {
+            args: Prisma.PodFolderAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePodFolder>
+          }
+          groupBy: {
+            args: Prisma.PodFolderGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PodFolderGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PodFolderCountArgs<ExtArgs>
+            result: $Utils.Optional<PodFolderCountAggregateOutputType> | number
+          }
+        }
+      }
+      PodFile: {
+        payload: Prisma.$PodFilePayload<ExtArgs>
+        fields: Prisma.PodFileFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PodFileFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PodFileFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>
+          }
+          findFirst: {
+            args: Prisma.PodFileFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PodFileFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>
+          }
+          findMany: {
+            args: Prisma.PodFileFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>[]
+          }
+          create: {
+            args: Prisma.PodFileCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>
+          }
+          createMany: {
+            args: Prisma.PodFileCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PodFileCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>[]
+          }
+          delete: {
+            args: Prisma.PodFileDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>
+          }
+          update: {
+            args: Prisma.PodFileUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>
+          }
+          deleteMany: {
+            args: Prisma.PodFileDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PodFileUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PodFileUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>[]
+          }
+          upsert: {
+            args: Prisma.PodFileUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodFilePayload>
+          }
+          aggregate: {
+            args: Prisma.PodFileAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePodFile>
+          }
+          groupBy: {
+            args: Prisma.PodFileGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PodFileGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PodFileCountArgs<ExtArgs>
+            result: $Utils.Optional<PodFileCountAggregateOutputType> | number
+          }
+        }
+      }
+      PodPermission: {
+        payload: Prisma.$PodPermissionPayload<ExtArgs>
+        fields: Prisma.PodPermissionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PodPermissionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PodPermissionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>
+          }
+          findFirst: {
+            args: Prisma.PodPermissionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PodPermissionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>
+          }
+          findMany: {
+            args: Prisma.PodPermissionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>[]
+          }
+          create: {
+            args: Prisma.PodPermissionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>
+          }
+          createMany: {
+            args: Prisma.PodPermissionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PodPermissionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>[]
+          }
+          delete: {
+            args: Prisma.PodPermissionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>
+          }
+          update: {
+            args: Prisma.PodPermissionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>
+          }
+          deleteMany: {
+            args: Prisma.PodPermissionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PodPermissionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PodPermissionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>[]
+          }
+          upsert: {
+            args: Prisma.PodPermissionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PodPermissionPayload>
+          }
+          aggregate: {
+            args: Prisma.PodPermissionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePodPermission>
+          }
+          groupBy: {
+            args: Prisma.PodPermissionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PodPermissionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PodPermissionCountArgs<ExtArgs>
+            result: $Utils.Optional<PodPermissionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3147,6 +3417,9 @@ export namespace Prisma {
     messageStatus?: MessageStatusOmit
     upload?: UploadOmit
     jobBatch?: JobBatchOmit
+    podFolder?: PodFolderOmit
+    podFile?: PodFileOmit
+    podPermission?: PodPermissionOmit
   }
 
   /* Types for Logging */
@@ -3352,6 +3625,8 @@ export namespace Prisma {
     sales: number
     invoices: number
     messagesStatus: number
+    podFolders: number
+    podFiles: number
   }
 
   export type CustomerCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3360,6 +3635,8 @@ export namespace Prisma {
     sales?: boolean | CustomerCountOutputTypeCountSalesArgs
     invoices?: boolean | CustomerCountOutputTypeCountInvoicesArgs
     messagesStatus?: boolean | CustomerCountOutputTypeCountMessagesStatusArgs
+    podFolders?: boolean | CustomerCountOutputTypeCountPodFoldersArgs
+    podFiles?: boolean | CustomerCountOutputTypeCountPodFilesArgs
   }
 
   // Custom InputTypes
@@ -3406,6 +3683,20 @@ export namespace Prisma {
    */
   export type CustomerCountOutputTypeCountMessagesStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageStatusWhereInput
+  }
+
+  /**
+   * CustomerCountOutputType without action
+   */
+  export type CustomerCountOutputTypeCountPodFoldersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodFolderWhereInput
+  }
+
+  /**
+   * CustomerCountOutputType without action
+   */
+  export type CustomerCountOutputTypeCountPodFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodFileWhereInput
   }
 
 
@@ -3686,6 +3977,46 @@ export namespace Prisma {
    */
   export type AdminComposerCountOutputTypeCountMessagesStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageStatusWhereInput
+  }
+
+
+  /**
+   * Count Type PodFolderCountOutputType
+   */
+
+  export type PodFolderCountOutputType = {
+    children: number
+    files: number
+  }
+
+  export type PodFolderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    children?: boolean | PodFolderCountOutputTypeCountChildrenArgs
+    files?: boolean | PodFolderCountOutputTypeCountFilesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PodFolderCountOutputType without action
+   */
+  export type PodFolderCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolderCountOutputType
+     */
+    select?: PodFolderCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PodFolderCountOutputType without action
+   */
+  export type PodFolderCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodFolderWhereInput
+  }
+
+  /**
+   * PodFolderCountOutputType without action
+   */
+  export type PodFolderCountOutputTypeCountFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodFileWhereInput
   }
 
 
@@ -10669,6 +11000,8 @@ export namespace Prisma {
     sales?: boolean | Customer$salesArgs<ExtArgs>
     invoices?: boolean | Customer$invoicesArgs<ExtArgs>
     messagesStatus?: boolean | Customer$messagesStatusArgs<ExtArgs>
+    podFolders?: boolean | Customer$podFoldersArgs<ExtArgs>
+    podFiles?: boolean | Customer$podFilesArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
 
@@ -10754,6 +11087,8 @@ export namespace Prisma {
     sales?: boolean | Customer$salesArgs<ExtArgs>
     invoices?: boolean | Customer$invoicesArgs<ExtArgs>
     messagesStatus?: boolean | Customer$messagesStatusArgs<ExtArgs>
+    podFolders?: boolean | Customer$podFoldersArgs<ExtArgs>
+    podFiles?: boolean | Customer$podFilesArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CustomerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -10767,6 +11102,8 @@ export namespace Prisma {
       sales: Prisma.$SalePayload<ExtArgs>[]
       invoices: Prisma.$InvoicePayload<ExtArgs>[]
       messagesStatus: Prisma.$MessageStatusPayload<ExtArgs>[]
+      podFolders: Prisma.$PodFolderPayload<ExtArgs>[]
+      podFiles: Prisma.$PodFilePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11190,6 +11527,8 @@ export namespace Prisma {
     sales<T extends Customer$salesArgs<ExtArgs> = {}>(args?: Subset<T, Customer$salesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SalePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     invoices<T extends Customer$invoicesArgs<ExtArgs> = {}>(args?: Subset<T, Customer$invoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messagesStatus<T extends Customer$messagesStatusArgs<ExtArgs> = {}>(args?: Subset<T, Customer$messagesStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    podFolders<T extends Customer$podFoldersArgs<ExtArgs> = {}>(args?: Subset<T, Customer$podFoldersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    podFiles<T extends Customer$podFilesArgs<ExtArgs> = {}>(args?: Subset<T, Customer$podFilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11744,6 +12083,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
+  }
+
+  /**
+   * Customer.podFolders
+   */
+  export type Customer$podFoldersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    where?: PodFolderWhereInput
+    orderBy?: PodFolderOrderByWithRelationInput | PodFolderOrderByWithRelationInput[]
+    cursor?: PodFolderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodFolderScalarFieldEnum | PodFolderScalarFieldEnum[]
+  }
+
+  /**
+   * Customer.podFiles
+   */
+  export type Customer$podFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    where?: PodFileWhereInput
+    orderBy?: PodFileOrderByWithRelationInput | PodFileOrderByWithRelationInput[]
+    cursor?: PodFileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodFileScalarFieldEnum | PodFileScalarFieldEnum[]
   }
 
   /**
@@ -36969,6 +37356,3576 @@ export namespace Prisma {
 
 
   /**
+   * Model PodFolder
+   */
+
+  export type AggregatePodFolder = {
+    _count: PodFolderCountAggregateOutputType | null
+    _avg: PodFolderAvgAggregateOutputType | null
+    _sum: PodFolderSumAggregateOutputType | null
+    _min: PodFolderMinAggregateOutputType | null
+    _max: PodFolderMaxAggregateOutputType | null
+  }
+
+  export type PodFolderAvgAggregateOutputType = {
+    storageUsed: number | null
+  }
+
+  export type PodFolderSumAggregateOutputType = {
+    storageUsed: number | null
+  }
+
+  export type PodFolderMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    parentId: string | null
+    customerId: string | null
+    createdById: string | null
+    storageUsed: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type PodFolderMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    parentId: string | null
+    customerId: string | null
+    createdById: string | null
+    storageUsed: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type PodFolderCountAggregateOutputType = {
+    id: number
+    name: number
+    parentId: number
+    customerId: number
+    createdById: number
+    storageUsed: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type PodFolderAvgAggregateInputType = {
+    storageUsed?: true
+  }
+
+  export type PodFolderSumAggregateInputType = {
+    storageUsed?: true
+  }
+
+  export type PodFolderMinAggregateInputType = {
+    id?: true
+    name?: true
+    parentId?: true
+    customerId?: true
+    createdById?: true
+    storageUsed?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type PodFolderMaxAggregateInputType = {
+    id?: true
+    name?: true
+    parentId?: true
+    customerId?: true
+    createdById?: true
+    storageUsed?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type PodFolderCountAggregateInputType = {
+    id?: true
+    name?: true
+    parentId?: true
+    customerId?: true
+    createdById?: true
+    storageUsed?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type PodFolderAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PodFolder to aggregate.
+     */
+    where?: PodFolderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFolders to fetch.
+     */
+    orderBy?: PodFolderOrderByWithRelationInput | PodFolderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PodFolderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFolders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFolders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PodFolders
+    **/
+    _count?: true | PodFolderCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PodFolderAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PodFolderSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PodFolderMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PodFolderMaxAggregateInputType
+  }
+
+  export type GetPodFolderAggregateType<T extends PodFolderAggregateArgs> = {
+        [P in keyof T & keyof AggregatePodFolder]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePodFolder[P]>
+      : GetScalarType<T[P], AggregatePodFolder[P]>
+  }
+
+
+
+
+  export type PodFolderGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodFolderWhereInput
+    orderBy?: PodFolderOrderByWithAggregationInput | PodFolderOrderByWithAggregationInput[]
+    by: PodFolderScalarFieldEnum[] | PodFolderScalarFieldEnum
+    having?: PodFolderScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PodFolderCountAggregateInputType | true
+    _avg?: PodFolderAvgAggregateInputType
+    _sum?: PodFolderSumAggregateInputType
+    _min?: PodFolderMinAggregateInputType
+    _max?: PodFolderMaxAggregateInputType
+  }
+
+  export type PodFolderGroupByOutputType = {
+    id: string
+    name: string
+    parentId: string | null
+    customerId: string | null
+    createdById: string | null
+    storageUsed: number
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: PodFolderCountAggregateOutputType | null
+    _avg: PodFolderAvgAggregateOutputType | null
+    _sum: PodFolderSumAggregateOutputType | null
+    _min: PodFolderMinAggregateOutputType | null
+    _max: PodFolderMaxAggregateOutputType | null
+  }
+
+  type GetPodFolderGroupByPayload<T extends PodFolderGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PodFolderGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PodFolderGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PodFolderGroupByOutputType[P]>
+            : GetScalarType<T[P], PodFolderGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PodFolderSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    parentId?: boolean
+    customerId?: boolean
+    createdById?: boolean
+    storageUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    parent?: boolean | PodFolder$parentArgs<ExtArgs>
+    children?: boolean | PodFolder$childrenArgs<ExtArgs>
+    files?: boolean | PodFolder$filesArgs<ExtArgs>
+    customer?: boolean | PodFolder$customerArgs<ExtArgs>
+    _count?: boolean | PodFolderCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["podFolder"]>
+
+  export type PodFolderSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    parentId?: boolean
+    customerId?: boolean
+    createdById?: boolean
+    storageUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    parent?: boolean | PodFolder$parentArgs<ExtArgs>
+    customer?: boolean | PodFolder$customerArgs<ExtArgs>
+  }, ExtArgs["result"]["podFolder"]>
+
+  export type PodFolderSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    parentId?: boolean
+    customerId?: boolean
+    createdById?: boolean
+    storageUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    parent?: boolean | PodFolder$parentArgs<ExtArgs>
+    customer?: boolean | PodFolder$customerArgs<ExtArgs>
+  }, ExtArgs["result"]["podFolder"]>
+
+  export type PodFolderSelectScalar = {
+    id?: boolean
+    name?: boolean
+    parentId?: boolean
+    customerId?: boolean
+    createdById?: boolean
+    storageUsed?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type PodFolderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "parentId" | "customerId" | "createdById" | "storageUsed" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["podFolder"]>
+  export type PodFolderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | PodFolder$parentArgs<ExtArgs>
+    children?: boolean | PodFolder$childrenArgs<ExtArgs>
+    files?: boolean | PodFolder$filesArgs<ExtArgs>
+    customer?: boolean | PodFolder$customerArgs<ExtArgs>
+    _count?: boolean | PodFolderCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PodFolderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | PodFolder$parentArgs<ExtArgs>
+    customer?: boolean | PodFolder$customerArgs<ExtArgs>
+  }
+  export type PodFolderIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    parent?: boolean | PodFolder$parentArgs<ExtArgs>
+    customer?: boolean | PodFolder$customerArgs<ExtArgs>
+  }
+
+  export type $PodFolderPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PodFolder"
+    objects: {
+      parent: Prisma.$PodFolderPayload<ExtArgs> | null
+      children: Prisma.$PodFolderPayload<ExtArgs>[]
+      files: Prisma.$PodFilePayload<ExtArgs>[]
+      customer: Prisma.$CustomerPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      parentId: string | null
+      customerId: string | null
+      createdById: string | null
+      storageUsed: number
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["podFolder"]>
+    composites: {}
+  }
+
+  type PodFolderGetPayload<S extends boolean | null | undefined | PodFolderDefaultArgs> = $Result.GetResult<Prisma.$PodFolderPayload, S>
+
+  type PodFolderCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PodFolderFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PodFolderCountAggregateInputType | true
+    }
+
+  export interface PodFolderDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PodFolder'], meta: { name: 'PodFolder' } }
+    /**
+     * Find zero or one PodFolder that matches the filter.
+     * @param {PodFolderFindUniqueArgs} args - Arguments to find a PodFolder
+     * @example
+     * // Get one PodFolder
+     * const podFolder = await prisma.podFolder.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PodFolderFindUniqueArgs>(args: SelectSubset<T, PodFolderFindUniqueArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PodFolder that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PodFolderFindUniqueOrThrowArgs} args - Arguments to find a PodFolder
+     * @example
+     * // Get one PodFolder
+     * const podFolder = await prisma.podFolder.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PodFolderFindUniqueOrThrowArgs>(args: SelectSubset<T, PodFolderFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PodFolder that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderFindFirstArgs} args - Arguments to find a PodFolder
+     * @example
+     * // Get one PodFolder
+     * const podFolder = await prisma.podFolder.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PodFolderFindFirstArgs>(args?: SelectSubset<T, PodFolderFindFirstArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PodFolder that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderFindFirstOrThrowArgs} args - Arguments to find a PodFolder
+     * @example
+     * // Get one PodFolder
+     * const podFolder = await prisma.podFolder.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PodFolderFindFirstOrThrowArgs>(args?: SelectSubset<T, PodFolderFindFirstOrThrowArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PodFolders that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PodFolders
+     * const podFolders = await prisma.podFolder.findMany()
+     * 
+     * // Get first 10 PodFolders
+     * const podFolders = await prisma.podFolder.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const podFolderWithIdOnly = await prisma.podFolder.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PodFolderFindManyArgs>(args?: SelectSubset<T, PodFolderFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PodFolder.
+     * @param {PodFolderCreateArgs} args - Arguments to create a PodFolder.
+     * @example
+     * // Create one PodFolder
+     * const PodFolder = await prisma.podFolder.create({
+     *   data: {
+     *     // ... data to create a PodFolder
+     *   }
+     * })
+     * 
+     */
+    create<T extends PodFolderCreateArgs>(args: SelectSubset<T, PodFolderCreateArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PodFolders.
+     * @param {PodFolderCreateManyArgs} args - Arguments to create many PodFolders.
+     * @example
+     * // Create many PodFolders
+     * const podFolder = await prisma.podFolder.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PodFolderCreateManyArgs>(args?: SelectSubset<T, PodFolderCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PodFolders and returns the data saved in the database.
+     * @param {PodFolderCreateManyAndReturnArgs} args - Arguments to create many PodFolders.
+     * @example
+     * // Create many PodFolders
+     * const podFolder = await prisma.podFolder.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PodFolders and only return the `id`
+     * const podFolderWithIdOnly = await prisma.podFolder.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PodFolderCreateManyAndReturnArgs>(args?: SelectSubset<T, PodFolderCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PodFolder.
+     * @param {PodFolderDeleteArgs} args - Arguments to delete one PodFolder.
+     * @example
+     * // Delete one PodFolder
+     * const PodFolder = await prisma.podFolder.delete({
+     *   where: {
+     *     // ... filter to delete one PodFolder
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PodFolderDeleteArgs>(args: SelectSubset<T, PodFolderDeleteArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PodFolder.
+     * @param {PodFolderUpdateArgs} args - Arguments to update one PodFolder.
+     * @example
+     * // Update one PodFolder
+     * const podFolder = await prisma.podFolder.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PodFolderUpdateArgs>(args: SelectSubset<T, PodFolderUpdateArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PodFolders.
+     * @param {PodFolderDeleteManyArgs} args - Arguments to filter PodFolders to delete.
+     * @example
+     * // Delete a few PodFolders
+     * const { count } = await prisma.podFolder.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PodFolderDeleteManyArgs>(args?: SelectSubset<T, PodFolderDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PodFolders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PodFolders
+     * const podFolder = await prisma.podFolder.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PodFolderUpdateManyArgs>(args: SelectSubset<T, PodFolderUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PodFolders and returns the data updated in the database.
+     * @param {PodFolderUpdateManyAndReturnArgs} args - Arguments to update many PodFolders.
+     * @example
+     * // Update many PodFolders
+     * const podFolder = await prisma.podFolder.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PodFolders and only return the `id`
+     * const podFolderWithIdOnly = await prisma.podFolder.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PodFolderUpdateManyAndReturnArgs>(args: SelectSubset<T, PodFolderUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PodFolder.
+     * @param {PodFolderUpsertArgs} args - Arguments to update or create a PodFolder.
+     * @example
+     * // Update or create a PodFolder
+     * const podFolder = await prisma.podFolder.upsert({
+     *   create: {
+     *     // ... data to create a PodFolder
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PodFolder we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PodFolderUpsertArgs>(args: SelectSubset<T, PodFolderUpsertArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PodFolders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderCountArgs} args - Arguments to filter PodFolders to count.
+     * @example
+     * // Count the number of PodFolders
+     * const count = await prisma.podFolder.count({
+     *   where: {
+     *     // ... the filter for the PodFolders we want to count
+     *   }
+     * })
+    **/
+    count<T extends PodFolderCountArgs>(
+      args?: Subset<T, PodFolderCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PodFolderCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PodFolder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PodFolderAggregateArgs>(args: Subset<T, PodFolderAggregateArgs>): Prisma.PrismaPromise<GetPodFolderAggregateType<T>>
+
+    /**
+     * Group by PodFolder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFolderGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PodFolderGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PodFolderGroupByArgs['orderBy'] }
+        : { orderBy?: PodFolderGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PodFolderGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPodFolderGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PodFolder model
+   */
+  readonly fields: PodFolderFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PodFolder.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PodFolderClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    parent<T extends PodFolder$parentArgs<ExtArgs> = {}>(args?: Subset<T, PodFolder$parentArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    children<T extends PodFolder$childrenArgs<ExtArgs> = {}>(args?: Subset<T, PodFolder$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    files<T extends PodFolder$filesArgs<ExtArgs> = {}>(args?: Subset<T, PodFolder$filesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    customer<T extends PodFolder$customerArgs<ExtArgs> = {}>(args?: Subset<T, PodFolder$customerArgs<ExtArgs>>): Prisma__CustomerClient<$Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PodFolder model
+   */
+  interface PodFolderFieldRefs {
+    readonly id: FieldRef<"PodFolder", 'String'>
+    readonly name: FieldRef<"PodFolder", 'String'>
+    readonly parentId: FieldRef<"PodFolder", 'String'>
+    readonly customerId: FieldRef<"PodFolder", 'String'>
+    readonly createdById: FieldRef<"PodFolder", 'String'>
+    readonly storageUsed: FieldRef<"PodFolder", 'Int'>
+    readonly createdAt: FieldRef<"PodFolder", 'DateTime'>
+    readonly updatedAt: FieldRef<"PodFolder", 'DateTime'>
+    readonly deletedAt: FieldRef<"PodFolder", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PodFolder findUnique
+   */
+  export type PodFolderFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFolder to fetch.
+     */
+    where: PodFolderWhereUniqueInput
+  }
+
+  /**
+   * PodFolder findUniqueOrThrow
+   */
+  export type PodFolderFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFolder to fetch.
+     */
+    where: PodFolderWhereUniqueInput
+  }
+
+  /**
+   * PodFolder findFirst
+   */
+  export type PodFolderFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFolder to fetch.
+     */
+    where?: PodFolderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFolders to fetch.
+     */
+    orderBy?: PodFolderOrderByWithRelationInput | PodFolderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PodFolders.
+     */
+    cursor?: PodFolderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFolders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFolders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PodFolders.
+     */
+    distinct?: PodFolderScalarFieldEnum | PodFolderScalarFieldEnum[]
+  }
+
+  /**
+   * PodFolder findFirstOrThrow
+   */
+  export type PodFolderFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFolder to fetch.
+     */
+    where?: PodFolderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFolders to fetch.
+     */
+    orderBy?: PodFolderOrderByWithRelationInput | PodFolderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PodFolders.
+     */
+    cursor?: PodFolderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFolders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFolders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PodFolders.
+     */
+    distinct?: PodFolderScalarFieldEnum | PodFolderScalarFieldEnum[]
+  }
+
+  /**
+   * PodFolder findMany
+   */
+  export type PodFolderFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFolders to fetch.
+     */
+    where?: PodFolderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFolders to fetch.
+     */
+    orderBy?: PodFolderOrderByWithRelationInput | PodFolderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PodFolders.
+     */
+    cursor?: PodFolderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFolders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFolders.
+     */
+    skip?: number
+    distinct?: PodFolderScalarFieldEnum | PodFolderScalarFieldEnum[]
+  }
+
+  /**
+   * PodFolder create
+   */
+  export type PodFolderCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PodFolder.
+     */
+    data: XOR<PodFolderCreateInput, PodFolderUncheckedCreateInput>
+  }
+
+  /**
+   * PodFolder createMany
+   */
+  export type PodFolderCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PodFolders.
+     */
+    data: PodFolderCreateManyInput | PodFolderCreateManyInput[]
+  }
+
+  /**
+   * PodFolder createManyAndReturn
+   */
+  export type PodFolderCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * The data used to create many PodFolders.
+     */
+    data: PodFolderCreateManyInput | PodFolderCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PodFolder update
+   */
+  export type PodFolderUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PodFolder.
+     */
+    data: XOR<PodFolderUpdateInput, PodFolderUncheckedUpdateInput>
+    /**
+     * Choose, which PodFolder to update.
+     */
+    where: PodFolderWhereUniqueInput
+  }
+
+  /**
+   * PodFolder updateMany
+   */
+  export type PodFolderUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PodFolders.
+     */
+    data: XOR<PodFolderUpdateManyMutationInput, PodFolderUncheckedUpdateManyInput>
+    /**
+     * Filter which PodFolders to update
+     */
+    where?: PodFolderWhereInput
+    /**
+     * Limit how many PodFolders to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodFolder updateManyAndReturn
+   */
+  export type PodFolderUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * The data used to update PodFolders.
+     */
+    data: XOR<PodFolderUpdateManyMutationInput, PodFolderUncheckedUpdateManyInput>
+    /**
+     * Filter which PodFolders to update
+     */
+    where?: PodFolderWhereInput
+    /**
+     * Limit how many PodFolders to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PodFolder upsert
+   */
+  export type PodFolderUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PodFolder to update in case it exists.
+     */
+    where: PodFolderWhereUniqueInput
+    /**
+     * In case the PodFolder found by the `where` argument doesn't exist, create a new PodFolder with this data.
+     */
+    create: XOR<PodFolderCreateInput, PodFolderUncheckedCreateInput>
+    /**
+     * In case the PodFolder was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PodFolderUpdateInput, PodFolderUncheckedUpdateInput>
+  }
+
+  /**
+   * PodFolder delete
+   */
+  export type PodFolderDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    /**
+     * Filter which PodFolder to delete.
+     */
+    where: PodFolderWhereUniqueInput
+  }
+
+  /**
+   * PodFolder deleteMany
+   */
+  export type PodFolderDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PodFolders to delete
+     */
+    where?: PodFolderWhereInput
+    /**
+     * Limit how many PodFolders to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodFolder.parent
+   */
+  export type PodFolder$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    where?: PodFolderWhereInput
+  }
+
+  /**
+   * PodFolder.children
+   */
+  export type PodFolder$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    where?: PodFolderWhereInput
+    orderBy?: PodFolderOrderByWithRelationInput | PodFolderOrderByWithRelationInput[]
+    cursor?: PodFolderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodFolderScalarFieldEnum | PodFolderScalarFieldEnum[]
+  }
+
+  /**
+   * PodFolder.files
+   */
+  export type PodFolder$filesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    where?: PodFileWhereInput
+    orderBy?: PodFileOrderByWithRelationInput | PodFileOrderByWithRelationInput[]
+    cursor?: PodFileWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PodFileScalarFieldEnum | PodFileScalarFieldEnum[]
+  }
+
+  /**
+   * PodFolder.customer
+   */
+  export type PodFolder$customerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Customer
+     */
+    select?: CustomerSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Customer
+     */
+    omit?: CustomerOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerInclude<ExtArgs> | null
+    where?: CustomerWhereInput
+  }
+
+  /**
+   * PodFolder without action
+   */
+  export type PodFolderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PodFile
+   */
+
+  export type AggregatePodFile = {
+    _count: PodFileCountAggregateOutputType | null
+    _avg: PodFileAvgAggregateOutputType | null
+    _sum: PodFileSumAggregateOutputType | null
+    _min: PodFileMinAggregateOutputType | null
+    _max: PodFileMaxAggregateOutputType | null
+  }
+
+  export type PodFileAvgAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type PodFileSumAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type PodFileMinAggregateOutputType = {
+    id: string | null
+    folderId: string | null
+    bookingId: string | null
+    filename: string | null
+    storedName: string | null
+    filePath: string | null
+    mimeType: string | null
+    fileSize: number | null
+    customerId: string | null
+    uploadedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type PodFileMaxAggregateOutputType = {
+    id: string | null
+    folderId: string | null
+    bookingId: string | null
+    filename: string | null
+    storedName: string | null
+    filePath: string | null
+    mimeType: string | null
+    fileSize: number | null
+    customerId: string | null
+    uploadedById: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    deletedAt: Date | null
+  }
+
+  export type PodFileCountAggregateOutputType = {
+    id: number
+    folderId: number
+    bookingId: number
+    filename: number
+    storedName: number
+    filePath: number
+    mimeType: number
+    fileSize: number
+    customerId: number
+    uploadedById: number
+    createdAt: number
+    updatedAt: number
+    deletedAt: number
+    _all: number
+  }
+
+
+  export type PodFileAvgAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type PodFileSumAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type PodFileMinAggregateInputType = {
+    id?: true
+    folderId?: true
+    bookingId?: true
+    filename?: true
+    storedName?: true
+    filePath?: true
+    mimeType?: true
+    fileSize?: true
+    customerId?: true
+    uploadedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type PodFileMaxAggregateInputType = {
+    id?: true
+    folderId?: true
+    bookingId?: true
+    filename?: true
+    storedName?: true
+    filePath?: true
+    mimeType?: true
+    fileSize?: true
+    customerId?: true
+    uploadedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+  }
+
+  export type PodFileCountAggregateInputType = {
+    id?: true
+    folderId?: true
+    bookingId?: true
+    filename?: true
+    storedName?: true
+    filePath?: true
+    mimeType?: true
+    fileSize?: true
+    customerId?: true
+    uploadedById?: true
+    createdAt?: true
+    updatedAt?: true
+    deletedAt?: true
+    _all?: true
+  }
+
+  export type PodFileAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PodFile to aggregate.
+     */
+    where?: PodFileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFiles to fetch.
+     */
+    orderBy?: PodFileOrderByWithRelationInput | PodFileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PodFileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PodFiles
+    **/
+    _count?: true | PodFileCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PodFileAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PodFileSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PodFileMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PodFileMaxAggregateInputType
+  }
+
+  export type GetPodFileAggregateType<T extends PodFileAggregateArgs> = {
+        [P in keyof T & keyof AggregatePodFile]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePodFile[P]>
+      : GetScalarType<T[P], AggregatePodFile[P]>
+  }
+
+
+
+
+  export type PodFileGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodFileWhereInput
+    orderBy?: PodFileOrderByWithAggregationInput | PodFileOrderByWithAggregationInput[]
+    by: PodFileScalarFieldEnum[] | PodFileScalarFieldEnum
+    having?: PodFileScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PodFileCountAggregateInputType | true
+    _avg?: PodFileAvgAggregateInputType
+    _sum?: PodFileSumAggregateInputType
+    _min?: PodFileMinAggregateInputType
+    _max?: PodFileMaxAggregateInputType
+  }
+
+  export type PodFileGroupByOutputType = {
+    id: string
+    folderId: string | null
+    bookingId: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType: string | null
+    fileSize: number
+    customerId: string | null
+    uploadedById: string | null
+    createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
+    _count: PodFileCountAggregateOutputType | null
+    _avg: PodFileAvgAggregateOutputType | null
+    _sum: PodFileSumAggregateOutputType | null
+    _min: PodFileMinAggregateOutputType | null
+    _max: PodFileMaxAggregateOutputType | null
+  }
+
+  type GetPodFileGroupByPayload<T extends PodFileGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PodFileGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PodFileGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PodFileGroupByOutputType[P]>
+            : GetScalarType<T[P], PodFileGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PodFileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    folderId?: boolean
+    bookingId?: boolean
+    filename?: boolean
+    storedName?: boolean
+    filePath?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    customerId?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    folder?: boolean | PodFile$folderArgs<ExtArgs>
+    customer?: boolean | PodFile$customerArgs<ExtArgs>
+  }, ExtArgs["result"]["podFile"]>
+
+  export type PodFileSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    folderId?: boolean
+    bookingId?: boolean
+    filename?: boolean
+    storedName?: boolean
+    filePath?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    customerId?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    folder?: boolean | PodFile$folderArgs<ExtArgs>
+    customer?: boolean | PodFile$customerArgs<ExtArgs>
+  }, ExtArgs["result"]["podFile"]>
+
+  export type PodFileSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    folderId?: boolean
+    bookingId?: boolean
+    filename?: boolean
+    storedName?: boolean
+    filePath?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    customerId?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+    folder?: boolean | PodFile$folderArgs<ExtArgs>
+    customer?: boolean | PodFile$customerArgs<ExtArgs>
+  }, ExtArgs["result"]["podFile"]>
+
+  export type PodFileSelectScalar = {
+    id?: boolean
+    folderId?: boolean
+    bookingId?: boolean
+    filename?: boolean
+    storedName?: boolean
+    filePath?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    customerId?: boolean
+    uploadedById?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    deletedAt?: boolean
+  }
+
+  export type PodFileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "folderId" | "bookingId" | "filename" | "storedName" | "filePath" | "mimeType" | "fileSize" | "customerId" | "uploadedById" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["podFile"]>
+  export type PodFileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    folder?: boolean | PodFile$folderArgs<ExtArgs>
+    customer?: boolean | PodFile$customerArgs<ExtArgs>
+  }
+  export type PodFileIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    folder?: boolean | PodFile$folderArgs<ExtArgs>
+    customer?: boolean | PodFile$customerArgs<ExtArgs>
+  }
+  export type PodFileIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    folder?: boolean | PodFile$folderArgs<ExtArgs>
+    customer?: boolean | PodFile$customerArgs<ExtArgs>
+  }
+
+  export type $PodFilePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PodFile"
+    objects: {
+      folder: Prisma.$PodFolderPayload<ExtArgs> | null
+      customer: Prisma.$CustomerPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      folderId: string | null
+      bookingId: string | null
+      filename: string
+      storedName: string
+      filePath: string
+      mimeType: string | null
+      fileSize: number
+      customerId: string | null
+      uploadedById: string | null
+      createdAt: Date
+      updatedAt: Date
+      deletedAt: Date | null
+    }, ExtArgs["result"]["podFile"]>
+    composites: {}
+  }
+
+  type PodFileGetPayload<S extends boolean | null | undefined | PodFileDefaultArgs> = $Result.GetResult<Prisma.$PodFilePayload, S>
+
+  type PodFileCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PodFileFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PodFileCountAggregateInputType | true
+    }
+
+  export interface PodFileDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PodFile'], meta: { name: 'PodFile' } }
+    /**
+     * Find zero or one PodFile that matches the filter.
+     * @param {PodFileFindUniqueArgs} args - Arguments to find a PodFile
+     * @example
+     * // Get one PodFile
+     * const podFile = await prisma.podFile.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PodFileFindUniqueArgs>(args: SelectSubset<T, PodFileFindUniqueArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PodFile that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PodFileFindUniqueOrThrowArgs} args - Arguments to find a PodFile
+     * @example
+     * // Get one PodFile
+     * const podFile = await prisma.podFile.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PodFileFindUniqueOrThrowArgs>(args: SelectSubset<T, PodFileFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PodFile that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileFindFirstArgs} args - Arguments to find a PodFile
+     * @example
+     * // Get one PodFile
+     * const podFile = await prisma.podFile.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PodFileFindFirstArgs>(args?: SelectSubset<T, PodFileFindFirstArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PodFile that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileFindFirstOrThrowArgs} args - Arguments to find a PodFile
+     * @example
+     * // Get one PodFile
+     * const podFile = await prisma.podFile.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PodFileFindFirstOrThrowArgs>(args?: SelectSubset<T, PodFileFindFirstOrThrowArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PodFiles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PodFiles
+     * const podFiles = await prisma.podFile.findMany()
+     * 
+     * // Get first 10 PodFiles
+     * const podFiles = await prisma.podFile.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const podFileWithIdOnly = await prisma.podFile.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PodFileFindManyArgs>(args?: SelectSubset<T, PodFileFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PodFile.
+     * @param {PodFileCreateArgs} args - Arguments to create a PodFile.
+     * @example
+     * // Create one PodFile
+     * const PodFile = await prisma.podFile.create({
+     *   data: {
+     *     // ... data to create a PodFile
+     *   }
+     * })
+     * 
+     */
+    create<T extends PodFileCreateArgs>(args: SelectSubset<T, PodFileCreateArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PodFiles.
+     * @param {PodFileCreateManyArgs} args - Arguments to create many PodFiles.
+     * @example
+     * // Create many PodFiles
+     * const podFile = await prisma.podFile.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PodFileCreateManyArgs>(args?: SelectSubset<T, PodFileCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PodFiles and returns the data saved in the database.
+     * @param {PodFileCreateManyAndReturnArgs} args - Arguments to create many PodFiles.
+     * @example
+     * // Create many PodFiles
+     * const podFile = await prisma.podFile.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PodFiles and only return the `id`
+     * const podFileWithIdOnly = await prisma.podFile.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PodFileCreateManyAndReturnArgs>(args?: SelectSubset<T, PodFileCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PodFile.
+     * @param {PodFileDeleteArgs} args - Arguments to delete one PodFile.
+     * @example
+     * // Delete one PodFile
+     * const PodFile = await prisma.podFile.delete({
+     *   where: {
+     *     // ... filter to delete one PodFile
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PodFileDeleteArgs>(args: SelectSubset<T, PodFileDeleteArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PodFile.
+     * @param {PodFileUpdateArgs} args - Arguments to update one PodFile.
+     * @example
+     * // Update one PodFile
+     * const podFile = await prisma.podFile.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PodFileUpdateArgs>(args: SelectSubset<T, PodFileUpdateArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PodFiles.
+     * @param {PodFileDeleteManyArgs} args - Arguments to filter PodFiles to delete.
+     * @example
+     * // Delete a few PodFiles
+     * const { count } = await prisma.podFile.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PodFileDeleteManyArgs>(args?: SelectSubset<T, PodFileDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PodFiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PodFiles
+     * const podFile = await prisma.podFile.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PodFileUpdateManyArgs>(args: SelectSubset<T, PodFileUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PodFiles and returns the data updated in the database.
+     * @param {PodFileUpdateManyAndReturnArgs} args - Arguments to update many PodFiles.
+     * @example
+     * // Update many PodFiles
+     * const podFile = await prisma.podFile.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PodFiles and only return the `id`
+     * const podFileWithIdOnly = await prisma.podFile.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PodFileUpdateManyAndReturnArgs>(args: SelectSubset<T, PodFileUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PodFile.
+     * @param {PodFileUpsertArgs} args - Arguments to update or create a PodFile.
+     * @example
+     * // Update or create a PodFile
+     * const podFile = await prisma.podFile.upsert({
+     *   create: {
+     *     // ... data to create a PodFile
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PodFile we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PodFileUpsertArgs>(args: SelectSubset<T, PodFileUpsertArgs<ExtArgs>>): Prisma__PodFileClient<$Result.GetResult<Prisma.$PodFilePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PodFiles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileCountArgs} args - Arguments to filter PodFiles to count.
+     * @example
+     * // Count the number of PodFiles
+     * const count = await prisma.podFile.count({
+     *   where: {
+     *     // ... the filter for the PodFiles we want to count
+     *   }
+     * })
+    **/
+    count<T extends PodFileCountArgs>(
+      args?: Subset<T, PodFileCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PodFileCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PodFile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PodFileAggregateArgs>(args: Subset<T, PodFileAggregateArgs>): Prisma.PrismaPromise<GetPodFileAggregateType<T>>
+
+    /**
+     * Group by PodFile.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodFileGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PodFileGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PodFileGroupByArgs['orderBy'] }
+        : { orderBy?: PodFileGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PodFileGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPodFileGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PodFile model
+   */
+  readonly fields: PodFileFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PodFile.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PodFileClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    folder<T extends PodFile$folderArgs<ExtArgs> = {}>(args?: Subset<T, PodFile$folderArgs<ExtArgs>>): Prisma__PodFolderClient<$Result.GetResult<Prisma.$PodFolderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    customer<T extends PodFile$customerArgs<ExtArgs> = {}>(args?: Subset<T, PodFile$customerArgs<ExtArgs>>): Prisma__CustomerClient<$Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PodFile model
+   */
+  interface PodFileFieldRefs {
+    readonly id: FieldRef<"PodFile", 'String'>
+    readonly folderId: FieldRef<"PodFile", 'String'>
+    readonly bookingId: FieldRef<"PodFile", 'String'>
+    readonly filename: FieldRef<"PodFile", 'String'>
+    readonly storedName: FieldRef<"PodFile", 'String'>
+    readonly filePath: FieldRef<"PodFile", 'String'>
+    readonly mimeType: FieldRef<"PodFile", 'String'>
+    readonly fileSize: FieldRef<"PodFile", 'Int'>
+    readonly customerId: FieldRef<"PodFile", 'String'>
+    readonly uploadedById: FieldRef<"PodFile", 'String'>
+    readonly createdAt: FieldRef<"PodFile", 'DateTime'>
+    readonly updatedAt: FieldRef<"PodFile", 'DateTime'>
+    readonly deletedAt: FieldRef<"PodFile", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PodFile findUnique
+   */
+  export type PodFileFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFile to fetch.
+     */
+    where: PodFileWhereUniqueInput
+  }
+
+  /**
+   * PodFile findUniqueOrThrow
+   */
+  export type PodFileFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFile to fetch.
+     */
+    where: PodFileWhereUniqueInput
+  }
+
+  /**
+   * PodFile findFirst
+   */
+  export type PodFileFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFile to fetch.
+     */
+    where?: PodFileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFiles to fetch.
+     */
+    orderBy?: PodFileOrderByWithRelationInput | PodFileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PodFiles.
+     */
+    cursor?: PodFileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PodFiles.
+     */
+    distinct?: PodFileScalarFieldEnum | PodFileScalarFieldEnum[]
+  }
+
+  /**
+   * PodFile findFirstOrThrow
+   */
+  export type PodFileFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFile to fetch.
+     */
+    where?: PodFileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFiles to fetch.
+     */
+    orderBy?: PodFileOrderByWithRelationInput | PodFileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PodFiles.
+     */
+    cursor?: PodFileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFiles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PodFiles.
+     */
+    distinct?: PodFileScalarFieldEnum | PodFileScalarFieldEnum[]
+  }
+
+  /**
+   * PodFile findMany
+   */
+  export type PodFileFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * Filter, which PodFiles to fetch.
+     */
+    where?: PodFileWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodFiles to fetch.
+     */
+    orderBy?: PodFileOrderByWithRelationInput | PodFileOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PodFiles.
+     */
+    cursor?: PodFileWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodFiles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodFiles.
+     */
+    skip?: number
+    distinct?: PodFileScalarFieldEnum | PodFileScalarFieldEnum[]
+  }
+
+  /**
+   * PodFile create
+   */
+  export type PodFileCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PodFile.
+     */
+    data: XOR<PodFileCreateInput, PodFileUncheckedCreateInput>
+  }
+
+  /**
+   * PodFile createMany
+   */
+  export type PodFileCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PodFiles.
+     */
+    data: PodFileCreateManyInput | PodFileCreateManyInput[]
+  }
+
+  /**
+   * PodFile createManyAndReturn
+   */
+  export type PodFileCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * The data used to create many PodFiles.
+     */
+    data: PodFileCreateManyInput | PodFileCreateManyInput[]
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PodFile update
+   */
+  export type PodFileUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PodFile.
+     */
+    data: XOR<PodFileUpdateInput, PodFileUncheckedUpdateInput>
+    /**
+     * Choose, which PodFile to update.
+     */
+    where: PodFileWhereUniqueInput
+  }
+
+  /**
+   * PodFile updateMany
+   */
+  export type PodFileUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PodFiles.
+     */
+    data: XOR<PodFileUpdateManyMutationInput, PodFileUncheckedUpdateManyInput>
+    /**
+     * Filter which PodFiles to update
+     */
+    where?: PodFileWhereInput
+    /**
+     * Limit how many PodFiles to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodFile updateManyAndReturn
+   */
+  export type PodFileUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * The data used to update PodFiles.
+     */
+    data: XOR<PodFileUpdateManyMutationInput, PodFileUncheckedUpdateManyInput>
+    /**
+     * Filter which PodFiles to update
+     */
+    where?: PodFileWhereInput
+    /**
+     * Limit how many PodFiles to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PodFile upsert
+   */
+  export type PodFileUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PodFile to update in case it exists.
+     */
+    where: PodFileWhereUniqueInput
+    /**
+     * In case the PodFile found by the `where` argument doesn't exist, create a new PodFile with this data.
+     */
+    create: XOR<PodFileCreateInput, PodFileUncheckedCreateInput>
+    /**
+     * In case the PodFile was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PodFileUpdateInput, PodFileUncheckedUpdateInput>
+  }
+
+  /**
+   * PodFile delete
+   */
+  export type PodFileDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+    /**
+     * Filter which PodFile to delete.
+     */
+    where: PodFileWhereUniqueInput
+  }
+
+  /**
+   * PodFile deleteMany
+   */
+  export type PodFileDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PodFiles to delete
+     */
+    where?: PodFileWhereInput
+    /**
+     * Limit how many PodFiles to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodFile.folder
+   */
+  export type PodFile$folderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFolder
+     */
+    select?: PodFolderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFolder
+     */
+    omit?: PodFolderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFolderInclude<ExtArgs> | null
+    where?: PodFolderWhereInput
+  }
+
+  /**
+   * PodFile.customer
+   */
+  export type PodFile$customerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Customer
+     */
+    select?: CustomerSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Customer
+     */
+    omit?: CustomerOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerInclude<ExtArgs> | null
+    where?: CustomerWhereInput
+  }
+
+  /**
+   * PodFile without action
+   */
+  export type PodFileDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodFile
+     */
+    select?: PodFileSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodFile
+     */
+    omit?: PodFileOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PodFileInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PodPermission
+   */
+
+  export type AggregatePodPermission = {
+    _count: PodPermissionCountAggregateOutputType | null
+    _min: PodPermissionMinAggregateOutputType | null
+    _max: PodPermissionMaxAggregateOutputType | null
+  }
+
+  export type PodPermissionMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    roleId: string | null
+    customerId: string | null
+    canUpload: boolean | null
+    canMove: boolean | null
+    canRename: boolean | null
+    canDelete: boolean | null
+    canShare: boolean | null
+    canManage: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PodPermissionMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    roleId: string | null
+    customerId: string | null
+    canUpload: boolean | null
+    canMove: boolean | null
+    canRename: boolean | null
+    canDelete: boolean | null
+    canShare: boolean | null
+    canManage: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PodPermissionCountAggregateOutputType = {
+    id: number
+    userId: number
+    roleId: number
+    customerId: number
+    canUpload: number
+    canMove: number
+    canRename: number
+    canDelete: number
+    canShare: number
+    canManage: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PodPermissionMinAggregateInputType = {
+    id?: true
+    userId?: true
+    roleId?: true
+    customerId?: true
+    canUpload?: true
+    canMove?: true
+    canRename?: true
+    canDelete?: true
+    canShare?: true
+    canManage?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PodPermissionMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    roleId?: true
+    customerId?: true
+    canUpload?: true
+    canMove?: true
+    canRename?: true
+    canDelete?: true
+    canShare?: true
+    canManage?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PodPermissionCountAggregateInputType = {
+    id?: true
+    userId?: true
+    roleId?: true
+    customerId?: true
+    canUpload?: true
+    canMove?: true
+    canRename?: true
+    canDelete?: true
+    canShare?: true
+    canManage?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PodPermissionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PodPermission to aggregate.
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodPermissions to fetch.
+     */
+    orderBy?: PodPermissionOrderByWithRelationInput | PodPermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PodPermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodPermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodPermissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PodPermissions
+    **/
+    _count?: true | PodPermissionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PodPermissionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PodPermissionMaxAggregateInputType
+  }
+
+  export type GetPodPermissionAggregateType<T extends PodPermissionAggregateArgs> = {
+        [P in keyof T & keyof AggregatePodPermission]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePodPermission[P]>
+      : GetScalarType<T[P], AggregatePodPermission[P]>
+  }
+
+
+
+
+  export type PodPermissionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PodPermissionWhereInput
+    orderBy?: PodPermissionOrderByWithAggregationInput | PodPermissionOrderByWithAggregationInput[]
+    by: PodPermissionScalarFieldEnum[] | PodPermissionScalarFieldEnum
+    having?: PodPermissionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PodPermissionCountAggregateInputType | true
+    _min?: PodPermissionMinAggregateInputType
+    _max?: PodPermissionMaxAggregateInputType
+  }
+
+  export type PodPermissionGroupByOutputType = {
+    id: string
+    userId: string | null
+    roleId: string | null
+    customerId: string | null
+    canUpload: boolean
+    canMove: boolean
+    canRename: boolean
+    canDelete: boolean
+    canShare: boolean
+    canManage: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: PodPermissionCountAggregateOutputType | null
+    _min: PodPermissionMinAggregateOutputType | null
+    _max: PodPermissionMaxAggregateOutputType | null
+  }
+
+  type GetPodPermissionGroupByPayload<T extends PodPermissionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PodPermissionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PodPermissionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PodPermissionGroupByOutputType[P]>
+            : GetScalarType<T[P], PodPermissionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PodPermissionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    roleId?: boolean
+    customerId?: boolean
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["podPermission"]>
+
+  export type PodPermissionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    roleId?: boolean
+    customerId?: boolean
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["podPermission"]>
+
+  export type PodPermissionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    roleId?: boolean
+    customerId?: boolean
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["podPermission"]>
+
+  export type PodPermissionSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    roleId?: boolean
+    customerId?: boolean
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PodPermissionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "roleId" | "customerId" | "canUpload" | "canMove" | "canRename" | "canDelete" | "canShare" | "canManage" | "createdAt" | "updatedAt", ExtArgs["result"]["podPermission"]>
+
+  export type $PodPermissionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PodPermission"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string | null
+      roleId: string | null
+      customerId: string | null
+      canUpload: boolean
+      canMove: boolean
+      canRename: boolean
+      canDelete: boolean
+      canShare: boolean
+      canManage: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["podPermission"]>
+    composites: {}
+  }
+
+  type PodPermissionGetPayload<S extends boolean | null | undefined | PodPermissionDefaultArgs> = $Result.GetResult<Prisma.$PodPermissionPayload, S>
+
+  type PodPermissionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PodPermissionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PodPermissionCountAggregateInputType | true
+    }
+
+  export interface PodPermissionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PodPermission'], meta: { name: 'PodPermission' } }
+    /**
+     * Find zero or one PodPermission that matches the filter.
+     * @param {PodPermissionFindUniqueArgs} args - Arguments to find a PodPermission
+     * @example
+     * // Get one PodPermission
+     * const podPermission = await prisma.podPermission.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PodPermissionFindUniqueArgs>(args: SelectSubset<T, PodPermissionFindUniqueArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PodPermission that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PodPermissionFindUniqueOrThrowArgs} args - Arguments to find a PodPermission
+     * @example
+     * // Get one PodPermission
+     * const podPermission = await prisma.podPermission.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PodPermissionFindUniqueOrThrowArgs>(args: SelectSubset<T, PodPermissionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PodPermission that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionFindFirstArgs} args - Arguments to find a PodPermission
+     * @example
+     * // Get one PodPermission
+     * const podPermission = await prisma.podPermission.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PodPermissionFindFirstArgs>(args?: SelectSubset<T, PodPermissionFindFirstArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PodPermission that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionFindFirstOrThrowArgs} args - Arguments to find a PodPermission
+     * @example
+     * // Get one PodPermission
+     * const podPermission = await prisma.podPermission.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PodPermissionFindFirstOrThrowArgs>(args?: SelectSubset<T, PodPermissionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PodPermissions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PodPermissions
+     * const podPermissions = await prisma.podPermission.findMany()
+     * 
+     * // Get first 10 PodPermissions
+     * const podPermissions = await prisma.podPermission.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const podPermissionWithIdOnly = await prisma.podPermission.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PodPermissionFindManyArgs>(args?: SelectSubset<T, PodPermissionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PodPermission.
+     * @param {PodPermissionCreateArgs} args - Arguments to create a PodPermission.
+     * @example
+     * // Create one PodPermission
+     * const PodPermission = await prisma.podPermission.create({
+     *   data: {
+     *     // ... data to create a PodPermission
+     *   }
+     * })
+     * 
+     */
+    create<T extends PodPermissionCreateArgs>(args: SelectSubset<T, PodPermissionCreateArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PodPermissions.
+     * @param {PodPermissionCreateManyArgs} args - Arguments to create many PodPermissions.
+     * @example
+     * // Create many PodPermissions
+     * const podPermission = await prisma.podPermission.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PodPermissionCreateManyArgs>(args?: SelectSubset<T, PodPermissionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PodPermissions and returns the data saved in the database.
+     * @param {PodPermissionCreateManyAndReturnArgs} args - Arguments to create many PodPermissions.
+     * @example
+     * // Create many PodPermissions
+     * const podPermission = await prisma.podPermission.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PodPermissions and only return the `id`
+     * const podPermissionWithIdOnly = await prisma.podPermission.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PodPermissionCreateManyAndReturnArgs>(args?: SelectSubset<T, PodPermissionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PodPermission.
+     * @param {PodPermissionDeleteArgs} args - Arguments to delete one PodPermission.
+     * @example
+     * // Delete one PodPermission
+     * const PodPermission = await prisma.podPermission.delete({
+     *   where: {
+     *     // ... filter to delete one PodPermission
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PodPermissionDeleteArgs>(args: SelectSubset<T, PodPermissionDeleteArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PodPermission.
+     * @param {PodPermissionUpdateArgs} args - Arguments to update one PodPermission.
+     * @example
+     * // Update one PodPermission
+     * const podPermission = await prisma.podPermission.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PodPermissionUpdateArgs>(args: SelectSubset<T, PodPermissionUpdateArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PodPermissions.
+     * @param {PodPermissionDeleteManyArgs} args - Arguments to filter PodPermissions to delete.
+     * @example
+     * // Delete a few PodPermissions
+     * const { count } = await prisma.podPermission.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PodPermissionDeleteManyArgs>(args?: SelectSubset<T, PodPermissionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PodPermissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PodPermissions
+     * const podPermission = await prisma.podPermission.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PodPermissionUpdateManyArgs>(args: SelectSubset<T, PodPermissionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PodPermissions and returns the data updated in the database.
+     * @param {PodPermissionUpdateManyAndReturnArgs} args - Arguments to update many PodPermissions.
+     * @example
+     * // Update many PodPermissions
+     * const podPermission = await prisma.podPermission.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PodPermissions and only return the `id`
+     * const podPermissionWithIdOnly = await prisma.podPermission.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PodPermissionUpdateManyAndReturnArgs>(args: SelectSubset<T, PodPermissionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PodPermission.
+     * @param {PodPermissionUpsertArgs} args - Arguments to update or create a PodPermission.
+     * @example
+     * // Update or create a PodPermission
+     * const podPermission = await prisma.podPermission.upsert({
+     *   create: {
+     *     // ... data to create a PodPermission
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PodPermission we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PodPermissionUpsertArgs>(args: SelectSubset<T, PodPermissionUpsertArgs<ExtArgs>>): Prisma__PodPermissionClient<$Result.GetResult<Prisma.$PodPermissionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PodPermissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionCountArgs} args - Arguments to filter PodPermissions to count.
+     * @example
+     * // Count the number of PodPermissions
+     * const count = await prisma.podPermission.count({
+     *   where: {
+     *     // ... the filter for the PodPermissions we want to count
+     *   }
+     * })
+    **/
+    count<T extends PodPermissionCountArgs>(
+      args?: Subset<T, PodPermissionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PodPermissionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PodPermission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PodPermissionAggregateArgs>(args: Subset<T, PodPermissionAggregateArgs>): Prisma.PrismaPromise<GetPodPermissionAggregateType<T>>
+
+    /**
+     * Group by PodPermission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PodPermissionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PodPermissionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PodPermissionGroupByArgs['orderBy'] }
+        : { orderBy?: PodPermissionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PodPermissionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPodPermissionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PodPermission model
+   */
+  readonly fields: PodPermissionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PodPermission.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PodPermissionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PodPermission model
+   */
+  interface PodPermissionFieldRefs {
+    readonly id: FieldRef<"PodPermission", 'String'>
+    readonly userId: FieldRef<"PodPermission", 'String'>
+    readonly roleId: FieldRef<"PodPermission", 'String'>
+    readonly customerId: FieldRef<"PodPermission", 'String'>
+    readonly canUpload: FieldRef<"PodPermission", 'Boolean'>
+    readonly canMove: FieldRef<"PodPermission", 'Boolean'>
+    readonly canRename: FieldRef<"PodPermission", 'Boolean'>
+    readonly canDelete: FieldRef<"PodPermission", 'Boolean'>
+    readonly canShare: FieldRef<"PodPermission", 'Boolean'>
+    readonly canManage: FieldRef<"PodPermission", 'Boolean'>
+    readonly createdAt: FieldRef<"PodPermission", 'DateTime'>
+    readonly updatedAt: FieldRef<"PodPermission", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PodPermission findUnique
+   */
+  export type PodPermissionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * Filter, which PodPermission to fetch.
+     */
+    where: PodPermissionWhereUniqueInput
+  }
+
+  /**
+   * PodPermission findUniqueOrThrow
+   */
+  export type PodPermissionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * Filter, which PodPermission to fetch.
+     */
+    where: PodPermissionWhereUniqueInput
+  }
+
+  /**
+   * PodPermission findFirst
+   */
+  export type PodPermissionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * Filter, which PodPermission to fetch.
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodPermissions to fetch.
+     */
+    orderBy?: PodPermissionOrderByWithRelationInput | PodPermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PodPermissions.
+     */
+    cursor?: PodPermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodPermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodPermissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PodPermissions.
+     */
+    distinct?: PodPermissionScalarFieldEnum | PodPermissionScalarFieldEnum[]
+  }
+
+  /**
+   * PodPermission findFirstOrThrow
+   */
+  export type PodPermissionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * Filter, which PodPermission to fetch.
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodPermissions to fetch.
+     */
+    orderBy?: PodPermissionOrderByWithRelationInput | PodPermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PodPermissions.
+     */
+    cursor?: PodPermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodPermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodPermissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PodPermissions.
+     */
+    distinct?: PodPermissionScalarFieldEnum | PodPermissionScalarFieldEnum[]
+  }
+
+  /**
+   * PodPermission findMany
+   */
+  export type PodPermissionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * Filter, which PodPermissions to fetch.
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PodPermissions to fetch.
+     */
+    orderBy?: PodPermissionOrderByWithRelationInput | PodPermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PodPermissions.
+     */
+    cursor?: PodPermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PodPermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PodPermissions.
+     */
+    skip?: number
+    distinct?: PodPermissionScalarFieldEnum | PodPermissionScalarFieldEnum[]
+  }
+
+  /**
+   * PodPermission create
+   */
+  export type PodPermissionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PodPermission.
+     */
+    data: XOR<PodPermissionCreateInput, PodPermissionUncheckedCreateInput>
+  }
+
+  /**
+   * PodPermission createMany
+   */
+  export type PodPermissionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PodPermissions.
+     */
+    data: PodPermissionCreateManyInput | PodPermissionCreateManyInput[]
+  }
+
+  /**
+   * PodPermission createManyAndReturn
+   */
+  export type PodPermissionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * The data used to create many PodPermissions.
+     */
+    data: PodPermissionCreateManyInput | PodPermissionCreateManyInput[]
+  }
+
+  /**
+   * PodPermission update
+   */
+  export type PodPermissionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PodPermission.
+     */
+    data: XOR<PodPermissionUpdateInput, PodPermissionUncheckedUpdateInput>
+    /**
+     * Choose, which PodPermission to update.
+     */
+    where: PodPermissionWhereUniqueInput
+  }
+
+  /**
+   * PodPermission updateMany
+   */
+  export type PodPermissionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PodPermissions.
+     */
+    data: XOR<PodPermissionUpdateManyMutationInput, PodPermissionUncheckedUpdateManyInput>
+    /**
+     * Filter which PodPermissions to update
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * Limit how many PodPermissions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodPermission updateManyAndReturn
+   */
+  export type PodPermissionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * The data used to update PodPermissions.
+     */
+    data: XOR<PodPermissionUpdateManyMutationInput, PodPermissionUncheckedUpdateManyInput>
+    /**
+     * Filter which PodPermissions to update
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * Limit how many PodPermissions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodPermission upsert
+   */
+  export type PodPermissionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PodPermission to update in case it exists.
+     */
+    where: PodPermissionWhereUniqueInput
+    /**
+     * In case the PodPermission found by the `where` argument doesn't exist, create a new PodPermission with this data.
+     */
+    create: XOR<PodPermissionCreateInput, PodPermissionUncheckedCreateInput>
+    /**
+     * In case the PodPermission was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PodPermissionUpdateInput, PodPermissionUncheckedUpdateInput>
+  }
+
+  /**
+   * PodPermission delete
+   */
+  export type PodPermissionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+    /**
+     * Filter which PodPermission to delete.
+     */
+    where: PodPermissionWhereUniqueInput
+  }
+
+  /**
+   * PodPermission deleteMany
+   */
+  export type PodPermissionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PodPermissions to delete
+     */
+    where?: PodPermissionWhereInput
+    /**
+     * Limit how many PodPermissions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PodPermission without action
+   */
+  export type PodPermissionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PodPermission
+     */
+    select?: PodPermissionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PodPermission
+     */
+    omit?: PodPermissionOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -37541,6 +41498,58 @@ export namespace Prisma {
   export type JobBatchScalarFieldEnum = (typeof JobBatchScalarFieldEnum)[keyof typeof JobBatchScalarFieldEnum]
 
 
+  export const PodFolderScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    parentId: 'parentId',
+    customerId: 'customerId',
+    createdById: 'createdById',
+    storageUsed: 'storageUsed',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type PodFolderScalarFieldEnum = (typeof PodFolderScalarFieldEnum)[keyof typeof PodFolderScalarFieldEnum]
+
+
+  export const PodFileScalarFieldEnum: {
+    id: 'id',
+    folderId: 'folderId',
+    bookingId: 'bookingId',
+    filename: 'filename',
+    storedName: 'storedName',
+    filePath: 'filePath',
+    mimeType: 'mimeType',
+    fileSize: 'fileSize',
+    customerId: 'customerId',
+    uploadedById: 'uploadedById',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    deletedAt: 'deletedAt'
+  };
+
+  export type PodFileScalarFieldEnum = (typeof PodFileScalarFieldEnum)[keyof typeof PodFileScalarFieldEnum]
+
+
+  export const PodPermissionScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    roleId: 'roleId',
+    customerId: 'customerId',
+    canUpload: 'canUpload',
+    canMove: 'canMove',
+    canRename: 'canRename',
+    canDelete: 'canDelete',
+    canShare: 'canShare',
+    canManage: 'canManage',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PodPermissionScalarFieldEnum = (typeof PodPermissionScalarFieldEnum)[keyof typeof PodPermissionScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -38020,6 +42029,8 @@ export namespace Prisma {
     sales?: SaleListRelationFilter
     invoices?: InvoiceListRelationFilter
     messagesStatus?: MessageStatusListRelationFilter
+    podFolders?: PodFolderListRelationFilter
+    podFiles?: PodFileListRelationFilter
   }
 
   export type CustomerOrderByWithRelationInput = {
@@ -38050,6 +42061,8 @@ export namespace Prisma {
     sales?: SaleOrderByRelationAggregateInput
     invoices?: InvoiceOrderByRelationAggregateInput
     messagesStatus?: MessageStatusOrderByRelationAggregateInput
+    podFolders?: PodFolderOrderByRelationAggregateInput
+    podFiles?: PodFileOrderByRelationAggregateInput
   }
 
   export type CustomerWhereUniqueInput = Prisma.AtLeast<{
@@ -38083,6 +42096,8 @@ export namespace Prisma {
     sales?: SaleListRelationFilter
     invoices?: InvoiceListRelationFilter
     messagesStatus?: MessageStatusListRelationFilter
+    podFolders?: PodFolderListRelationFilter
+    podFiles?: PodFileListRelationFilter
   }, "id" | "accountNumber" | "customerAccount">
 
   export type CustomerOrderByWithAggregationInput = {
@@ -40520,6 +44535,279 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"JobBatch"> | Date | string
   }
 
+  export type PodFolderWhereInput = {
+    AND?: PodFolderWhereInput | PodFolderWhereInput[]
+    OR?: PodFolderWhereInput[]
+    NOT?: PodFolderWhereInput | PodFolderWhereInput[]
+    id?: StringFilter<"PodFolder"> | string
+    name?: StringFilter<"PodFolder"> | string
+    parentId?: StringNullableFilter<"PodFolder"> | string | null
+    customerId?: StringNullableFilter<"PodFolder"> | string | null
+    createdById?: StringNullableFilter<"PodFolder"> | string | null
+    storageUsed?: IntFilter<"PodFolder"> | number
+    createdAt?: DateTimeFilter<"PodFolder"> | Date | string
+    updatedAt?: DateTimeFilter<"PodFolder"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"PodFolder"> | Date | string | null
+    parent?: XOR<PodFolderNullableScalarRelationFilter, PodFolderWhereInput> | null
+    children?: PodFolderListRelationFilter
+    files?: PodFileListRelationFilter
+    customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
+  }
+
+  export type PodFolderOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    parentId?: SortOrderInput | SortOrder
+    customerId?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    storageUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    parent?: PodFolderOrderByWithRelationInput
+    children?: PodFolderOrderByRelationAggregateInput
+    files?: PodFileOrderByRelationAggregateInput
+    customer?: CustomerOrderByWithRelationInput
+  }
+
+  export type PodFolderWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PodFolderWhereInput | PodFolderWhereInput[]
+    OR?: PodFolderWhereInput[]
+    NOT?: PodFolderWhereInput | PodFolderWhereInput[]
+    name?: StringFilter<"PodFolder"> | string
+    parentId?: StringNullableFilter<"PodFolder"> | string | null
+    customerId?: StringNullableFilter<"PodFolder"> | string | null
+    createdById?: StringNullableFilter<"PodFolder"> | string | null
+    storageUsed?: IntFilter<"PodFolder"> | number
+    createdAt?: DateTimeFilter<"PodFolder"> | Date | string
+    updatedAt?: DateTimeFilter<"PodFolder"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"PodFolder"> | Date | string | null
+    parent?: XOR<PodFolderNullableScalarRelationFilter, PodFolderWhereInput> | null
+    children?: PodFolderListRelationFilter
+    files?: PodFileListRelationFilter
+    customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
+  }, "id">
+
+  export type PodFolderOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    parentId?: SortOrderInput | SortOrder
+    customerId?: SortOrderInput | SortOrder
+    createdById?: SortOrderInput | SortOrder
+    storageUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: PodFolderCountOrderByAggregateInput
+    _avg?: PodFolderAvgOrderByAggregateInput
+    _max?: PodFolderMaxOrderByAggregateInput
+    _min?: PodFolderMinOrderByAggregateInput
+    _sum?: PodFolderSumOrderByAggregateInput
+  }
+
+  export type PodFolderScalarWhereWithAggregatesInput = {
+    AND?: PodFolderScalarWhereWithAggregatesInput | PodFolderScalarWhereWithAggregatesInput[]
+    OR?: PodFolderScalarWhereWithAggregatesInput[]
+    NOT?: PodFolderScalarWhereWithAggregatesInput | PodFolderScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PodFolder"> | string
+    name?: StringWithAggregatesFilter<"PodFolder"> | string
+    parentId?: StringNullableWithAggregatesFilter<"PodFolder"> | string | null
+    customerId?: StringNullableWithAggregatesFilter<"PodFolder"> | string | null
+    createdById?: StringNullableWithAggregatesFilter<"PodFolder"> | string | null
+    storageUsed?: IntWithAggregatesFilter<"PodFolder"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"PodFolder"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PodFolder"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"PodFolder"> | Date | string | null
+  }
+
+  export type PodFileWhereInput = {
+    AND?: PodFileWhereInput | PodFileWhereInput[]
+    OR?: PodFileWhereInput[]
+    NOT?: PodFileWhereInput | PodFileWhereInput[]
+    id?: StringFilter<"PodFile"> | string
+    folderId?: StringNullableFilter<"PodFile"> | string | null
+    bookingId?: StringNullableFilter<"PodFile"> | string | null
+    filename?: StringFilter<"PodFile"> | string
+    storedName?: StringFilter<"PodFile"> | string
+    filePath?: StringFilter<"PodFile"> | string
+    mimeType?: StringNullableFilter<"PodFile"> | string | null
+    fileSize?: IntFilter<"PodFile"> | number
+    customerId?: StringNullableFilter<"PodFile"> | string | null
+    uploadedById?: StringNullableFilter<"PodFile"> | string | null
+    createdAt?: DateTimeFilter<"PodFile"> | Date | string
+    updatedAt?: DateTimeFilter<"PodFile"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"PodFile"> | Date | string | null
+    folder?: XOR<PodFolderNullableScalarRelationFilter, PodFolderWhereInput> | null
+    customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
+  }
+
+  export type PodFileOrderByWithRelationInput = {
+    id?: SortOrder
+    folderId?: SortOrderInput | SortOrder
+    bookingId?: SortOrderInput | SortOrder
+    filename?: SortOrder
+    storedName?: SortOrder
+    filePath?: SortOrder
+    mimeType?: SortOrderInput | SortOrder
+    fileSize?: SortOrder
+    customerId?: SortOrderInput | SortOrder
+    uploadedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    folder?: PodFolderOrderByWithRelationInput
+    customer?: CustomerOrderByWithRelationInput
+  }
+
+  export type PodFileWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PodFileWhereInput | PodFileWhereInput[]
+    OR?: PodFileWhereInput[]
+    NOT?: PodFileWhereInput | PodFileWhereInput[]
+    folderId?: StringNullableFilter<"PodFile"> | string | null
+    bookingId?: StringNullableFilter<"PodFile"> | string | null
+    filename?: StringFilter<"PodFile"> | string
+    storedName?: StringFilter<"PodFile"> | string
+    filePath?: StringFilter<"PodFile"> | string
+    mimeType?: StringNullableFilter<"PodFile"> | string | null
+    fileSize?: IntFilter<"PodFile"> | number
+    customerId?: StringNullableFilter<"PodFile"> | string | null
+    uploadedById?: StringNullableFilter<"PodFile"> | string | null
+    createdAt?: DateTimeFilter<"PodFile"> | Date | string
+    updatedAt?: DateTimeFilter<"PodFile"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"PodFile"> | Date | string | null
+    folder?: XOR<PodFolderNullableScalarRelationFilter, PodFolderWhereInput> | null
+    customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
+  }, "id">
+
+  export type PodFileOrderByWithAggregationInput = {
+    id?: SortOrder
+    folderId?: SortOrderInput | SortOrder
+    bookingId?: SortOrderInput | SortOrder
+    filename?: SortOrder
+    storedName?: SortOrder
+    filePath?: SortOrder
+    mimeType?: SortOrderInput | SortOrder
+    fileSize?: SortOrder
+    customerId?: SortOrderInput | SortOrder
+    uploadedById?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrderInput | SortOrder
+    _count?: PodFileCountOrderByAggregateInput
+    _avg?: PodFileAvgOrderByAggregateInput
+    _max?: PodFileMaxOrderByAggregateInput
+    _min?: PodFileMinOrderByAggregateInput
+    _sum?: PodFileSumOrderByAggregateInput
+  }
+
+  export type PodFileScalarWhereWithAggregatesInput = {
+    AND?: PodFileScalarWhereWithAggregatesInput | PodFileScalarWhereWithAggregatesInput[]
+    OR?: PodFileScalarWhereWithAggregatesInput[]
+    NOT?: PodFileScalarWhereWithAggregatesInput | PodFileScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PodFile"> | string
+    folderId?: StringNullableWithAggregatesFilter<"PodFile"> | string | null
+    bookingId?: StringNullableWithAggregatesFilter<"PodFile"> | string | null
+    filename?: StringWithAggregatesFilter<"PodFile"> | string
+    storedName?: StringWithAggregatesFilter<"PodFile"> | string
+    filePath?: StringWithAggregatesFilter<"PodFile"> | string
+    mimeType?: StringNullableWithAggregatesFilter<"PodFile"> | string | null
+    fileSize?: IntWithAggregatesFilter<"PodFile"> | number
+    customerId?: StringNullableWithAggregatesFilter<"PodFile"> | string | null
+    uploadedById?: StringNullableWithAggregatesFilter<"PodFile"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PodFile"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PodFile"> | Date | string
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"PodFile"> | Date | string | null
+  }
+
+  export type PodPermissionWhereInput = {
+    AND?: PodPermissionWhereInput | PodPermissionWhereInput[]
+    OR?: PodPermissionWhereInput[]
+    NOT?: PodPermissionWhereInput | PodPermissionWhereInput[]
+    id?: StringFilter<"PodPermission"> | string
+    userId?: StringNullableFilter<"PodPermission"> | string | null
+    roleId?: StringNullableFilter<"PodPermission"> | string | null
+    customerId?: StringNullableFilter<"PodPermission"> | string | null
+    canUpload?: BoolFilter<"PodPermission"> | boolean
+    canMove?: BoolFilter<"PodPermission"> | boolean
+    canRename?: BoolFilter<"PodPermission"> | boolean
+    canDelete?: BoolFilter<"PodPermission"> | boolean
+    canShare?: BoolFilter<"PodPermission"> | boolean
+    canManage?: BoolFilter<"PodPermission"> | boolean
+    createdAt?: DateTimeFilter<"PodPermission"> | Date | string
+    updatedAt?: DateTimeFilter<"PodPermission"> | Date | string
+  }
+
+  export type PodPermissionOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    roleId?: SortOrderInput | SortOrder
+    customerId?: SortOrderInput | SortOrder
+    canUpload?: SortOrder
+    canMove?: SortOrder
+    canRename?: SortOrder
+    canDelete?: SortOrder
+    canShare?: SortOrder
+    canManage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PodPermissionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PodPermissionWhereInput | PodPermissionWhereInput[]
+    OR?: PodPermissionWhereInput[]
+    NOT?: PodPermissionWhereInput | PodPermissionWhereInput[]
+    userId?: StringNullableFilter<"PodPermission"> | string | null
+    roleId?: StringNullableFilter<"PodPermission"> | string | null
+    customerId?: StringNullableFilter<"PodPermission"> | string | null
+    canUpload?: BoolFilter<"PodPermission"> | boolean
+    canMove?: BoolFilter<"PodPermission"> | boolean
+    canRename?: BoolFilter<"PodPermission"> | boolean
+    canDelete?: BoolFilter<"PodPermission"> | boolean
+    canShare?: BoolFilter<"PodPermission"> | boolean
+    canManage?: BoolFilter<"PodPermission"> | boolean
+    createdAt?: DateTimeFilter<"PodPermission"> | Date | string
+    updatedAt?: DateTimeFilter<"PodPermission"> | Date | string
+  }, "id">
+
+  export type PodPermissionOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    roleId?: SortOrderInput | SortOrder
+    customerId?: SortOrderInput | SortOrder
+    canUpload?: SortOrder
+    canMove?: SortOrder
+    canRename?: SortOrder
+    canDelete?: SortOrder
+    canShare?: SortOrder
+    canManage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PodPermissionCountOrderByAggregateInput
+    _max?: PodPermissionMaxOrderByAggregateInput
+    _min?: PodPermissionMinOrderByAggregateInput
+  }
+
+  export type PodPermissionScalarWhereWithAggregatesInput = {
+    AND?: PodPermissionScalarWhereWithAggregatesInput | PodPermissionScalarWhereWithAggregatesInput[]
+    OR?: PodPermissionScalarWhereWithAggregatesInput[]
+    NOT?: PodPermissionScalarWhereWithAggregatesInput | PodPermissionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PodPermission"> | string
+    userId?: StringNullableWithAggregatesFilter<"PodPermission"> | string | null
+    roleId?: StringNullableWithAggregatesFilter<"PodPermission"> | string | null
+    customerId?: StringNullableWithAggregatesFilter<"PodPermission"> | string | null
+    canUpload?: BoolWithAggregatesFilter<"PodPermission"> | boolean
+    canMove?: BoolWithAggregatesFilter<"PodPermission"> | boolean
+    canRename?: BoolWithAggregatesFilter<"PodPermission"> | boolean
+    canDelete?: BoolWithAggregatesFilter<"PodPermission"> | boolean
+    canShare?: BoolWithAggregatesFilter<"PodPermission"> | boolean
+    canManage?: BoolWithAggregatesFilter<"PodPermission"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"PodPermission"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PodPermission"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     name: string
@@ -40961,6 +45249,8 @@ export namespace Prisma {
     sales?: SaleCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateInput = {
@@ -40991,6 +45281,8 @@ export namespace Prisma {
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUpdateInput = {
@@ -41021,6 +45313,8 @@ export namespace Prisma {
     sales?: SaleUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateInput = {
@@ -41051,6 +45345,8 @@ export namespace Prisma {
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerCreateManyInput = {
@@ -43967,6 +48263,311 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PodFolderCreateInput = {
+    id?: string
+    name: string
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    parent?: PodFolderCreateNestedOneWithoutChildrenInput
+    children?: PodFolderCreateNestedManyWithoutParentInput
+    files?: PodFileCreateNestedManyWithoutFolderInput
+    customer?: CustomerCreateNestedOneWithoutPodFoldersInput
+  }
+
+  export type PodFolderUncheckedCreateInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    customerId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    children?: PodFolderUncheckedCreateNestedManyWithoutParentInput
+    files?: PodFileUncheckedCreateNestedManyWithoutFolderInput
+  }
+
+  export type PodFolderUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parent?: PodFolderUpdateOneWithoutChildrenNestedInput
+    children?: PodFolderUpdateManyWithoutParentNestedInput
+    files?: PodFileUpdateManyWithoutFolderNestedInput
+    customer?: CustomerUpdateOneWithoutPodFoldersNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    children?: PodFolderUncheckedUpdateManyWithoutParentNestedInput
+    files?: PodFileUncheckedUpdateManyWithoutFolderNestedInput
+  }
+
+  export type PodFolderCreateManyInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    customerId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFolderUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFolderUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileCreateInput = {
+    id?: string
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    folder?: PodFolderCreateNestedOneWithoutFilesInput
+    customer?: CustomerCreateNestedOneWithoutPodFilesInput
+  }
+
+  export type PodFileUncheckedCreateInput = {
+    id?: string
+    folderId?: string | null
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    customerId?: string | null
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFileUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    folder?: PodFolderUpdateOneWithoutFilesNestedInput
+    customer?: CustomerUpdateOneWithoutPodFilesNestedInput
+  }
+
+  export type PodFileUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileCreateManyInput = {
+    id?: string
+    folderId?: string | null
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    customerId?: string | null
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFileUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodPermissionCreateInput = {
+    id?: string
+    userId?: string | null
+    roleId?: string | null
+    customerId?: string | null
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PodPermissionUncheckedCreateInput = {
+    id?: string
+    userId?: string | null
+    roleId?: string | null
+    customerId?: string | null
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PodPermissionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    canUpload?: BoolFieldUpdateOperationsInput | boolean
+    canMove?: BoolFieldUpdateOperationsInput | boolean
+    canRename?: BoolFieldUpdateOperationsInput | boolean
+    canDelete?: BoolFieldUpdateOperationsInput | boolean
+    canShare?: BoolFieldUpdateOperationsInput | boolean
+    canManage?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PodPermissionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    canUpload?: BoolFieldUpdateOperationsInput | boolean
+    canMove?: BoolFieldUpdateOperationsInput | boolean
+    canRename?: BoolFieldUpdateOperationsInput | boolean
+    canDelete?: BoolFieldUpdateOperationsInput | boolean
+    canShare?: BoolFieldUpdateOperationsInput | boolean
+    canManage?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PodPermissionCreateManyInput = {
+    id?: string
+    userId?: string | null
+    roleId?: string | null
+    customerId?: string | null
+    canUpload?: boolean
+    canMove?: boolean
+    canRename?: boolean
+    canDelete?: boolean
+    canShare?: boolean
+    canManage?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PodPermissionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    canUpload?: BoolFieldUpdateOperationsInput | boolean
+    canMove?: BoolFieldUpdateOperationsInput | boolean
+    canRename?: BoolFieldUpdateOperationsInput | boolean
+    canDelete?: BoolFieldUpdateOperationsInput | boolean
+    canShare?: BoolFieldUpdateOperationsInput | boolean
+    canManage?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PodPermissionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    canUpload?: BoolFieldUpdateOperationsInput | boolean
+    canMove?: BoolFieldUpdateOperationsInput | boolean
+    canRename?: BoolFieldUpdateOperationsInput | boolean
+    canDelete?: BoolFieldUpdateOperationsInput | boolean
+    canShare?: BoolFieldUpdateOperationsInput | boolean
+    canManage?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -44411,6 +49012,18 @@ export namespace Prisma {
     none?: MessageStatusWhereInput
   }
 
+  export type PodFolderListRelationFilter = {
+    every?: PodFolderWhereInput
+    some?: PodFolderWhereInput
+    none?: PodFolderWhereInput
+  }
+
+  export type PodFileListRelationFilter = {
+    every?: PodFileWhereInput
+    some?: PodFileWhereInput
+    none?: PodFileWhereInput
+  }
+
   export type BookingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -44428,6 +49041,14 @@ export namespace Prisma {
   }
 
   export type MessageStatusOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PodFolderOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PodFileOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -46087,6 +50708,156 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type PodFolderNullableScalarRelationFilter = {
+    is?: PodFolderWhereInput | null
+    isNot?: PodFolderWhereInput | null
+  }
+
+  export type PodFolderCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    parentId?: SortOrder
+    customerId?: SortOrder
+    createdById?: SortOrder
+    storageUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type PodFolderAvgOrderByAggregateInput = {
+    storageUsed?: SortOrder
+  }
+
+  export type PodFolderMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    parentId?: SortOrder
+    customerId?: SortOrder
+    createdById?: SortOrder
+    storageUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type PodFolderMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    parentId?: SortOrder
+    customerId?: SortOrder
+    createdById?: SortOrder
+    storageUsed?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type PodFolderSumOrderByAggregateInput = {
+    storageUsed?: SortOrder
+  }
+
+  export type PodFileCountOrderByAggregateInput = {
+    id?: SortOrder
+    folderId?: SortOrder
+    bookingId?: SortOrder
+    filename?: SortOrder
+    storedName?: SortOrder
+    filePath?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    customerId?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type PodFileAvgOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type PodFileMaxOrderByAggregateInput = {
+    id?: SortOrder
+    folderId?: SortOrder
+    bookingId?: SortOrder
+    filename?: SortOrder
+    storedName?: SortOrder
+    filePath?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    customerId?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type PodFileMinOrderByAggregateInput = {
+    id?: SortOrder
+    folderId?: SortOrder
+    bookingId?: SortOrder
+    filename?: SortOrder
+    storedName?: SortOrder
+    filePath?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    customerId?: SortOrder
+    uploadedById?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    deletedAt?: SortOrder
+  }
+
+  export type PodFileSumOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type PodPermissionCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    roleId?: SortOrder
+    customerId?: SortOrder
+    canUpload?: SortOrder
+    canMove?: SortOrder
+    canRename?: SortOrder
+    canDelete?: SortOrder
+    canShare?: SortOrder
+    canManage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PodPermissionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    roleId?: SortOrder
+    customerId?: SortOrder
+    canUpload?: SortOrder
+    canMove?: SortOrder
+    canRename?: SortOrder
+    canDelete?: SortOrder
+    canShare?: SortOrder
+    canManage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PodPermissionMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    roleId?: SortOrder
+    customerId?: SortOrder
+    canUpload?: SortOrder
+    canMove?: SortOrder
+    canRename?: SortOrder
+    canDelete?: SortOrder
+    canShare?: SortOrder
+    canManage?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type UserRoleCreateNestedManyWithoutUserInput = {
     create?: XOR<UserRoleCreateWithoutUserInput, UserRoleUncheckedCreateWithoutUserInput> | UserRoleCreateWithoutUserInput[] | UserRoleUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserRoleCreateOrConnectWithoutUserInput | UserRoleCreateOrConnectWithoutUserInput[]
@@ -46474,6 +51245,20 @@ export namespace Prisma {
     connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
+  export type PodFolderCreateNestedManyWithoutCustomerInput = {
+    create?: XOR<PodFolderCreateWithoutCustomerInput, PodFolderUncheckedCreateWithoutCustomerInput> | PodFolderCreateWithoutCustomerInput[] | PodFolderUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutCustomerInput | PodFolderCreateOrConnectWithoutCustomerInput[]
+    createMany?: PodFolderCreateManyCustomerInputEnvelope
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+  }
+
+  export type PodFileCreateNestedManyWithoutCustomerInput = {
+    create?: XOR<PodFileCreateWithoutCustomerInput, PodFileUncheckedCreateWithoutCustomerInput> | PodFileCreateWithoutCustomerInput[] | PodFileUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutCustomerInput | PodFileCreateOrConnectWithoutCustomerInput[]
+    createMany?: PodFileCreateManyCustomerInputEnvelope
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+  }
+
   export type BookingUncheckedCreateNestedManyWithoutCustomerInput = {
     create?: XOR<BookingCreateWithoutCustomerInput, BookingUncheckedCreateWithoutCustomerInput> | BookingCreateWithoutCustomerInput[] | BookingUncheckedCreateWithoutCustomerInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutCustomerInput | BookingCreateOrConnectWithoutCustomerInput[]
@@ -46507,6 +51292,20 @@ export namespace Prisma {
     connectOrCreate?: MessageStatusCreateOrConnectWithoutCustomerInput | MessageStatusCreateOrConnectWithoutCustomerInput[]
     createMany?: MessageStatusCreateManyCustomerInputEnvelope
     connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+  }
+
+  export type PodFolderUncheckedCreateNestedManyWithoutCustomerInput = {
+    create?: XOR<PodFolderCreateWithoutCustomerInput, PodFolderUncheckedCreateWithoutCustomerInput> | PodFolderCreateWithoutCustomerInput[] | PodFolderUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutCustomerInput | PodFolderCreateOrConnectWithoutCustomerInput[]
+    createMany?: PodFolderCreateManyCustomerInputEnvelope
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+  }
+
+  export type PodFileUncheckedCreateNestedManyWithoutCustomerInput = {
+    create?: XOR<PodFileCreateWithoutCustomerInput, PodFileUncheckedCreateWithoutCustomerInput> | PodFileCreateWithoutCustomerInput[] | PodFileUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutCustomerInput | PodFileCreateOrConnectWithoutCustomerInput[]
+    createMany?: PodFileCreateManyCustomerInputEnvelope
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -46587,6 +51386,34 @@ export namespace Prisma {
     deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
+  export type PodFolderUpdateManyWithoutCustomerNestedInput = {
+    create?: XOR<PodFolderCreateWithoutCustomerInput, PodFolderUncheckedCreateWithoutCustomerInput> | PodFolderCreateWithoutCustomerInput[] | PodFolderUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutCustomerInput | PodFolderCreateOrConnectWithoutCustomerInput[]
+    upsert?: PodFolderUpsertWithWhereUniqueWithoutCustomerInput | PodFolderUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: PodFolderCreateManyCustomerInputEnvelope
+    set?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    disconnect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    delete?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    update?: PodFolderUpdateWithWhereUniqueWithoutCustomerInput | PodFolderUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?: PodFolderUpdateManyWithWhereWithoutCustomerInput | PodFolderUpdateManyWithWhereWithoutCustomerInput[]
+    deleteMany?: PodFolderScalarWhereInput | PodFolderScalarWhereInput[]
+  }
+
+  export type PodFileUpdateManyWithoutCustomerNestedInput = {
+    create?: XOR<PodFileCreateWithoutCustomerInput, PodFileUncheckedCreateWithoutCustomerInput> | PodFileCreateWithoutCustomerInput[] | PodFileUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutCustomerInput | PodFileCreateOrConnectWithoutCustomerInput[]
+    upsert?: PodFileUpsertWithWhereUniqueWithoutCustomerInput | PodFileUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: PodFileCreateManyCustomerInputEnvelope
+    set?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    disconnect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    delete?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    update?: PodFileUpdateWithWhereUniqueWithoutCustomerInput | PodFileUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?: PodFileUpdateManyWithWhereWithoutCustomerInput | PodFileUpdateManyWithWhereWithoutCustomerInput[]
+    deleteMany?: PodFileScalarWhereInput | PodFileScalarWhereInput[]
+  }
+
   export type BookingUncheckedUpdateManyWithoutCustomerNestedInput = {
     create?: XOR<BookingCreateWithoutCustomerInput, BookingUncheckedCreateWithoutCustomerInput> | BookingCreateWithoutCustomerInput[] | BookingUncheckedCreateWithoutCustomerInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutCustomerInput | BookingCreateOrConnectWithoutCustomerInput[]
@@ -46655,6 +51482,34 @@ export namespace Prisma {
     update?: MessageStatusUpdateWithWhereUniqueWithoutCustomerInput | MessageStatusUpdateWithWhereUniqueWithoutCustomerInput[]
     updateMany?: MessageStatusUpdateManyWithWhereWithoutCustomerInput | MessageStatusUpdateManyWithWhereWithoutCustomerInput[]
     deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+  }
+
+  export type PodFolderUncheckedUpdateManyWithoutCustomerNestedInput = {
+    create?: XOR<PodFolderCreateWithoutCustomerInput, PodFolderUncheckedCreateWithoutCustomerInput> | PodFolderCreateWithoutCustomerInput[] | PodFolderUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutCustomerInput | PodFolderCreateOrConnectWithoutCustomerInput[]
+    upsert?: PodFolderUpsertWithWhereUniqueWithoutCustomerInput | PodFolderUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: PodFolderCreateManyCustomerInputEnvelope
+    set?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    disconnect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    delete?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    update?: PodFolderUpdateWithWhereUniqueWithoutCustomerInput | PodFolderUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?: PodFolderUpdateManyWithWhereWithoutCustomerInput | PodFolderUpdateManyWithWhereWithoutCustomerInput[]
+    deleteMany?: PodFolderScalarWhereInput | PodFolderScalarWhereInput[]
+  }
+
+  export type PodFileUncheckedUpdateManyWithoutCustomerNestedInput = {
+    create?: XOR<PodFileCreateWithoutCustomerInput, PodFileUncheckedCreateWithoutCustomerInput> | PodFileCreateWithoutCustomerInput[] | PodFileUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutCustomerInput | PodFileCreateOrConnectWithoutCustomerInput[]
+    upsert?: PodFileUpsertWithWhereUniqueWithoutCustomerInput | PodFileUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: PodFileCreateManyCustomerInputEnvelope
+    set?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    disconnect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    delete?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    update?: PodFileUpdateWithWhereUniqueWithoutCustomerInput | PodFileUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?: PodFileUpdateManyWithWhereWithoutCustomerInput | PodFileUpdateManyWithWhereWithoutCustomerInput[]
+    deleteMany?: PodFileScalarWhereInput | PodFileScalarWhereInput[]
   }
 
   export type DriverContactCreateNestedManyWithoutDriverInput = {
@@ -47613,6 +52468,154 @@ export namespace Prisma {
     upsert?: CustomerUpsertWithoutMessagesStatusInput
     connect?: CustomerWhereUniqueInput
     update?: XOR<XOR<CustomerUpdateToOneWithWhereWithoutMessagesStatusInput, CustomerUpdateWithoutMessagesStatusInput>, CustomerUncheckedUpdateWithoutMessagesStatusInput>
+  }
+
+  export type PodFolderCreateNestedOneWithoutChildrenInput = {
+    create?: XOR<PodFolderCreateWithoutChildrenInput, PodFolderUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: PodFolderCreateOrConnectWithoutChildrenInput
+    connect?: PodFolderWhereUniqueInput
+  }
+
+  export type PodFolderCreateNestedManyWithoutParentInput = {
+    create?: XOR<PodFolderCreateWithoutParentInput, PodFolderUncheckedCreateWithoutParentInput> | PodFolderCreateWithoutParentInput[] | PodFolderUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutParentInput | PodFolderCreateOrConnectWithoutParentInput[]
+    createMany?: PodFolderCreateManyParentInputEnvelope
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+  }
+
+  export type PodFileCreateNestedManyWithoutFolderInput = {
+    create?: XOR<PodFileCreateWithoutFolderInput, PodFileUncheckedCreateWithoutFolderInput> | PodFileCreateWithoutFolderInput[] | PodFileUncheckedCreateWithoutFolderInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutFolderInput | PodFileCreateOrConnectWithoutFolderInput[]
+    createMany?: PodFileCreateManyFolderInputEnvelope
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+  }
+
+  export type CustomerCreateNestedOneWithoutPodFoldersInput = {
+    create?: XOR<CustomerCreateWithoutPodFoldersInput, CustomerUncheckedCreateWithoutPodFoldersInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutPodFoldersInput
+    connect?: CustomerWhereUniqueInput
+  }
+
+  export type PodFolderUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<PodFolderCreateWithoutParentInput, PodFolderUncheckedCreateWithoutParentInput> | PodFolderCreateWithoutParentInput[] | PodFolderUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutParentInput | PodFolderCreateOrConnectWithoutParentInput[]
+    createMany?: PodFolderCreateManyParentInputEnvelope
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+  }
+
+  export type PodFileUncheckedCreateNestedManyWithoutFolderInput = {
+    create?: XOR<PodFileCreateWithoutFolderInput, PodFileUncheckedCreateWithoutFolderInput> | PodFileCreateWithoutFolderInput[] | PodFileUncheckedCreateWithoutFolderInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutFolderInput | PodFileCreateOrConnectWithoutFolderInput[]
+    createMany?: PodFileCreateManyFolderInputEnvelope
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+  }
+
+  export type PodFolderUpdateOneWithoutChildrenNestedInput = {
+    create?: XOR<PodFolderCreateWithoutChildrenInput, PodFolderUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: PodFolderCreateOrConnectWithoutChildrenInput
+    upsert?: PodFolderUpsertWithoutChildrenInput
+    disconnect?: PodFolderWhereInput | boolean
+    delete?: PodFolderWhereInput | boolean
+    connect?: PodFolderWhereUniqueInput
+    update?: XOR<XOR<PodFolderUpdateToOneWithWhereWithoutChildrenInput, PodFolderUpdateWithoutChildrenInput>, PodFolderUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type PodFolderUpdateManyWithoutParentNestedInput = {
+    create?: XOR<PodFolderCreateWithoutParentInput, PodFolderUncheckedCreateWithoutParentInput> | PodFolderCreateWithoutParentInput[] | PodFolderUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutParentInput | PodFolderCreateOrConnectWithoutParentInput[]
+    upsert?: PodFolderUpsertWithWhereUniqueWithoutParentInput | PodFolderUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: PodFolderCreateManyParentInputEnvelope
+    set?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    disconnect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    delete?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    update?: PodFolderUpdateWithWhereUniqueWithoutParentInput | PodFolderUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: PodFolderUpdateManyWithWhereWithoutParentInput | PodFolderUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: PodFolderScalarWhereInput | PodFolderScalarWhereInput[]
+  }
+
+  export type PodFileUpdateManyWithoutFolderNestedInput = {
+    create?: XOR<PodFileCreateWithoutFolderInput, PodFileUncheckedCreateWithoutFolderInput> | PodFileCreateWithoutFolderInput[] | PodFileUncheckedCreateWithoutFolderInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutFolderInput | PodFileCreateOrConnectWithoutFolderInput[]
+    upsert?: PodFileUpsertWithWhereUniqueWithoutFolderInput | PodFileUpsertWithWhereUniqueWithoutFolderInput[]
+    createMany?: PodFileCreateManyFolderInputEnvelope
+    set?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    disconnect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    delete?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    update?: PodFileUpdateWithWhereUniqueWithoutFolderInput | PodFileUpdateWithWhereUniqueWithoutFolderInput[]
+    updateMany?: PodFileUpdateManyWithWhereWithoutFolderInput | PodFileUpdateManyWithWhereWithoutFolderInput[]
+    deleteMany?: PodFileScalarWhereInput | PodFileScalarWhereInput[]
+  }
+
+  export type CustomerUpdateOneWithoutPodFoldersNestedInput = {
+    create?: XOR<CustomerCreateWithoutPodFoldersInput, CustomerUncheckedCreateWithoutPodFoldersInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutPodFoldersInput
+    upsert?: CustomerUpsertWithoutPodFoldersInput
+    disconnect?: CustomerWhereInput | boolean
+    delete?: CustomerWhereInput | boolean
+    connect?: CustomerWhereUniqueInput
+    update?: XOR<XOR<CustomerUpdateToOneWithWhereWithoutPodFoldersInput, CustomerUpdateWithoutPodFoldersInput>, CustomerUncheckedUpdateWithoutPodFoldersInput>
+  }
+
+  export type PodFolderUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<PodFolderCreateWithoutParentInput, PodFolderUncheckedCreateWithoutParentInput> | PodFolderCreateWithoutParentInput[] | PodFolderUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: PodFolderCreateOrConnectWithoutParentInput | PodFolderCreateOrConnectWithoutParentInput[]
+    upsert?: PodFolderUpsertWithWhereUniqueWithoutParentInput | PodFolderUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: PodFolderCreateManyParentInputEnvelope
+    set?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    disconnect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    delete?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    connect?: PodFolderWhereUniqueInput | PodFolderWhereUniqueInput[]
+    update?: PodFolderUpdateWithWhereUniqueWithoutParentInput | PodFolderUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: PodFolderUpdateManyWithWhereWithoutParentInput | PodFolderUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: PodFolderScalarWhereInput | PodFolderScalarWhereInput[]
+  }
+
+  export type PodFileUncheckedUpdateManyWithoutFolderNestedInput = {
+    create?: XOR<PodFileCreateWithoutFolderInput, PodFileUncheckedCreateWithoutFolderInput> | PodFileCreateWithoutFolderInput[] | PodFileUncheckedCreateWithoutFolderInput[]
+    connectOrCreate?: PodFileCreateOrConnectWithoutFolderInput | PodFileCreateOrConnectWithoutFolderInput[]
+    upsert?: PodFileUpsertWithWhereUniqueWithoutFolderInput | PodFileUpsertWithWhereUniqueWithoutFolderInput[]
+    createMany?: PodFileCreateManyFolderInputEnvelope
+    set?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    disconnect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    delete?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    connect?: PodFileWhereUniqueInput | PodFileWhereUniqueInput[]
+    update?: PodFileUpdateWithWhereUniqueWithoutFolderInput | PodFileUpdateWithWhereUniqueWithoutFolderInput[]
+    updateMany?: PodFileUpdateManyWithWhereWithoutFolderInput | PodFileUpdateManyWithWhereWithoutFolderInput[]
+    deleteMany?: PodFileScalarWhereInput | PodFileScalarWhereInput[]
+  }
+
+  export type PodFolderCreateNestedOneWithoutFilesInput = {
+    create?: XOR<PodFolderCreateWithoutFilesInput, PodFolderUncheckedCreateWithoutFilesInput>
+    connectOrCreate?: PodFolderCreateOrConnectWithoutFilesInput
+    connect?: PodFolderWhereUniqueInput
+  }
+
+  export type CustomerCreateNestedOneWithoutPodFilesInput = {
+    create?: XOR<CustomerCreateWithoutPodFilesInput, CustomerUncheckedCreateWithoutPodFilesInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutPodFilesInput
+    connect?: CustomerWhereUniqueInput
+  }
+
+  export type PodFolderUpdateOneWithoutFilesNestedInput = {
+    create?: XOR<PodFolderCreateWithoutFilesInput, PodFolderUncheckedCreateWithoutFilesInput>
+    connectOrCreate?: PodFolderCreateOrConnectWithoutFilesInput
+    upsert?: PodFolderUpsertWithoutFilesInput
+    disconnect?: PodFolderWhereInput | boolean
+    delete?: PodFolderWhereInput | boolean
+    connect?: PodFolderWhereUniqueInput
+    update?: XOR<XOR<PodFolderUpdateToOneWithWhereWithoutFilesInput, PodFolderUpdateWithoutFilesInput>, PodFolderUncheckedUpdateWithoutFilesInput>
+  }
+
+  export type CustomerUpdateOneWithoutPodFilesNestedInput = {
+    create?: XOR<CustomerCreateWithoutPodFilesInput, CustomerUncheckedCreateWithoutPodFilesInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutPodFilesInput
+    upsert?: CustomerUpsertWithoutPodFilesInput
+    disconnect?: CustomerWhereInput | boolean
+    delete?: CustomerWhereInput | boolean
+    connect?: CustomerWhereUniqueInput
+    update?: XOR<XOR<CustomerUpdateToOneWithWhereWithoutPodFilesInput, CustomerUpdateWithoutPodFilesInput>, CustomerUncheckedUpdateWithoutPodFilesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -48833,6 +53836,80 @@ export namespace Prisma {
     data: MessageStatusCreateManyCustomerInput | MessageStatusCreateManyCustomerInput[]
   }
 
+  export type PodFolderCreateWithoutCustomerInput = {
+    id?: string
+    name: string
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    parent?: PodFolderCreateNestedOneWithoutChildrenInput
+    children?: PodFolderCreateNestedManyWithoutParentInput
+    files?: PodFileCreateNestedManyWithoutFolderInput
+  }
+
+  export type PodFolderUncheckedCreateWithoutCustomerInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    children?: PodFolderUncheckedCreateNestedManyWithoutParentInput
+    files?: PodFileUncheckedCreateNestedManyWithoutFolderInput
+  }
+
+  export type PodFolderCreateOrConnectWithoutCustomerInput = {
+    where: PodFolderWhereUniqueInput
+    create: XOR<PodFolderCreateWithoutCustomerInput, PodFolderUncheckedCreateWithoutCustomerInput>
+  }
+
+  export type PodFolderCreateManyCustomerInputEnvelope = {
+    data: PodFolderCreateManyCustomerInput | PodFolderCreateManyCustomerInput[]
+  }
+
+  export type PodFileCreateWithoutCustomerInput = {
+    id?: string
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    folder?: PodFolderCreateNestedOneWithoutFilesInput
+  }
+
+  export type PodFileUncheckedCreateWithoutCustomerInput = {
+    id?: string
+    folderId?: string | null
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFileCreateOrConnectWithoutCustomerInput = {
+    where: PodFileWhereUniqueInput
+    create: XOR<PodFileCreateWithoutCustomerInput, PodFileUncheckedCreateWithoutCustomerInput>
+  }
+
+  export type PodFileCreateManyCustomerInputEnvelope = {
+    data: PodFileCreateManyCustomerInput | PodFileCreateManyCustomerInput[]
+  }
+
   export type BookingUpsertWithWhereUniqueWithoutCustomerInput = {
     where: BookingWhereUniqueInput
     update: XOR<BookingUpdateWithoutCustomerInput, BookingUncheckedUpdateWithoutCustomerInput>
@@ -49084,6 +54161,72 @@ export namespace Prisma {
     customerId?: StringFilter<"MessageStatus"> | string
     sentStatus?: IntFilter<"MessageStatus"> | number
     sentAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+  }
+
+  export type PodFolderUpsertWithWhereUniqueWithoutCustomerInput = {
+    where: PodFolderWhereUniqueInput
+    update: XOR<PodFolderUpdateWithoutCustomerInput, PodFolderUncheckedUpdateWithoutCustomerInput>
+    create: XOR<PodFolderCreateWithoutCustomerInput, PodFolderUncheckedCreateWithoutCustomerInput>
+  }
+
+  export type PodFolderUpdateWithWhereUniqueWithoutCustomerInput = {
+    where: PodFolderWhereUniqueInput
+    data: XOR<PodFolderUpdateWithoutCustomerInput, PodFolderUncheckedUpdateWithoutCustomerInput>
+  }
+
+  export type PodFolderUpdateManyWithWhereWithoutCustomerInput = {
+    where: PodFolderScalarWhereInput
+    data: XOR<PodFolderUpdateManyMutationInput, PodFolderUncheckedUpdateManyWithoutCustomerInput>
+  }
+
+  export type PodFolderScalarWhereInput = {
+    AND?: PodFolderScalarWhereInput | PodFolderScalarWhereInput[]
+    OR?: PodFolderScalarWhereInput[]
+    NOT?: PodFolderScalarWhereInput | PodFolderScalarWhereInput[]
+    id?: StringFilter<"PodFolder"> | string
+    name?: StringFilter<"PodFolder"> | string
+    parentId?: StringNullableFilter<"PodFolder"> | string | null
+    customerId?: StringNullableFilter<"PodFolder"> | string | null
+    createdById?: StringNullableFilter<"PodFolder"> | string | null
+    storageUsed?: IntFilter<"PodFolder"> | number
+    createdAt?: DateTimeFilter<"PodFolder"> | Date | string
+    updatedAt?: DateTimeFilter<"PodFolder"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"PodFolder"> | Date | string | null
+  }
+
+  export type PodFileUpsertWithWhereUniqueWithoutCustomerInput = {
+    where: PodFileWhereUniqueInput
+    update: XOR<PodFileUpdateWithoutCustomerInput, PodFileUncheckedUpdateWithoutCustomerInput>
+    create: XOR<PodFileCreateWithoutCustomerInput, PodFileUncheckedCreateWithoutCustomerInput>
+  }
+
+  export type PodFileUpdateWithWhereUniqueWithoutCustomerInput = {
+    where: PodFileWhereUniqueInput
+    data: XOR<PodFileUpdateWithoutCustomerInput, PodFileUncheckedUpdateWithoutCustomerInput>
+  }
+
+  export type PodFileUpdateManyWithWhereWithoutCustomerInput = {
+    where: PodFileScalarWhereInput
+    data: XOR<PodFileUpdateManyMutationInput, PodFileUncheckedUpdateManyWithoutCustomerInput>
+  }
+
+  export type PodFileScalarWhereInput = {
+    AND?: PodFileScalarWhereInput | PodFileScalarWhereInput[]
+    OR?: PodFileScalarWhereInput[]
+    NOT?: PodFileScalarWhereInput | PodFileScalarWhereInput[]
+    id?: StringFilter<"PodFile"> | string
+    folderId?: StringNullableFilter<"PodFile"> | string | null
+    bookingId?: StringNullableFilter<"PodFile"> | string | null
+    filename?: StringFilter<"PodFile"> | string
+    storedName?: StringFilter<"PodFile"> | string
+    filePath?: StringFilter<"PodFile"> | string
+    mimeType?: StringNullableFilter<"PodFile"> | string | null
+    fileSize?: IntFilter<"PodFile"> | number
+    customerId?: StringNullableFilter<"PodFile"> | string | null
+    uploadedById?: StringNullableFilter<"PodFile"> | string | null
+    createdAt?: DateTimeFilter<"PodFile"> | Date | string
+    updatedAt?: DateTimeFilter<"PodFile"> | Date | string
+    deletedAt?: DateTimeNullableFilter<"PodFile"> | Date | string | null
   }
 
   export type DriverContactCreateWithoutDriverInput = {
@@ -50323,6 +55466,8 @@ export namespace Prisma {
     sales?: SaleCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutVehicleRatesInput = {
@@ -50352,6 +55497,8 @@ export namespace Prisma {
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerCreateOrConnectWithoutVehicleRatesInput = {
@@ -50424,6 +55571,8 @@ export namespace Prisma {
     sales?: SaleUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutVehicleRatesInput = {
@@ -50453,6 +55602,8 @@ export namespace Prisma {
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type VehicleUpsertWithoutVehicleRatesInput = {
@@ -51303,6 +56454,8 @@ export namespace Prisma {
     sales?: SaleCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutBookingsInput = {
@@ -51332,6 +56485,8 @@ export namespace Prisma {
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerCreateOrConnectWithoutBookingsInput = {
@@ -51773,6 +56928,8 @@ export namespace Prisma {
     sales?: SaleUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutBookingsInput = {
@@ -51802,6 +56959,8 @@ export namespace Prisma {
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type BookingTypeUpsertWithoutBookingsInput = {
@@ -52935,6 +58094,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutSalesInput = {
@@ -52964,6 +58125,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerCreateOrConnectWithoutSalesInput = {
@@ -53009,6 +58172,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutSalesInput = {
@@ -53038,6 +58203,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerCreateWithoutInvoicesInput = {
@@ -53067,6 +58234,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
     sales?: SaleCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutInvoicesInput = {
@@ -53096,6 +58265,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
     messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerCreateOrConnectWithoutInvoicesInput = {
@@ -53141,6 +58312,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
     sales?: SaleUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutInvoicesInput = {
@@ -53170,6 +58343,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
     messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type UserCreateWithoutComposedMessagesInput = {
@@ -53375,6 +58550,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
     sales?: SaleCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutMessagesStatusInput = {
@@ -53404,6 +58581,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerCreateOrConnectWithoutMessagesStatusInput = {
@@ -53488,6 +58667,8 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
     sales?: SaleUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutMessagesStatusInput = {
@@ -53517,6 +58698,530 @@ export namespace Prisma {
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type PodFolderCreateWithoutChildrenInput = {
+    id?: string
+    name: string
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    parent?: PodFolderCreateNestedOneWithoutChildrenInput
+    files?: PodFileCreateNestedManyWithoutFolderInput
+    customer?: CustomerCreateNestedOneWithoutPodFoldersInput
+  }
+
+  export type PodFolderUncheckedCreateWithoutChildrenInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    customerId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    files?: PodFileUncheckedCreateNestedManyWithoutFolderInput
+  }
+
+  export type PodFolderCreateOrConnectWithoutChildrenInput = {
+    where: PodFolderWhereUniqueInput
+    create: XOR<PodFolderCreateWithoutChildrenInput, PodFolderUncheckedCreateWithoutChildrenInput>
+  }
+
+  export type PodFolderCreateWithoutParentInput = {
+    id?: string
+    name: string
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    children?: PodFolderCreateNestedManyWithoutParentInput
+    files?: PodFileCreateNestedManyWithoutFolderInput
+    customer?: CustomerCreateNestedOneWithoutPodFoldersInput
+  }
+
+  export type PodFolderUncheckedCreateWithoutParentInput = {
+    id?: string
+    name: string
+    customerId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    children?: PodFolderUncheckedCreateNestedManyWithoutParentInput
+    files?: PodFileUncheckedCreateNestedManyWithoutFolderInput
+  }
+
+  export type PodFolderCreateOrConnectWithoutParentInput = {
+    where: PodFolderWhereUniqueInput
+    create: XOR<PodFolderCreateWithoutParentInput, PodFolderUncheckedCreateWithoutParentInput>
+  }
+
+  export type PodFolderCreateManyParentInputEnvelope = {
+    data: PodFolderCreateManyParentInput | PodFolderCreateManyParentInput[]
+  }
+
+  export type PodFileCreateWithoutFolderInput = {
+    id?: string
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    customer?: CustomerCreateNestedOneWithoutPodFilesInput
+  }
+
+  export type PodFileUncheckedCreateWithoutFolderInput = {
+    id?: string
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    customerId?: string | null
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFileCreateOrConnectWithoutFolderInput = {
+    where: PodFileWhereUniqueInput
+    create: XOR<PodFileCreateWithoutFolderInput, PodFileUncheckedCreateWithoutFolderInput>
+  }
+
+  export type PodFileCreateManyFolderInputEnvelope = {
+    data: PodFileCreateManyFolderInput | PodFileCreateManyFolderInput[]
+  }
+
+  export type CustomerCreateWithoutPodFoldersInput = {
+    id?: string
+    name: string
+    accountNumber?: string | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    address2?: string | null
+    address3?: string | null
+    city?: string | null
+    postcode?: string | null
+    notes?: string | null
+    contact?: string | null
+    poNumber?: string | null
+    poEmail?: string | null
+    deadMileage?: number
+    jobRefStart?: number
+    customerAccount?: string | null
+    customerEmailBcc?: string | null
+    termsOfPayment?: string | null
+    messageType?: string | null
+    userId?: string | null
+    legacyCustomerId?: number | null
+    bookings?: BookingCreateNestedManyWithoutCustomerInput
+    vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
+    sales?: SaleCreateNestedManyWithoutCustomerInput
+    invoices?: InvoiceCreateNestedManyWithoutCustomerInput
+    messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerUncheckedCreateWithoutPodFoldersInput = {
+    id?: string
+    name: string
+    accountNumber?: string | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    address2?: string | null
+    address3?: string | null
+    city?: string | null
+    postcode?: string | null
+    notes?: string | null
+    contact?: string | null
+    poNumber?: string | null
+    poEmail?: string | null
+    deadMileage?: number
+    jobRefStart?: number
+    customerAccount?: string | null
+    customerEmailBcc?: string | null
+    termsOfPayment?: string | null
+    messageType?: string | null
+    userId?: string | null
+    legacyCustomerId?: number | null
+    bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
+    vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
+    sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+    messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFiles?: PodFileUncheckedCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerCreateOrConnectWithoutPodFoldersInput = {
+    where: CustomerWhereUniqueInput
+    create: XOR<CustomerCreateWithoutPodFoldersInput, CustomerUncheckedCreateWithoutPodFoldersInput>
+  }
+
+  export type PodFolderUpsertWithoutChildrenInput = {
+    update: XOR<PodFolderUpdateWithoutChildrenInput, PodFolderUncheckedUpdateWithoutChildrenInput>
+    create: XOR<PodFolderCreateWithoutChildrenInput, PodFolderUncheckedCreateWithoutChildrenInput>
+    where?: PodFolderWhereInput
+  }
+
+  export type PodFolderUpdateToOneWithWhereWithoutChildrenInput = {
+    where?: PodFolderWhereInput
+    data: XOR<PodFolderUpdateWithoutChildrenInput, PodFolderUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type PodFolderUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parent?: PodFolderUpdateOneWithoutChildrenNestedInput
+    files?: PodFileUpdateManyWithoutFolderNestedInput
+    customer?: CustomerUpdateOneWithoutPodFoldersNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    files?: PodFileUncheckedUpdateManyWithoutFolderNestedInput
+  }
+
+  export type PodFolderUpsertWithWhereUniqueWithoutParentInput = {
+    where: PodFolderWhereUniqueInput
+    update: XOR<PodFolderUpdateWithoutParentInput, PodFolderUncheckedUpdateWithoutParentInput>
+    create: XOR<PodFolderCreateWithoutParentInput, PodFolderUncheckedCreateWithoutParentInput>
+  }
+
+  export type PodFolderUpdateWithWhereUniqueWithoutParentInput = {
+    where: PodFolderWhereUniqueInput
+    data: XOR<PodFolderUpdateWithoutParentInput, PodFolderUncheckedUpdateWithoutParentInput>
+  }
+
+  export type PodFolderUpdateManyWithWhereWithoutParentInput = {
+    where: PodFolderScalarWhereInput
+    data: XOR<PodFolderUpdateManyMutationInput, PodFolderUncheckedUpdateManyWithoutParentInput>
+  }
+
+  export type PodFileUpsertWithWhereUniqueWithoutFolderInput = {
+    where: PodFileWhereUniqueInput
+    update: XOR<PodFileUpdateWithoutFolderInput, PodFileUncheckedUpdateWithoutFolderInput>
+    create: XOR<PodFileCreateWithoutFolderInput, PodFileUncheckedCreateWithoutFolderInput>
+  }
+
+  export type PodFileUpdateWithWhereUniqueWithoutFolderInput = {
+    where: PodFileWhereUniqueInput
+    data: XOR<PodFileUpdateWithoutFolderInput, PodFileUncheckedUpdateWithoutFolderInput>
+  }
+
+  export type PodFileUpdateManyWithWhereWithoutFolderInput = {
+    where: PodFileScalarWhereInput
+    data: XOR<PodFileUpdateManyMutationInput, PodFileUncheckedUpdateManyWithoutFolderInput>
+  }
+
+  export type CustomerUpsertWithoutPodFoldersInput = {
+    update: XOR<CustomerUpdateWithoutPodFoldersInput, CustomerUncheckedUpdateWithoutPodFoldersInput>
+    create: XOR<CustomerCreateWithoutPodFoldersInput, CustomerUncheckedCreateWithoutPodFoldersInput>
+    where?: CustomerWhereInput
+  }
+
+  export type CustomerUpdateToOneWithWhereWithoutPodFoldersInput = {
+    where?: CustomerWhereInput
+    data: XOR<CustomerUpdateWithoutPodFoldersInput, CustomerUncheckedUpdateWithoutPodFoldersInput>
+  }
+
+  export type CustomerUpdateWithoutPodFoldersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    address2?: NullableStringFieldUpdateOperationsInput | string | null
+    address3?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contact?: NullableStringFieldUpdateOperationsInput | string | null
+    poNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    poEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    deadMileage?: IntFieldUpdateOperationsInput | number
+    jobRefStart?: IntFieldUpdateOperationsInput | number
+    customerAccount?: NullableStringFieldUpdateOperationsInput | string | null
+    customerEmailBcc?: NullableStringFieldUpdateOperationsInput | string | null
+    termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
+    messageType?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
+    bookings?: BookingUpdateManyWithoutCustomerNestedInput
+    vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
+    sales?: SaleUpdateManyWithoutCustomerNestedInput
+    invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
+    messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type CustomerUncheckedUpdateWithoutPodFoldersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    address2?: NullableStringFieldUpdateOperationsInput | string | null
+    address3?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contact?: NullableStringFieldUpdateOperationsInput | string | null
+    poNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    poEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    deadMileage?: IntFieldUpdateOperationsInput | number
+    jobRefStart?: IntFieldUpdateOperationsInput | number
+    customerAccount?: NullableStringFieldUpdateOperationsInput | string | null
+    customerEmailBcc?: NullableStringFieldUpdateOperationsInput | string | null
+    termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
+    messageType?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
+    bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
+    vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
+    sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+    messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFiles?: PodFileUncheckedUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type PodFolderCreateWithoutFilesInput = {
+    id?: string
+    name: string
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    parent?: PodFolderCreateNestedOneWithoutChildrenInput
+    children?: PodFolderCreateNestedManyWithoutParentInput
+    customer?: CustomerCreateNestedOneWithoutPodFoldersInput
+  }
+
+  export type PodFolderUncheckedCreateWithoutFilesInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    customerId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    children?: PodFolderUncheckedCreateNestedManyWithoutParentInput
+  }
+
+  export type PodFolderCreateOrConnectWithoutFilesInput = {
+    where: PodFolderWhereUniqueInput
+    create: XOR<PodFolderCreateWithoutFilesInput, PodFolderUncheckedCreateWithoutFilesInput>
+  }
+
+  export type CustomerCreateWithoutPodFilesInput = {
+    id?: string
+    name: string
+    accountNumber?: string | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    address2?: string | null
+    address3?: string | null
+    city?: string | null
+    postcode?: string | null
+    notes?: string | null
+    contact?: string | null
+    poNumber?: string | null
+    poEmail?: string | null
+    deadMileage?: number
+    jobRefStart?: number
+    customerAccount?: string | null
+    customerEmailBcc?: string | null
+    termsOfPayment?: string | null
+    messageType?: string | null
+    userId?: string | null
+    legacyCustomerId?: number | null
+    bookings?: BookingCreateNestedManyWithoutCustomerInput
+    vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
+    sales?: SaleCreateNestedManyWithoutCustomerInput
+    invoices?: InvoiceCreateNestedManyWithoutCustomerInput
+    messagesStatus?: MessageStatusCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerUncheckedCreateWithoutPodFilesInput = {
+    id?: string
+    name: string
+    accountNumber?: string | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    address2?: string | null
+    address3?: string | null
+    city?: string | null
+    postcode?: string | null
+    notes?: string | null
+    contact?: string | null
+    poNumber?: string | null
+    poEmail?: string | null
+    deadMileage?: number
+    jobRefStart?: number
+    customerAccount?: string | null
+    customerEmailBcc?: string | null
+    termsOfPayment?: string | null
+    messageType?: string | null
+    userId?: string | null
+    legacyCustomerId?: number | null
+    bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
+    vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
+    sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+    messagesStatus?: MessageStatusUncheckedCreateNestedManyWithoutCustomerInput
+    podFolders?: PodFolderUncheckedCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerCreateOrConnectWithoutPodFilesInput = {
+    where: CustomerWhereUniqueInput
+    create: XOR<CustomerCreateWithoutPodFilesInput, CustomerUncheckedCreateWithoutPodFilesInput>
+  }
+
+  export type PodFolderUpsertWithoutFilesInput = {
+    update: XOR<PodFolderUpdateWithoutFilesInput, PodFolderUncheckedUpdateWithoutFilesInput>
+    create: XOR<PodFolderCreateWithoutFilesInput, PodFolderUncheckedCreateWithoutFilesInput>
+    where?: PodFolderWhereInput
+  }
+
+  export type PodFolderUpdateToOneWithWhereWithoutFilesInput = {
+    where?: PodFolderWhereInput
+    data: XOR<PodFolderUpdateWithoutFilesInput, PodFolderUncheckedUpdateWithoutFilesInput>
+  }
+
+  export type PodFolderUpdateWithoutFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parent?: PodFolderUpdateOneWithoutChildrenNestedInput
+    children?: PodFolderUpdateManyWithoutParentNestedInput
+    customer?: CustomerUpdateOneWithoutPodFoldersNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateWithoutFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    children?: PodFolderUncheckedUpdateManyWithoutParentNestedInput
+  }
+
+  export type CustomerUpsertWithoutPodFilesInput = {
+    update: XOR<CustomerUpdateWithoutPodFilesInput, CustomerUncheckedUpdateWithoutPodFilesInput>
+    create: XOR<CustomerCreateWithoutPodFilesInput, CustomerUncheckedCreateWithoutPodFilesInput>
+    where?: CustomerWhereInput
+  }
+
+  export type CustomerUpdateToOneWithWhereWithoutPodFilesInput = {
+    where?: CustomerWhereInput
+    data: XOR<CustomerUpdateWithoutPodFilesInput, CustomerUncheckedUpdateWithoutPodFilesInput>
+  }
+
+  export type CustomerUpdateWithoutPodFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    address2?: NullableStringFieldUpdateOperationsInput | string | null
+    address3?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contact?: NullableStringFieldUpdateOperationsInput | string | null
+    poNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    poEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    deadMileage?: IntFieldUpdateOperationsInput | number
+    jobRefStart?: IntFieldUpdateOperationsInput | number
+    customerAccount?: NullableStringFieldUpdateOperationsInput | string | null
+    customerEmailBcc?: NullableStringFieldUpdateOperationsInput | string | null
+    termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
+    messageType?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
+    bookings?: BookingUpdateManyWithoutCustomerNestedInput
+    vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
+    sales?: SaleUpdateManyWithoutCustomerNestedInput
+    invoices?: InvoiceUpdateManyWithoutCustomerNestedInput
+    messagesStatus?: MessageStatusUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type CustomerUncheckedUpdateWithoutPodFilesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    accountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    address2?: NullableStringFieldUpdateOperationsInput | string | null
+    address3?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    postcode?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    contact?: NullableStringFieldUpdateOperationsInput | string | null
+    poNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    poEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    deadMileage?: IntFieldUpdateOperationsInput | number
+    jobRefStart?: IntFieldUpdateOperationsInput | number
+    customerAccount?: NullableStringFieldUpdateOperationsInput | string | null
+    customerEmailBcc?: NullableStringFieldUpdateOperationsInput | string | null
+    termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
+    messageType?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
+    bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
+    vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
+    sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+    messagesStatus?: MessageStatusUncheckedUpdateManyWithoutCustomerNestedInput
+    podFolders?: PodFolderUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
   export type UserRoleCreateManyUserInput = {
@@ -53824,6 +59529,32 @@ export namespace Prisma {
     messageId: string
     sentStatus?: number
     sentAt?: Date | string | null
+  }
+
+  export type PodFolderCreateManyCustomerInput = {
+    id?: string
+    name: string
+    parentId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFileCreateManyCustomerInput = {
+    id?: string
+    folderId?: string | null
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
   }
 
   export type BookingUpdateWithoutCustomerInput = {
@@ -54287,6 +60018,88 @@ export namespace Prisma {
     messageId?: StringFieldUpdateOperationsInput | string
     sentStatus?: IntFieldUpdateOperationsInput | number
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFolderUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    parent?: PodFolderUpdateOneWithoutChildrenNestedInput
+    children?: PodFolderUpdateManyWithoutParentNestedInput
+    files?: PodFileUpdateManyWithoutFolderNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    children?: PodFolderUncheckedUpdateManyWithoutParentNestedInput
+    files?: PodFileUncheckedUpdateManyWithoutFolderNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateManyWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    folder?: PodFolderUpdateOneWithoutFilesNestedInput
+  }
+
+  export type PodFileUncheckedUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileUncheckedUpdateManyWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    folderId?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DriverContactCreateManyDriverInput = {
@@ -57143,6 +62956,114 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     sentStatus?: IntFieldUpdateOperationsInput | number
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFolderCreateManyParentInput = {
+    id?: string
+    name: string
+    customerId?: string | null
+    createdById?: string | null
+    storageUsed?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFileCreateManyFolderInput = {
+    id?: string
+    bookingId?: string | null
+    filename: string
+    storedName: string
+    filePath: string
+    mimeType?: string | null
+    fileSize?: number
+    customerId?: string | null
+    uploadedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PodFolderUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    children?: PodFolderUpdateManyWithoutParentNestedInput
+    files?: PodFileUpdateManyWithoutFolderNestedInput
+    customer?: CustomerUpdateOneWithoutPodFoldersNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    children?: PodFolderUncheckedUpdateManyWithoutParentNestedInput
+    files?: PodFileUncheckedUpdateManyWithoutFolderNestedInput
+  }
+
+  export type PodFolderUncheckedUpdateManyWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    storageUsed?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileUpdateWithoutFolderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customer?: CustomerUpdateOneWithoutPodFilesNestedInput
+  }
+
+  export type PodFileUncheckedUpdateWithoutFolderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PodFileUncheckedUpdateManyWithoutFolderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    filename?: StringFieldUpdateOperationsInput | string
+    storedName?: StringFieldUpdateOperationsInput | string
+    filePath?: StringFieldUpdateOperationsInput | string
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: IntFieldUpdateOperationsInput | number
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 
