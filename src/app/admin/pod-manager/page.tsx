@@ -391,9 +391,10 @@ function PodManagerInner() {
         >
           {isActive ? <FolderOpen className="w-4 h-4 shrink-0 text-blue-600" /> : <Folder className="w-4 h-4 shrink-0 text-amber-500" />}
           <span className="truncate flex-1">{folder.name}</span>
-          {folder._count && (folder._count.files + folder._count.children) > 0 && (
-            <span className="text-xs text-slate-400 shrink-0">{folder._count.files + folder._count.children}</span>
-          )}
+          {(() => {
+            const total = (folder as any).totalFiles ?? (folder._count ? folder._count.files + folder._count.children : 0);
+            return total > 0 ? <span className="text-xs text-slate-400 shrink-0">{total}</span> : null;
+          })()}
         </button>
         {children.map(c => <FolderTreeItem key={c.id} folder={c} depth={depth + 1} />)}
       </div>
@@ -559,14 +560,19 @@ function PodManagerInner() {
                           <div className="flex flex-col items-center gap-2 text-center pointer-events-none">
                             <FolderOpen className="w-10 h-10 text-amber-400" />
                             <p className="text-xs font-medium text-slate-700 leading-tight line-clamp-2">{folder.name}</p>
-                            {folder._count && (
-                              <p className="text-xs text-slate-400">
-                                {folder._count.children > 0 && `${folder._count.children} folder${folder._count.children !== 1 ? "s" : ""}`}
-                                {folder._count.children > 0 && folder._count.files > 0 && ", "}
-                                {folder._count.files > 0 && `${folder._count.files} file${folder._count.files !== 1 ? "s" : ""}`}
-                                {folder._count.children === 0 && folder._count.files === 0 && "empty"}
-                              </p>
-                            )}
+                            {(() => {
+                              const total = (folder as any).totalFiles ?? folder._count?.files ?? 0;
+                              const subFolders = folder._count?.children ?? 0;
+                              return (
+                                <p className="text-xs text-slate-400">
+                                  {total > 0
+                                    ? `${total} file${total !== 1 ? "s" : ""}${subFolders > 0 ? ` in ${subFolders} folder${subFolders !== 1 ? "s" : ""}` : ""}`
+                                    : subFolders > 0
+                                      ? `${subFolders} folder${subFolders !== 1 ? "s" : ""}`
+                                      : "empty"}
+                                </p>
+                              );
+                            })()}
                             {folder.customer && (
                               <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full border border-blue-100 truncate max-w-full">
                                 {folder.customer.name}

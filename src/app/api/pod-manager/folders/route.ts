@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 
+// Recursively count all files in a folder and its sub-folders
+async function countFilesRecursive(folderId: string): Promise<number> {
+  const direct = await prisma.podFile.count({ where: { folderId, deletedAt: null } });
+  const children = await prisma.podFolder.findMany({
+    where: { parentId: folderId, deletedAt: null },
+    select: { id: true },
+  });
+  let total = direct;
+  for (const child of children) {
+    total += await countFilesRecursive(child.id);
+  }
+  return total;
+}
+
+// Attach totalFiles (recursive) to each folder
+async function withTotalFiles(folders: any[]): Promise<any[]> {
+  return Promise.all(folders.map(async (f) => ({
+    ...f,
+    totalFiles: await countFilesRecursive(f.id),
+  })));
+}
+
 // GET /api/pod-manager/folders?parentId=&customerId=
 export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
@@ -21,10 +43,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "POD Manager access not enabled for this account" }, { status: 403 });
     }
 
-    // When navigating inside the folder tree (parentId provided), don't filter by customerId —
-    // sub-folders created by admin have customerId=null. Security is enforced by the folder tree
-    // structure: the customer can only reach these folders by navigating from their assigned root.
-    // At root level (no parentId), restrict to their assigned root folder only.
     if (!parentId) {
       // Root level — only show the assigned folder
       const assignedFolderId = customer.podFolderId;
@@ -36,7 +54,9 @@ export async function GET(req: NextRequest) {
           customer: { select: { id: true, name: true } },
         },
       });
-      return NextResponse.json(folder ? [folder] : []);
+      if (!folder) return NextResponse.json([]);
+      const [withTotal] = await withTotalFiles([folder]);
+      return NextResponse.json([withTotal]);
     }
 
     // Inside the tree — return sub-folders without customerId filter
@@ -49,7 +69,7 @@ export async function GET(req: NextRequest) {
           customer: { select: { id: true, name: true } },
         },
       });
-      return NextResponse.json(folders);
+      return NextResponse.json(await withTotalFiles(folders));
     } catch (e: any) {
       return NextResponse.json({ error: e.message }, { status: 500 });
     }
@@ -71,7 +91,7 @@ export async function GET(req: NextRequest) {
         customer: { select: { id: true, name: true } },
       },
     });
-    return NextResponse.json(folders);
+    return NextResponse.json(await withTotalFiles(folders));
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -87,7 +107,6 @@ export async function POST(req: NextRequest) {
 
   if (!name?.trim()) return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
-  // Check pod_manager_manage permission
   const canManage = session.roles?.includes("admin") || session.permissions?.includes("pod_manager_manage");
   if (!canManage) return NextResponse.json({ error: "Permission denied" }, { status: 403 });
 

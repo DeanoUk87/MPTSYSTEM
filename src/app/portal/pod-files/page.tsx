@@ -253,9 +253,19 @@ export default function PortalPodFilesPage() {
                     >
                       <FolderOpen className="w-10 h-10 text-amber-400" />
                       <p className="text-xs font-medium text-slate-700 truncate w-full">{folder.name}</p>
-                      {folder._count && (
-                        <p className="text-xs text-slate-400">{folder._count.files} file{folder._count.files !== 1 ? "s" : ""}</p>
-                      )}
+                      {(() => {
+                        const total = (folder as any).totalFiles ?? folder._count?.files ?? 0;
+                        const subs = folder._count?.children ?? 0;
+                        return (
+                          <p className="text-xs text-slate-400">
+                            {total > 0
+                              ? `${total} file${total !== 1 ? "s" : ""}`
+                              : subs > 0
+                                ? `${subs} folder${subs !== 1 ? "s" : ""}`
+                                : "empty"}
+                          </p>
+                        );
+                      })()}
                     </button>
                   ))}
                 </div>
