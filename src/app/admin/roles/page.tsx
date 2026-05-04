@@ -34,6 +34,14 @@ const ACTION_LABELS: Record<string, string> = {
   create: "Create",
   edit: "Edit",
   delete: "Delete",
+  // POD Manager specific actions
+  manager_view: "View",
+  manager_upload: "Upload",
+  manager_move: "Move",
+  manager_rename: "Rename",
+  manager_delete: "Delete",
+  manager_share: "Share",
+  manager_manage: "Manage",
 };
 
 const MODULE_COLORS: Record<string, string> = {

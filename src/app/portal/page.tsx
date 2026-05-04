@@ -510,11 +510,16 @@ export default function CustomerPortalPage() {
   const [selected, setSelected] = useState<Booking | null>(null);
   const [logo, setLogo] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState("MP Transport");
+  const [podManagerAccess, setPodManagerAccess] = useState(false);
 
   useEffect(() => {
     fetch("/api/branding")
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) { setLogo(d.logo || null); setCompanyName(d.companyName || "MP Transport"); } })
+      .catch(() => {});
+    fetch("/api/portal/pod-access")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setPodManagerAccess(d.podManagerAccess ?? false); })
       .catch(() => {});
   }, []);
 
@@ -624,6 +629,12 @@ export default function CustomerPortalPage() {
             className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
             History
           </Link>
+          {podManagerAccess && (
+            <Link href="/portal/pod-files"
+              className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
+              POD Files
+            </Link>
+          )}
           <button onClick={handleLogout}
             className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
             <LogOut className="w-3.5 h-3.5" /> Sign Out

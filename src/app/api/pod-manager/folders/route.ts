@@ -11,10 +11,20 @@ export async function GET(req: NextRequest) {
   const parentId = searchParams.get("parentId") || null;
   const customerId = searchParams.get("customerId") || undefined;
 
-  // Customer-scoped users can only see their own folders
+  // Customer-scoped users can only see their own folders — and only if POD Manager access is enabled
   const effectiveCustomerId = session.customerId
     ? session.customerId
     : customerId || undefined;
+
+  if (session.customerId) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: session.customerId },
+      select: { podManagerAccess: true },
+    });
+    if (!customer?.podManagerAccess) {
+      return NextResponse.json({ error: "POD Manager access not enabled for this account" }, { status: 403 });
+    }
+  }
 
   try {
     const folders = await prisma.podFolder.findMany({

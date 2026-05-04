@@ -25,10 +25,20 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") || "50", 10)));
 
-  // Customer-scoped users can only see their own files
+  // Customer-scoped users can only see their own files — and only if POD Manager access is enabled
   const effectiveCustomerId = session.customerId
     ? session.customerId
     : customerId || undefined;
+
+  if (session.customerId) {
+    const customer = await prisma.customer.findUnique({
+      where: { id: session.customerId },
+      select: { podManagerAccess: true },
+    });
+    if (!customer?.podManagerAccess) {
+      return NextResponse.json({ error: "POD Manager access not enabled for this account" }, { status: 403 });
+    }
+  }
 
   const where: any = {
     folderId: folderId ?? null,

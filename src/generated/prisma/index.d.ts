@@ -10699,6 +10699,7 @@ export namespace Prisma {
     termsOfPayment: string | null
     messageType: string | null
     userId: string | null
+    podManagerAccess: boolean | null
     legacyCustomerId: number | null
   }
 
@@ -10724,6 +10725,7 @@ export namespace Prisma {
     termsOfPayment: string | null
     messageType: string | null
     userId: string | null
+    podManagerAccess: boolean | null
     legacyCustomerId: number | null
   }
 
@@ -10749,6 +10751,7 @@ export namespace Prisma {
     termsOfPayment: number
     messageType: number
     userId: number
+    podManagerAccess: number
     legacyCustomerId: number
     _all: number
   }
@@ -10788,6 +10791,7 @@ export namespace Prisma {
     termsOfPayment?: true
     messageType?: true
     userId?: true
+    podManagerAccess?: true
     legacyCustomerId?: true
   }
 
@@ -10813,6 +10817,7 @@ export namespace Prisma {
     termsOfPayment?: true
     messageType?: true
     userId?: true
+    podManagerAccess?: true
     legacyCustomerId?: true
   }
 
@@ -10838,6 +10843,7 @@ export namespace Prisma {
     termsOfPayment?: true
     messageType?: true
     userId?: true
+    podManagerAccess?: true
     legacyCustomerId?: true
     _all?: true
   }
@@ -10950,6 +10956,7 @@ export namespace Prisma {
     termsOfPayment: string | null
     messageType: string | null
     userId: string | null
+    podManagerAccess: boolean
     legacyCustomerId: number | null
     _count: CustomerCountAggregateOutputType | null
     _avg: CustomerAvgAggregateOutputType | null
@@ -10994,6 +11001,7 @@ export namespace Prisma {
     termsOfPayment?: boolean
     messageType?: boolean
     userId?: boolean
+    podManagerAccess?: boolean
     legacyCustomerId?: boolean
     bookings?: boolean | Customer$bookingsArgs<ExtArgs>
     vehicleRates?: boolean | Customer$vehicleRatesArgs<ExtArgs>
@@ -11027,6 +11035,7 @@ export namespace Prisma {
     termsOfPayment?: boolean
     messageType?: boolean
     userId?: boolean
+    podManagerAccess?: boolean
     legacyCustomerId?: boolean
   }, ExtArgs["result"]["customer"]>
 
@@ -11052,6 +11061,7 @@ export namespace Prisma {
     termsOfPayment?: boolean
     messageType?: boolean
     userId?: boolean
+    podManagerAccess?: boolean
     legacyCustomerId?: boolean
   }, ExtArgs["result"]["customer"]>
 
@@ -11077,10 +11087,11 @@ export namespace Prisma {
     termsOfPayment?: boolean
     messageType?: boolean
     userId?: boolean
+    podManagerAccess?: boolean
     legacyCustomerId?: boolean
   }
 
-  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "accountNumber" | "email" | "phone" | "address" | "address2" | "address3" | "city" | "postcode" | "notes" | "contact" | "poNumber" | "poEmail" | "deadMileage" | "jobRefStart" | "customerAccount" | "customerEmailBcc" | "termsOfPayment" | "messageType" | "userId" | "legacyCustomerId", ExtArgs["result"]["customer"]>
+  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "accountNumber" | "email" | "phone" | "address" | "address2" | "address3" | "city" | "postcode" | "notes" | "contact" | "poNumber" | "poEmail" | "deadMileage" | "jobRefStart" | "customerAccount" | "customerEmailBcc" | "termsOfPayment" | "messageType" | "userId" | "podManagerAccess" | "legacyCustomerId", ExtArgs["result"]["customer"]>
   export type CustomerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     bookings?: boolean | Customer$bookingsArgs<ExtArgs>
     vehicleRates?: boolean | Customer$vehicleRatesArgs<ExtArgs>
@@ -11127,6 +11138,7 @@ export namespace Prisma {
       termsOfPayment: string | null
       messageType: string | null
       userId: string | null
+      podManagerAccess: boolean
       legacyCustomerId: number | null
     }, ExtArgs["result"]["customer"]>
     composites: {}
@@ -11579,6 +11591,7 @@ export namespace Prisma {
     readonly termsOfPayment: FieldRef<"Customer", 'String'>
     readonly messageType: FieldRef<"Customer", 'String'>
     readonly userId: FieldRef<"Customer", 'String'>
+    readonly podManagerAccess: FieldRef<"Customer", 'Boolean'>
     readonly legacyCustomerId: FieldRef<"Customer", 'Int'>
   }
     
@@ -41032,6 +41045,7 @@ export namespace Prisma {
     termsOfPayment: 'termsOfPayment',
     messageType: 'messageType',
     userId: 'userId',
+    podManagerAccess: 'podManagerAccess',
     legacyCustomerId: 'legacyCustomerId'
   };
 
@@ -42023,6 +42037,7 @@ export namespace Prisma {
     termsOfPayment?: StringNullableFilter<"Customer"> | string | null
     messageType?: StringNullableFilter<"Customer"> | string | null
     userId?: StringNullableFilter<"Customer"> | string | null
+    podManagerAccess?: BoolFilter<"Customer"> | boolean
     legacyCustomerId?: IntNullableFilter<"Customer"> | number | null
     bookings?: BookingListRelationFilter
     vehicleRates?: CustomerVehicleRateListRelationFilter
@@ -42055,6 +42070,7 @@ export namespace Prisma {
     termsOfPayment?: SortOrderInput | SortOrder
     messageType?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
+    podManagerAccess?: SortOrder
     legacyCustomerId?: SortOrderInput | SortOrder
     bookings?: BookingOrderByRelationAggregateInput
     vehicleRates?: CustomerVehicleRateOrderByRelationAggregateInput
@@ -42090,6 +42106,7 @@ export namespace Prisma {
     termsOfPayment?: StringNullableFilter<"Customer"> | string | null
     messageType?: StringNullableFilter<"Customer"> | string | null
     userId?: StringNullableFilter<"Customer"> | string | null
+    podManagerAccess?: BoolFilter<"Customer"> | boolean
     legacyCustomerId?: IntNullableFilter<"Customer"> | number | null
     bookings?: BookingListRelationFilter
     vehicleRates?: CustomerVehicleRateListRelationFilter
@@ -42122,6 +42139,7 @@ export namespace Prisma {
     termsOfPayment?: SortOrderInput | SortOrder
     messageType?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
+    podManagerAccess?: SortOrder
     legacyCustomerId?: SortOrderInput | SortOrder
     _count?: CustomerCountOrderByAggregateInput
     _avg?: CustomerAvgOrderByAggregateInput
@@ -42155,6 +42173,7 @@ export namespace Prisma {
     termsOfPayment?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     messageType?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     userId?: StringNullableWithAggregatesFilter<"Customer"> | string | null
+    podManagerAccess?: BoolWithAggregatesFilter<"Customer"> | boolean
     legacyCustomerId?: IntNullableWithAggregatesFilter<"Customer"> | number | null
   }
 
@@ -45243,6 +45262,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
@@ -45275,6 +45295,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
@@ -45307,6 +45328,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
@@ -45339,6 +45361,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
@@ -45371,6 +45394,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
   }
 
@@ -45396,6 +45420,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -45421,6 +45446,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -49074,6 +49100,7 @@ export namespace Prisma {
     termsOfPayment?: SortOrder
     messageType?: SortOrder
     userId?: SortOrder
+    podManagerAccess?: SortOrder
     legacyCustomerId?: SortOrder
   }
 
@@ -49105,6 +49132,7 @@ export namespace Prisma {
     termsOfPayment?: SortOrder
     messageType?: SortOrder
     userId?: SortOrder
+    podManagerAccess?: SortOrder
     legacyCustomerId?: SortOrder
   }
 
@@ -49130,6 +49158,7 @@ export namespace Prisma {
     termsOfPayment?: SortOrder
     messageType?: SortOrder
     userId?: SortOrder
+    podManagerAccess?: SortOrder
     legacyCustomerId?: SortOrder
   }
 
@@ -55461,6 +55490,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     sales?: SaleCreateNestedManyWithoutCustomerInput
@@ -55492,6 +55522,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
@@ -55566,6 +55597,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     sales?: SaleUpdateManyWithoutCustomerNestedInput
@@ -55597,6 +55629,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
@@ -56449,6 +56482,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
     sales?: SaleCreateNestedManyWithoutCustomerInput
@@ -56480,6 +56514,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
     sales?: SaleUncheckedCreateNestedManyWithoutCustomerInput
@@ -56923,6 +56958,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
     sales?: SaleUpdateManyWithoutCustomerNestedInput
@@ -56954,6 +56990,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
     sales?: SaleUncheckedUpdateManyWithoutCustomerNestedInput
@@ -58089,6 +58126,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
@@ -58120,6 +58158,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
@@ -58167,6 +58206,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
@@ -58198,6 +58238,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
@@ -58229,6 +58270,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
@@ -58260,6 +58302,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
@@ -58307,6 +58350,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
@@ -58338,6 +58382,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
@@ -58545,6 +58590,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
@@ -58576,6 +58622,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
@@ -58662,6 +58709,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
@@ -58693,6 +58741,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
@@ -58829,6 +58878,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
@@ -58860,6 +58910,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
@@ -58976,6 +59027,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
@@ -59007,6 +59059,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput
@@ -59069,6 +59122,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateCreateNestedManyWithoutCustomerInput
@@ -59100,6 +59154,7 @@ export namespace Prisma {
     termsOfPayment?: string | null
     messageType?: string | null
     userId?: string | null
+    podManagerAccess?: boolean
     legacyCustomerId?: number | null
     bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
     vehicleRates?: CustomerVehicleRateUncheckedCreateNestedManyWithoutCustomerInput
@@ -59184,6 +59239,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUpdateManyWithoutCustomerNestedInput
@@ -59215,6 +59271,7 @@ export namespace Prisma {
     termsOfPayment?: NullableStringFieldUpdateOperationsInput | string | null
     messageType?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    podManagerAccess?: BoolFieldUpdateOperationsInput | boolean
     legacyCustomerId?: NullableIntFieldUpdateOperationsInput | number | null
     bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
     vehicleRates?: CustomerVehicleRateUncheckedUpdateManyWithoutCustomerNestedInput

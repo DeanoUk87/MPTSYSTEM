@@ -2,7 +2,7 @@
 import { useState, useEffect, use, useRef } from "react";
 import Topbar from "@/components/Topbar";
 import Modal from "@/components/Modal";
-import { ArrowLeft, Plus, Trash2, Pencil, Loader2, KeyRound, CheckCircle2, Copy, FolderOpen } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Pencil, Loader2, KeyRound, CheckCircle2, Copy, FolderOpen, ShieldCheck, ShieldOff } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -66,14 +66,17 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [accessStatus, setAccessStatus] = useState<{ hasAccess: boolean; user: any | null } | null>(null);
   const [generatedCreds, setGeneratedCreds] = useState<{ username: string; password: string } | null>(null);
   const [accessLoading, setAccessLoading] = useState(false);
+  const [podAccess, setPodAccess] = useState(false);
+  const [podAccessLoading, setPodAccessLoading] = useState(false);
 
   async function loadAll() {
     setLoading(true);
-    const [cRes, vRes, rRes, aRes] = await Promise.all([
+    const [cRes, vRes, rRes, aRes, pRes] = await Promise.all([
       fetch(`/api/customers/${id}`),
       fetch("/api/vehicles"),
       fetch(`/api/vehicle-rates?customerId=${id}`),
       fetch(`/api/customers/${id}/access`),
+      fetch(`/api/customers/${id}/pod-access`),
     ]);
     if (cRes.ok) {
       const c = await cRes.json();
@@ -90,7 +93,20 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     if (vRes.ok) setVehicles(await vRes.json());
     if (rRes.ok) setRates(await rRes.json());
     if (aRes.ok) setAccessStatus(await aRes.json());
+    if (pRes.ok) { const p = await pRes.json(); setPodAccess(p.podManagerAccess ?? false); }
     setLoading(false);
+  }
+
+  async function togglePodAccess() {
+    setPodAccessLoading(true);
+    try {
+      const res = await fetch(`/api/customers/${id}/pod-access`, { method: "POST" });
+      if (res.ok) {
+        const d = await res.json();
+        setPodAccess(d.podManagerAccess);
+        toast.success(d.podManagerAccess ? "POD Manager access enabled" : "POD Manager access disabled");
+      } else toast.error("Failed to update POD access");
+    } finally { setPodAccessLoading(false); }
   }
 
   useEffect(() => { loadAll(); }, [id]);
@@ -192,6 +208,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             <button onClick={() => { setGeneratedCreds(null); setAccessModal(true); }}
               className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
               <KeyRound className="w-3 h-3" /> {accessStatus?.hasAccess ? "Reset Portal Access" : "Allow Login Access"}
+            </button>
+            <button
+              onClick={togglePodAccess}
+              disabled={podAccessLoading}
+              title={podAccess ? "Disable customer POD Manager access" : "Enable customer POD Manager access"}
+              className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm transition-colors disabled:opacity-50 ${
+                podAccess
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                  : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+              }`}>
+              {podAccessLoading
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : podAccess
+                  ? <ShieldCheck className="w-3 h-3" />
+                  : <ShieldOff className="w-3 h-3" />}
+              POD Access {podAccess ? "ON" : "OFF"}
             </button>
             <Link
               href={`/admin/pod-manager?customerId=${id}`}
