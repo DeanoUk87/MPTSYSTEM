@@ -5,6 +5,12 @@ import { unlink } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 
+async function deletePhysicalFile(filePath: string) {
+  const relPath = filePath.replace(/^\/api/, "");
+  const physPath = path.join(process.cwd(), "public", relPath);
+  if (existsSync(physPath)) await unlink(physPath).catch(() => {});
+}
+
 // POST /api/pod-manager/bulk
 // body: { action: "delete" | "move", fileIds: string[], folderId?: string }
 export async function POST(req: NextRequest) {
@@ -27,7 +33,14 @@ export async function POST(req: NextRequest) {
     if (!canDelete) return NextResponse.json({ error: "Permission denied" }, { status: 403 });
 
     try {
-      // Soft delete
+      // Get file paths before deleting so we can remove from disk
+      const files = await prisma.podFile.findMany({
+        where: { id: { in: fileIds } },
+        select: { id: true, filePath: true },
+      });
+      // Delete physical files from disk
+      for (const f of files) await deletePhysicalFile(f.filePath);
+      // Soft delete in DB
       await prisma.podFile.updateMany({
         where: { id: { in: fileIds } },
         data: { deletedAt: new Date() },

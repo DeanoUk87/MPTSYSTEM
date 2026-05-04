@@ -94,10 +94,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const file = await prisma.podFile.findUnique({ where: { id } });
     if (!file) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+    // Always delete the physical file from disk (regardless of soft/hard delete)
+    const relPath = file.filePath.replace(/^\/api/, ""); // handle /api/uploads/pod/X or /uploads/pod/X
+    const physPath = path.join(process.cwd(), "public", relPath);
+    if (existsSync(physPath)) await unlink(physPath).catch(() => {});
+
     if (permanent) {
-      // Delete physical file
-      const physPath = path.join(process.cwd(), "public", file.filePath);
-      if (existsSync(physPath)) await unlink(physPath);
       await prisma.podFile.delete({ where: { id } });
     } else {
       await prisma.podFile.update({ where: { id }, data: { deletedAt: new Date() } });

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
+import { unlink } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
 
 // PATCH /api/pod-manager/folders/[id] — rename or move
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -49,7 +52,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 }
 
 async function softDeleteFolderTree(folderId: string, now: Date) {
-  // Delete all files in this folder
+  // Get all files in this folder and delete them from disk
+  const files = await prisma.podFile.findMany({ where: { folderId, deletedAt: null }, select: { id: true, filePath: true } });
+  for (const file of files) {
+    const relPath = file.filePath.replace(/^\/api/, "");
+    const physPath = path.join(process.cwd(), "public", relPath);
+    if (existsSync(physPath)) await unlink(physPath).catch(() => {});
+  }
+  // Soft-delete all files in DB
   await prisma.podFile.updateMany({ where: { folderId, deletedAt: null }, data: { deletedAt: now } });
   // Recurse into children
   const children = await prisma.podFolder.findMany({ where: { parentId: folderId, deletedAt: null }, select: { id: true } });

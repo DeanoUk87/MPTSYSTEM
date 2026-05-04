@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
         folderId: folderId || null,
         filename: file.name,
         storedName,
-        filePath: `/uploads/pod/${storedName}`,
+        filePath: `/api/uploads/pod/${storedName}`,
         mimeType: file.type,
         fileSize: file.size,
         customerId: customerId || null,

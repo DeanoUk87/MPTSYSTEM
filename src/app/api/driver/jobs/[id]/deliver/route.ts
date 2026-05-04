@@ -82,7 +82,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           : `${postcodePrefix}#${photoIndex}.${ext}`;
         const filepath = path.join(UPLOAD_DIR, filename);
         await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
-        existing.push(`/uploads/pod/${filename}`);
+        existing.push(`/api/uploads/pod/${filename}`);
         photoIndex++;
       }
 

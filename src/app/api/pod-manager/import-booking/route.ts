@@ -76,13 +76,16 @@ export async function POST(req: NextRequest) {
       const ext = storedName.split(".").pop()?.toLowerCase() ?? "jpg";
       const mimeType = ["pdf"].includes(ext) ? "application/pdf" : `image/${ext === "jpg" ? "jpeg" : ext}`;
 
+      // Normalise path — ensure it goes through the API route for correct serving
+      const normalisedPath = f.filePath.startsWith("/api/") ? f.filePath : `/api${f.filePath}`;
+
       await prisma.podFile.create({
         data: {
           folderId: folderId || null,
           bookingId: f.bookingId,
           filename: storedName,
           storedName,
-          filePath: f.filePath,
+          filePath: normalisedPath,
           mimeType,
           fileSize,
           customerId: booking.customerId || null,

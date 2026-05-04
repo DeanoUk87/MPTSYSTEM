@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filepath, buffer);
 
-    files.push(`/uploads/pod/${filename}`);
+    files.push(`/api/uploads/pod/${filename}`);
     await prisma.booking.update({ where: { id }, data: { podUpload: JSON.stringify(files) } });
 
     return NextResponse.json({ podUpload: files });
@@ -61,15 +61,20 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const existing = await prisma.booking.findUnique({ where: { id }, select: { podUpload: true } });
     const files = parsePodFiles(existing?.podUpload);
 
+    function filePathToDisk(fp: string): string {
+      // Handles both /uploads/pod/X and /api/uploads/pod/X
+      const rel = fp.replace(/^\/api/, "");
+      return path.join(process.cwd(), "public", rel);
+    }
+
     if (fileToRemove) {
-      const absPath = path.join(process.cwd(), "public", fileToRemove);
-      await unlink(absPath).catch(() => {});
+      await unlink(filePathToDisk(fileToRemove)).catch(() => {});
       const updated = files.filter(f => f !== fileToRemove);
       await prisma.booking.update({ where: { id }, data: { podUpload: updated.length ? JSON.stringify(updated) : null } });
       return NextResponse.json({ podUpload: updated });
     } else {
       for (const f of files) {
-        await unlink(path.join(process.cwd(), "public", f)).catch(() => {});
+        await unlink(filePathToDisk(f)).catch(() => {});
       }
       await prisma.booking.update({ where: { id }, data: { podUpload: null } });
       return NextResponse.json({ podUpload: [] });
