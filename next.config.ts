@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://maps.googleapis.com https://maps.gstatic.com",
               "connect-src 'self' https://maps.googleapis.com https://api.postcodes.io https://api.craftyclick.co.uk",
+              "frame-src 'self' blob:",
               "frame-ancestors 'none'",
             ].join("; "),
           },

@@ -560,7 +560,12 @@ function PodManagerInner() {
                             <FolderOpen className="w-10 h-10 text-amber-400" />
                             <p className="text-xs font-medium text-slate-700 leading-tight line-clamp-2">{folder.name}</p>
                             {folder._count && (
-                              <p className="text-xs text-slate-400">{folder._count.files} files</p>
+                              <p className="text-xs text-slate-400">
+                                {folder._count.children > 0 && `${folder._count.children} folder${folder._count.children !== 1 ? "s" : ""}`}
+                                {folder._count.children > 0 && folder._count.files > 0 && ", "}
+                                {folder._count.files > 0 && `${folder._count.files} file${folder._count.files !== 1 ? "s" : ""}`}
+                                {folder._count.children === 0 && folder._count.files === 0 && "empty"}
+                              </p>
                             )}
                             {folder.customer && (
                               <span className="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full border border-blue-100 truncate max-w-full">
@@ -599,7 +604,7 @@ function PodManagerInner() {
                     </div>
                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                       {/* Table header */}
-                      <div className="grid grid-cols-[auto_1fr_120px_100px_100px_80px] gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500">
+                      <div className="grid grid-cols-[auto_minmax(0,1fr)_80px_80px_100px] gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500">
                         <div className="flex items-center">
                           <button onClick={selectAll} className="p-0.5 rounded hover:bg-slate-200">
                             {selectedIds.size === files.length && files.length > 0
@@ -610,7 +615,6 @@ function PodManagerInner() {
                         <button onClick={() => toggleSort("filename")} className="flex items-center gap-1 text-left hover:text-slate-700">
                           Name <SortIcon field="filename" />
                         </button>
-                        <span>Customer</span>
                         <button onClick={() => toggleSort("fileSize")} className="flex items-center gap-1 hover:text-slate-700">
                           Size <SortIcon field="fileSize" />
                         </button>
@@ -623,11 +627,12 @@ function PodManagerInner() {
                       {/* Rows */}
                       {files.map(file => {
                         const isImage = file.mimeType?.startsWith("image/");
+                        const isPdf = file.mimeType === "application/pdf";
                         const selected = selectedIds.has(file.id);
                         return (
                           <div key={file.id}
                             className={clsx(
-                              "grid grid-cols-[auto_1fr_120px_100px_100px_80px] gap-2 px-3 py-2.5 border-b border-slate-100 last:border-0 items-center hover:bg-slate-50 transition-colors text-sm",
+                              "grid grid-cols-[auto_minmax(0,1fr)_80px_100px_100px] gap-2 px-3 py-2.5 border-b border-slate-100 last:border-0 items-center hover:bg-slate-50 transition-colors text-sm",
                               selected && "bg-blue-50"
                             )}
                           >
@@ -644,16 +649,16 @@ function PodManagerInner() {
                                 </div>
                               )}
                               <button
-                                onClick={() => isImage ? setPreviewFile(file) : window.open(file.filePath, "_blank")}
-                                className="text-slate-700 font-medium truncate text-left hover:text-blue-600"
+                                onClick={() => isImage ? setPreviewFile(file) : isPdf ? setPreviewFile(file) : window.open(file.filePath, "_blank")}
+                                className="text-slate-700 font-medium truncate text-left hover:text-blue-600 max-w-[200px]"
+                                title={file.filename}
                               >
                                 {file.filename}
                               </button>
                             </div>
-                            <span className="text-xs text-slate-500 truncate">{file.customer?.name || "—"}</span>
                             <span className="text-xs text-slate-500">{formatBytes(file.fileSize)}</span>
                             <span className="text-xs text-slate-500">{formatDate(file.createdAt)}</span>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-0.5">
                               <a href={file.filePath} download={file.filename}
                                 className="p-1 text-slate-400 hover:text-emerald-600 rounded hover:bg-emerald-50" title="Download">
                                 <Download className="w-3.5 h-3.5" />
@@ -797,25 +802,48 @@ function PodManagerInner() {
         </div>
       )}
 
-      {/* Image Preview */}
+      {/* File Preview (image + PDF) */}
       {previewFile && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setPreviewFile(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 shrink-0">
               <p className="font-semibold text-slate-800 truncate">{previewFile.filename}</p>
               <div className="flex items-center gap-2">
-                <a href={previewFile.filePath} download={previewFile.filename}
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(previewFile.filePath);
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = previewFile.filename;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    } catch {
+                      toast.error("Download failed — file may not exist on server yet");
+                    }
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700">
                   <Download className="w-3.5 h-3.5" /> Download
-                </a>
+                </button>
                 <button onClick={() => setPreviewFile(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><X className="w-4 h-4" /></button>
               </div>
             </div>
-            <div className="overflow-auto max-h-[calc(90vh-60px)] flex items-center justify-center bg-slate-50 p-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={previewFile.filePath} alt={previewFile.filename} className="max-w-full max-h-full object-contain rounded-lg" />
+            <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-50 p-4 min-h-0">
+              {previewFile.mimeType === "application/pdf" ? (
+                <iframe
+                  src={previewFile.filePath}
+                  title={previewFile.filename}
+                  className="w-full rounded-lg border border-slate-200"
+                  style={{ height: "calc(92vh - 120px)" }}
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={previewFile.filePath} alt={previewFile.filename} className="max-w-full max-h-full object-contain rounded-lg" />
+              )}
             </div>
-            <div className="px-4 py-2 border-t border-slate-100 text-xs text-slate-500 flex gap-4">
+            <div className="px-4 py-2 border-t border-slate-100 text-xs text-slate-500 flex gap-4 shrink-0">
               <span>{formatBytes(previewFile.fileSize)}</span>
               <span>{formatDate(previewFile.createdAt)}</span>
               {previewFile.customer && <span>Customer: {previewFile.customer.name}</span>}
