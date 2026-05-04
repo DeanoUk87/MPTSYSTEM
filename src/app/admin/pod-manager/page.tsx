@@ -665,10 +665,21 @@ function PodManagerInner() {
                             <span className="text-xs text-slate-500">{formatBytes(file.fileSize)}</span>
                             <span className="text-xs text-slate-500">{formatDate(file.createdAt)}</span>
                             <div className="flex items-center gap-0.5">
-                              <a href={file.filePath} download={file.filename}
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetch(file.filePath);
+                                    if (!res.ok) { toast.error("File not found on server"); return; }
+                                    const blob = await res.blob();
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement("a");
+                                    a.href = url; a.download = file.filename; a.click();
+                                    URL.revokeObjectURL(url);
+                                  } catch { toast.error("Download failed"); }
+                                }}
                                 className="p-1 text-slate-400 hover:text-emerald-600 rounded hover:bg-emerald-50" title="Download">
                                 <Download className="w-3.5 h-3.5" />
-                              </a>
+                              </button>
                               {canRename && (
                                 <button onClick={() => { setRenameTarget({ type: "file", id: file.id, name: file.filename }); setRenameName(file.filename); }}
                                   className="p-1 text-slate-400 hover:text-blue-600 rounded hover:bg-blue-50" title="Rename">

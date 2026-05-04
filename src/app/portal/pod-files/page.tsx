@@ -109,19 +109,20 @@ export default function PortalPodFilesPage() {
   }, [accessChecked, rootFolderId]);
 
   // Load content whenever currentFolderId or search changes
+  // Pass currentFolderId explicitly to avoid stale closure
   useEffect(() => {
     if (!accessChecked) return;
-    loadContent();
+    loadContent(currentFolderId, search);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentFolderId, search, accessChecked]);
 
-  async function loadContent() {
+  async function loadContent(folderId: string | null, searchTerm: string) {
     setLoading(true);
     try {
-      const folderParam = currentFolderId ? `parentId=${currentFolderId}` : "";
+      const folderParam = folderId ? `parentId=${folderId}` : "";
       const [fRes, fileRes] = await Promise.all([
         fetch(`/api/pod-manager/folders?${folderParam}`),
-        fetch(`/api/pod-manager/files?folderId=${currentFolderId || ""}&search=${encodeURIComponent(search)}&pageSize=200`),
+        fetch(`/api/pod-manager/files?folderId=${folderId || ""}&search=${encodeURIComponent(searchTerm)}&pageSize=200`),
       ]);
       if (fRes.status === 401 || fileRes.status === 401) { router.push("/login"); return; }
       if (fRes.status === 403 || fileRes.status === 403) { router.replace("/portal"); return; }
