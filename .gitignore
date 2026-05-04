@@ -43,3 +43,9 @@ next-env.d.ts
 
 /.next/
 standalone.zip
+
+# Legacy files no longer needed
+/OLDSYSTEM/
+MOBILE#*.jpg
+dashboard.png
+booking.png
