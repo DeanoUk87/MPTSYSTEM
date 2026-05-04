@@ -18,6 +18,13 @@ const ALL_PERMISSIONS = [
   "roles_view", "roles_create", "roles_edit", "roles_delete",
   "driver_jobs_view",
   "legacy_view",
+  "pod_manager_view",
+  "pod_manager_upload",
+  "pod_manager_move",
+  "pod_manager_rename",
+  "pod_manager_delete",
+  "pod_manager_share",
+  "pod_manager_manage",
 ];
 
 export async function GET(req: NextRequest) {
