@@ -37,6 +37,8 @@ export async function GET(req: NextRequest) {
     // Files inside the folder tree may have customerId=null (created by admin).
     // Don't filter by customerId — the folder navigation already scopes access.
     // Just filter by the requested folderId.
+    // Normalise sort field: "name" is not a valid PodFile field — use "filename"
+    const sortField = sort === "name" ? "filename" : sort;
     const where: any = {
       folderId: folderId ?? null,
       deletedAt: null,
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
       const [files, total] = await Promise.all([
         prisma.podFile.findMany({
           where,
-          orderBy: { [sort]: dir },
+          orderBy: { [sortField]: dir },
           skip: (page - 1) * pageSize,
           take: pageSize,
           include: { customer: { select: { id: true, name: true } } },
