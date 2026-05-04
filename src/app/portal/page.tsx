@@ -175,18 +175,21 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
     return iW.current;
   }
 
+  function setMarkerPosition(marker: any, pos: { lat: number; lng: number }) {
+    // AdvancedMarkerElement uses .position, legacy Marker uses .setPosition()
+    if (typeof marker.setPosition === "function") marker.setPosition(pos);
+    else marker.position = pos;
+  }
+
   function placeMarkers() {
     if (!map.current) return;
     const cd = lChill.current;
     const ad = lAmb.current;
     if (cd) {
       const pos = { lat: cd.lat, lng: cd.lng };
-      if (cM.current) { cM.current.setPosition(pos); map.current.panTo(pos); }
+      if (cM.current) { setMarkerPosition(cM.current, pos); map.current.panTo(pos); }
       else {
-        cM.current = new window.google.maps.Marker({
-          position: pos, map: map.current, title: "Chill Unit",
-          icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-        });
+        cM.current = makeMarker(pos, "Chill Unit", "blue");
         cM.current.addListener("click", () => {
           if (lHideTemp.current) return;
           const iw = ensureInfoWindow();
@@ -199,12 +202,9 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
     }
     if (ad) {
       const pos = { lat: ad.lat, lng: ad.lng };
-      if (aM.current) { aM.current.setPosition(pos); }
+      if (aM.current) { setMarkerPosition(aM.current, pos); }
       else {
-        aM.current = new window.google.maps.Marker({
-          position: pos, map: map.current, title: "Ambient Unit",
-          icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-        });
+        aM.current = makeMarker(pos, "Ambient Unit", "green");
         aM.current.addListener("click", () => {
           if (lHideTemp.current) return;
           const iw = ensureInfoWindow();
@@ -216,10 +216,38 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
     }
   }
 
+  function makeMarker(position: { lat: number; lng: number }, title: string, color: "blue" | "green") {
+    // Use AdvancedMarkerElement if available (Maps JS API v3.57+), else fall back to legacy Marker
+    const g = window.google.maps;
+    if (g.marker?.AdvancedMarkerElement) {
+      const pin = new g.marker.PinElement({
+        background: color === "blue" ? "#2563eb" : "#16a34a",
+        borderColor: color === "blue" ? "#1d4ed8" : "#15803d",
+        glyphColor: "#ffffff",
+      });
+      return new g.marker.AdvancedMarkerElement({
+        position,
+        map: map.current,
+        title,
+        content: pin.element,
+      });
+    }
+    // Legacy fallback
+    return new g.Marker({
+      position,
+      map: map.current,
+      title,
+      icon: color === "blue"
+        ? "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+        : "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+    });
+  }
+
   function init() {
     if (!divRef.current || !window.google?.maps || map.current) return;
     map.current = new window.google.maps.Map(divRef.current, {
       center: { lat: 52.5, lng: -1.5 }, zoom: 7,
+      mapId: "pod_live_map",
     });
     placeMarkers();
   }
@@ -231,7 +259,7 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
     if (!document.getElementById("gmap-script")) {
       const s = document.createElement("script");
       s.id = "gmap-script";
-      s.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}`;
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&v=weekly&libraries=marker`;
       s.async = true;
       document.head.appendChild(s);
     }
@@ -242,12 +270,9 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
   useEffect(() => {
     if (!map.current || !chillData) return;
     const pos = { lat: chillData.lat, lng: chillData.lng };
-    if (cM.current) { cM.current.setPosition(pos); map.current.panTo(pos); }
+    if (cM.current) { setMarkerPosition(cM.current, pos); map.current.panTo(pos); }
     else {
-      cM.current = new window.google.maps.Marker({
-        position: pos, map: map.current, title: "Chill Unit",
-        icon: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-      });
+      cM.current = makeMarker(pos, "Chill Unit", "blue");
       cM.current.addListener("click", () => {
         const iw = ensureInfoWindow();
         iw.setContent(buildInfoContent(lChillUnit.current, lChill.current));
@@ -261,12 +286,9 @@ function LiveMap({ chillImei, ambImei, chillData, ambData, showTempLegend, chill
   useEffect(() => {
     if (!map.current || !ambData) return;
     const pos = { lat: ambData.lat, lng: ambData.lng };
-    if (aM.current) aM.current.setPosition(pos);
+    if (aM.current) setMarkerPosition(aM.current, pos);
     else {
-      aM.current = new window.google.maps.Marker({
-        position: pos, map: map.current, title: "Ambient Unit",
-        icon: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-      });
+      aM.current = makeMarker(pos, "Ambient Unit", "green");
       aM.current.addListener("click", () => {
         const iw = ensureInfoWindow();
         iw.setContent(buildInfoContent(lAmbUnit.current, lAmb.current));
