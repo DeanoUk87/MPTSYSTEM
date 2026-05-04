@@ -553,9 +553,10 @@ function PodManagerInner() {
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Folders</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                       {folders.map(folder => (
-                        <div key={folder.id} className="group relative bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all p-3 cursor-pointer"
-                          onDoubleClick={() => navigateTo(folder.id, folder.name)}>
-                          <div className="flex flex-col items-center gap-2 text-center">
+                        <div key={folder.id}
+                          className="group relative bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all p-3 cursor-pointer select-none"
+                          onClick={() => navigateTo(folder.id, folder.name)}>
+                          <div className="flex flex-col items-center gap-2 text-center pointer-events-none">
                             <FolderOpen className="w-10 h-10 text-amber-400" />
                             <p className="text-xs font-medium text-slate-700 leading-tight line-clamp-2">{folder.name}</p>
                             {folder._count && (
@@ -567,24 +568,21 @@ function PodManagerInner() {
                               </span>
                             )}
                           </div>
-                          {/* Context menu */}
-                          <div className="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
+                          {/* Context menu — pointer-events-auto so clicks reach these buttons */}
+                          <div className="absolute top-1 right-1 hidden group-hover:flex gap-0.5 pointer-events-auto">
                             {canRename && (
                               <button onClick={e => { e.stopPropagation(); setRenameTarget({ type: "folder", id: folder.id, name: folder.name }); setRenameName(folder.name); }}
-                                className="p-1 bg-white border border-slate-200 rounded text-slate-500 hover:text-blue-600 shadow-sm">
+                                className="p-1 bg-white border border-slate-200 rounded text-slate-500 hover:text-blue-600 shadow-sm z-10">
                                 <Pencil className="w-3 h-3" />
                               </button>
                             )}
                             {canDelete && (
                               <button onClick={e => { e.stopPropagation(); setDeleteTarget({ type: "folder", ids: [folder.id], label: folder.name }); }}
-                                className="p-1 bg-white border border-slate-200 rounded text-slate-500 hover:text-rose-600 shadow-sm">
+                                className="p-1 bg-white border border-slate-200 rounded text-slate-500 hover:text-rose-600 shadow-sm z-10">
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             )}
                           </div>
-                          {/* Open button */}
-                          <button onClick={() => navigateTo(folder.id, folder.name)}
-                            className="absolute inset-0 w-full h-full opacity-0" />
                         </div>
                       ))}
                     </div>
