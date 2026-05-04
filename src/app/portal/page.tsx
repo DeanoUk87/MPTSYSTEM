@@ -632,7 +632,7 @@ export default function CustomerPortalPage() {
           {podManagerAccess && (
             <Link href="/portal/pod-files"
               className="flex items-center gap-1.5 text-xs text-blue-200 hover:text-white border border-blue-500 hover:border-blue-300 px-3 py-1.5 rounded-lg transition">
-              POD Files
+              POD Portal
             </Link>
           )}
           <button onClick={handleLogout}

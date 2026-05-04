@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  FolderOpen, Folder, Download, LogOut, ArrowLeft,
+  FolderOpen, Download, LogOut, ArrowLeft,
   Loader2, FileText, Image as ImageIcon, File, X,
   Search, ChevronRight, Home
 } from "lucide-react";
@@ -46,10 +46,16 @@ function FileTypeIcon({ mimeType }: { mimeType?: string | null }) {
 
 export default function PortalPodFilesPage() {
   const router = useRouter();
+
+  // Root folder assigned to this customer — they cannot navigate above this
+  const [rootFolderId, setRootFolderId] = useState<string | null>(null);
+  const [rootFolderName, setRootFolderName] = useState<string>("POD Files");
+  const [accessChecked, setAccessChecked] = useState(false);
+
   const [folders, setFolders] = useState<PodFolder[]>([]);
   const [files, setFiles] = useState<PodFile[]>([]);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([{ id: null, name: "My Files" }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [previewFile, setPreviewFile] = useState<PodFile | null>(null);
@@ -57,6 +63,7 @@ export default function PortalPodFilesPage() {
   const [companyName, setCompanyName] = useState("MP Transport");
   const [error, setError] = useState("");
 
+  // Load branding
   useEffect(() => {
     fetch("/api/branding")
       .then(r => r.ok ? r.json() : null)
@@ -64,7 +71,7 @@ export default function PortalPodFilesPage() {
       .catch(() => {});
   }, []);
 
-  // Check POD Manager access before loading anything
+  // Check access and get assigned root folder
   useEffect(() => {
     fetch("/api/portal/pod-access")
       .then(r => {
@@ -73,20 +80,51 @@ export default function PortalPodFilesPage() {
       })
       .then(d => {
         if (!d || !d.podManagerAccess) { router.replace("/portal"); return; }
-        load();
+        const assignedFolderId = d.podFolderId ?? null;
+        setRootFolderId(assignedFolderId);
+        setCurrentFolderId(assignedFolderId);
+        setAccessChecked(true);
       })
       .catch(() => router.replace("/portal"));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function load() {
+  // Load folder name for root
+  useEffect(() => {
+    if (!accessChecked) return;
+    if (rootFolderId) {
+      fetch(`/api/pod-manager/folders`)
+        .then(r => r.ok ? r.json() : [])
+        .then((allFolders: PodFolder[]) => {
+          const root = allFolders.find(f => f.id === rootFolderId);
+          const name = root?.name ?? "POD Files";
+          setRootFolderName(name);
+          setBreadcrumbs([{ id: rootFolderId, name }]);
+        })
+        .catch(() => setBreadcrumbs([{ id: rootFolderId, name: "POD Files" }]));
+    } else {
+      // No specific folder assigned — show root
+      setBreadcrumbs([{ id: null, name: "POD Files" }]);
+    }
+  }, [accessChecked, rootFolderId]);
+
+  // Load content whenever currentFolderId or search changes
+  useEffect(() => {
+    if (!accessChecked) return;
+    loadContent();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFolderId, search, accessChecked]);
+
+  async function loadContent() {
     setLoading(true);
     try {
+      const folderParam = currentFolderId ? `parentId=${currentFolderId}` : "";
       const [fRes, fileRes] = await Promise.all([
-        fetch(`/api/pod-manager/folders?${currentFolderId ? `parentId=${currentFolderId}` : ""}`),
-        fetch(`/api/pod-manager/files?folderId=${currentFolderId || ""}&search=${encodeURIComponent(search)}&pageSize=100`),
+        fetch(`/api/pod-manager/folders?${folderParam}`),
+        fetch(`/api/pod-manager/files?folderId=${currentFolderId || ""}&search=${encodeURIComponent(search)}&pageSize=200`),
       ]);
       if (fRes.status === 401 || fileRes.status === 401) { router.push("/login"); return; }
+      if (fRes.status === 403 || fileRes.status === 403) { router.replace("/portal"); return; }
       if (fRes.ok) setFolders(await fRes.json());
       if (fileRes.ok) { const d = await fileRes.json(); setFiles(d.files || []); }
     } catch {
@@ -96,12 +134,13 @@ export default function PortalPodFilesPage() {
     }
   }
 
-  useEffect(() => { load(); }, [currentFolderId, search]);
-
   function navigateTo(folderId: string | null, name: string, fromBreadcrumb = false) {
+    // Prevent navigating above the assigned root folder
+    if (rootFolderId && folderId === null) return;
+
     if (fromBreadcrumb) {
       const idx = breadcrumbs.findIndex(b => b.id === folderId);
-      setBreadcrumbs(idx >= 0 ? breadcrumbs.slice(0, idx + 1) : [{ id: null, name: "My Files" }]);
+      if (idx >= 0) setBreadcrumbs(breadcrumbs.slice(0, idx + 1));
     } else if (folderId !== null) {
       setBreadcrumbs(prev => [...prev, { id: folderId, name }]);
     }
@@ -122,16 +161,23 @@ export default function PortalPodFilesPage() {
     </div>
   );
 
+  if (!accessChecked) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-blue-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           {logo
-            ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={companyName} className="h-10 w-auto object-contain" />
+            ? /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={logo} alt={companyName} className="h-10 w-auto object-contain" />
             : <span className="text-xl font-bold tracking-tight">{companyName}</span>}
           <div>
-            <p className="text-sm font-bold tracking-tight leading-none">POD Files</p>
+            <p className="text-sm font-bold tracking-tight leading-none">POD Portal</p>
             <p className="text-blue-200 text-xs mt-0.5">Your proof of delivery documents</p>
           </div>
         </div>
@@ -162,7 +208,9 @@ export default function PortalPodFilesPage() {
                     i === breadcrumbs.length - 1 ? "font-semibold text-slate-800" : "text-slate-500"
                   )}
                 >
-                  {i === 0 ? <span className="flex items-center gap-1"><Home className="w-3.5 h-3.5" />{crumb.name}</span> : crumb.name}
+                  {i === 0
+                    ? <span className="flex items-center gap-1"><Home className="w-3.5 h-3.5" />{crumb.name}</span>
+                    : crumb.name}
                 </button>
               </span>
             ))}
@@ -192,7 +240,7 @@ export default function PortalPodFilesPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Folders */}
+            {/* Sub-folders */}
             {folders.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Folders</p>
@@ -243,7 +291,7 @@ export default function PortalPodFilesPage() {
                           )}
                         </div>
 
-                        {/* Name */}
+                        {/* Name & meta */}
                         <button
                           onClick={() => isImage ? setPreviewFile(file) : window.open(file.filePath, "_blank")}
                           className="flex-1 text-left min-w-0"
@@ -269,7 +317,7 @@ export default function PortalPodFilesPage() {
               <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                 <FolderOpen className="w-14 h-14 mb-3 text-slate-300" />
                 <p className="font-medium text-slate-500">No POD files yet</p>
-                <p className="text-sm mt-1">Files will appear here once your deliveries are completed and processed</p>
+                <p className="text-sm mt-1 text-center">Files will appear here once your deliveries are completed and processed</p>
               </div>
             ) : null}
           </div>

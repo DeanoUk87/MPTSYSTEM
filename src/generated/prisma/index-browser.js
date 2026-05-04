@@ -197,6 +197,7 @@ exports.Prisma.CustomerScalarFieldEnum = {
   messageType: 'messageType',
   userId: 'userId',
   podManagerAccess: 'podManagerAccess',
+  podFolderId: 'podFolderId',
   legacyCustomerId: 'legacyCustomerId'
 };
 

@@ -123,7 +123,8 @@ model Customer {
   termsOfPayment  String?
   messageType     String?
   userId          String?
-  podManagerAccess Boolean @default(false) // grant this customer access to POD Files in portal
+  podManagerAccess Boolean @default(false) // grant this customer access to POD Portal in portal
+  podFolderId      String? // the specific POD folder this customer can see in the portal
   // Legacy DB link
   legacyCustomerId Int?
 
